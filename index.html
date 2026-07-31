@@ -17,7 +17,20 @@
     --green: #6fa85c;
     --shadow: 0 2px 0 rgba(122,96,68,.18);
   }
+  /* 따뜻한 방 하나로 고정된 세계관이라 다크 테마를 따로 두지 않는다.
+     대신 뷰어가 다크 모드여도 스크롤바·기본 위젯이 어두워지지 않도록 명시한다. */
+  :root { color-scheme: light; }
+
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  button:focus-visible { outline: 3px solid var(--pink); outline-offset: 2px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: .01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: .01ms !important;
+    }
+  }
   body {
     margin: 0;
     font-family: "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", system-ui, sans-serif;
@@ -177,22 +190,39 @@
   .item-b { font-size: 9.5px; color: var(--ink-soft); font-weight: 700; line-height: 1.3; }
   .item-p.zero { color: var(--ink-soft); opacity: .7; }
 
-  /* ---------- 탭 ---------- */
-  #tabs { display: flex; gap: 8px; margin-bottom: 8px; }
-  #tabs button { flex: 1; padding: 8px; }
-  #tabs button.on { background: var(--ink); color: #fff8ee; border-color: var(--ink); }
-  .tabbody { padding: 10px; max-height: 330px; overflow-y: auto; }
+  /* ---------- 아이콘 탭 ---------- */
+  #nav { display: flex; gap: 8px; margin-bottom: 10px; }
+  #nav button {
+    flex: 1; padding: 7px 4px; position: relative;
+    display: flex; flex-direction: column; align-items: center; gap: 1px;
+  }
+  #nav .ni { font-size: 21px; line-height: 1.15; }
+  #nav .nl { font-size: 10.5px; font-weight: 800; }
+  #nav button.on { background: var(--ink); color: #fff8ee; border-color: var(--ink); }
+  #nav .dot {
+    position: absolute; top: 6px; right: 12px;
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--pink); border: 2px solid var(--panel);
+  }
+  #nav button.on .dot { border-color: var(--ink); }
+  .tabbody { padding: 10px; max-height: 60vh; overflow-y: auto; }
 
-  .row { display: flex; align-items: center; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); }
-  .row:last-child { border-bottom: none; }
-  .row .e { font-size: 24px; width: 30px; text-align: center; }
-  .row .t { flex: 1; min-width: 0; }
-  .row .n { font-size: 13px; font-weight: 800; }
-  .row .d { font-size: 11px; color: var(--ink-soft); margin-top: 2px; }
-  .row button { padding: 7px 12px; font-size: 12px; white-space: nowrap; }
-  .row.done { opacity: .55; }
-  .owned { font-size: 11px; font-weight: 800; color: var(--green); white-space: nowrap; }
-  .sect { font-size: 11px; font-weight: 800; color: var(--ink-soft); padding: 8px 4px 2px; letter-spacing: .04em; line-height: 1.6; }
+  /* ---------- 상점 (아이콘 격자) ---------- */
+  .shopgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .shopgrid button {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    padding: 10px 4px 8px; position: relative; text-align: center;
+  }
+  .shopgrid .e { font-size: 28px; line-height: 1.1; }
+  .shopgrid .n { font-size: 11.5px; font-weight: 800; line-height: 1.25; }
+  .shopgrid .d { font-size: 9.5px; color: var(--ink-soft); font-weight: 700; line-height: 1.35; min-height: 25px; }
+  .shopgrid .c { font-size: 11.5px; font-weight: 800; color: var(--gold); }
+  /* 아직 못 사는 항목도 설명은 읽혀야 한다 — 전역 disabled보다 덜 흐리게 */
+  .shopgrid button:disabled, .gitems button:disabled { opacity: .58; }
+  .shopgrid button.done { opacity: .5; border-style: dashed; }
+  .shopgrid button.done .c { color: var(--green); }
+  .shopgrid button.buyable { border-color: var(--gold); }
+  .sect { font-size: 11px; font-weight: 800; color: var(--ink-soft); padding: 2px 2px 9px; letter-spacing: .04em; line-height: 1.6; }
 
   #logbody .li { font-size: 12px; padding: 6px 4px; border-bottom: 1px dashed var(--line); display: flex; gap: 8px; }
   #logbody .li:last-child { border-bottom: none; }
@@ -263,22 +293,30 @@
     <div id="moodline"><span id="moodface">😊</span><span id="moodtext">기분 좋음</span><span id="moodnum" style="color:var(--ink-soft)">0</span></div>
   </div>
 
-  <div class="panel" id="incomepanel">
-    <div class="ihead">지금 이런 이유로 돈이 들어와요</div>
-    <div id="incomelist"></div>
-    <div class="itotal">합계 <b id="itotalval">0</b> / 분</div>
-  </div>
+  <nav id="nav">
+    <button data-tab="care" class="on"><span class="ni">🏠</span><span class="nl">돌보기</span></button>
+    <button data-tab="shop"><span class="ni">🛒</span><span class="nl">상점</span><span class="dot" hidden></span></button>
+    <button data-tab="log"><span class="ni">📔</span><span class="nl">일지</span></button>
+  </nav>
 
-  <div class="panel" id="care"></div>
+  <section id="page-care">
+    <div class="panel" id="incomepanel">
+      <div class="ihead">지금 이런 이유로 돈이 들어와요</div>
+      <div id="incomelist"></div>
+      <div class="itotal">합계 <b id="itotalval">0</b> / 분</div>
+    </div>
+    <div class="panel" id="care"></div>
+  </section>
 
-  <div id="tabs">
-    <button data-tab="shop" class="on">상점</button>
-    <button data-tab="log">일지</button>
-  </div>
-  <div class="panel" id="shoppanel"><div class="tabbody" id="shopbody"></div></div>
-  <div class="panel" id="logpanel" hidden><div class="tabbody" id="logbody"></div></div>
+  <section id="page-shop" hidden>
+    <div class="panel"><div class="tabbody" id="shopbody"></div></div>
+  </section>
 
-  <div id="footer">자동 저장됩니다 · <button id="reset">처음부터</button></div>
+  <section id="page-log" hidden>
+    <div class="panel"><div class="tabbody" id="logbody"></div></div>
+  </section>
+
+  <div id="footer"><span id="savenote">자동 저장됩니다</span> · <button id="reset">처음부터</button></div>
 </div>
 
 <script>
@@ -423,7 +461,13 @@ const IDLE_LINES = {
 /* ===================== 상태 ===================== */
 
 let S = null;
-let lastFrame = 0, bubbleTimer = 0, idleTimer = 0, tab = "shop";
+let lastFrame = 0, bubbleTimer = 0, idleTimer = 0, tab = "care";
+
+// 저장이 막힌 환경(파일 뷰어, 시크릿 모드 등)에서는 켤 때마다 새 게임이 된다. 미리 감지해서 알려준다.
+const storageOK = (() => {
+  try { localStorage.setItem("__t", "1"); localStorage.removeItem("__t"); return true; }
+  catch (e) { return false; }
+})();
 
 function freshState(type, name) {
   return {
@@ -873,50 +917,50 @@ const shopEls = new Map();
 
 function buildShop() {
   const box = $("shopbody");
-  box.innerHTML = `<div class="sect">설비 — 한 번 사면 계속 남습니다</div>`;
+  box.innerHTML = `<div class="sect">설비 — 한 번 사면 계속 남고, 방에 놓입니다</div>`;
   shopEls.clear();
 
+  const grid = document.createElement("div");
+  grid.className = "shopgrid";
   for (const f of FURNITURE) {
-    const row = document.createElement("div");
-    row.className = "row";
-    row.innerHTML = `
-      <div class="e">${f.emoji}</div>
-      <div class="t"><div class="n">${f.name}</div><div class="d">${f.desc}</div></div>`;
-
     const b = document.createElement("button");
-    b.textContent = "🪙 " + fmt(f.cost);
+    b.innerHTML = `
+      <span class="e">${f.emoji}</span>
+      <span class="n">${f.name}</span>
+      <span class="d">${f.desc}</span>
+      <span class="c"></span>`;
+    b.title = `${f.name} — ${f.desc}`;
     b.onclick = () => buy(f);
-    row.appendChild(b);
-
-    const tag = document.createElement("span");
-    tag.className = "owned";
-    tag.textContent = "보유 중";
-    tag.hidden = true;
-    row.appendChild(tag);
-
-    box.appendChild(row);
-    shopEls.set(f.id, { row, btn: b, tag });
+    grid.appendChild(b);
+    shopEls.set(f.id, { btn: b, c: b.querySelector(".c") });
   }
+  box.appendChild(grid);
 
   const note = document.createElement("div");
   note.className = "sect";
-  note.style.paddingTop = "14px";
-  note.textContent = "먹이·목욕 같은 소모품은 위 돌보기 버튼을 누를 때 코인이 바로 빠져나갑니다. 좋은 걸 해줄수록 받는 보상과 지속 배율이 커집니다.";
+  note.style.padding = "14px 2px 0";
+  note.textContent = "먹이·목욕 같은 소모품은 🏠 돌보기에서 누를 때 코인이 바로 빠져나갑니다.";
   box.appendChild(note);
   updateShop();
 }
 
 function updateShop() {
+  let anyBuyable = false;
   for (const f of FURNITURE) {
     const el = shopEls.get(f.id);
     if (!el) continue;
     const owned = has(f.id);
-    el.row.classList.toggle("done", owned);
-    el.btn.hidden = owned;
-    el.tag.hidden = !owned;
-    const off = S.coins < f.cost;
+    const afford = S.coins >= f.cost;
+    if (!owned && afford) anyBuyable = true;
+
+    el.c.textContent = owned ? "✓ 보유 중" : "🪙 " + fmt(f.cost);
+    el.btn.classList.toggle("done", owned);
+    el.btn.classList.toggle("buyable", !owned && afford);
+    const off = owned || !afford;
     if (el.btn.disabled !== off) el.btn.disabled = off;
   }
+  // 살 수 있는 게 생기면 🛒 아이콘에 점을 찍는다
+  $("nav").querySelector('[data-tab="shop"] .dot').hidden = !anyBuyable;
 }
 
 /* --- 일지 --- */
@@ -966,7 +1010,7 @@ function loop(now) {
   renderStats();
   updateIncome();
   updateCare();
-  if (tab === "shop") updateShop();
+  updateShop();   // 🛒 아이콘의 알림 점도 여기서 갱신되므로 탭과 무관하게 돌린다
 }
 
 /* ===================== 저장 ===================== */
@@ -1079,6 +1123,10 @@ function begin() {
   buildIncome();
   buildCare();
   buildShop();
+  if (!storageOK) {
+    $("savenote").textContent = "이 환경에서는 저장이 안 돼요 (새로고침하면 처음부터)";
+    $("savenote").style.color = "var(--pink)";
+  }
   render();
   lastFrame = performance.now();
   idleTimer = 25;
@@ -1088,12 +1136,11 @@ function begin() {
   document.addEventListener("visibilitychange", () => { if (document.hidden) save(); });
 }
 
-document.querySelectorAll("#tabs button").forEach((b) => {
+document.querySelectorAll("#nav button").forEach((b) => {
   b.onclick = () => {
     tab = b.dataset.tab;
-    document.querySelectorAll("#tabs button").forEach((x) => x.classList.toggle("on", x === b));
-    $("shoppanel").hidden = tab !== "shop";
-    $("logpanel").hidden = tab !== "log";
+    document.querySelectorAll("#nav button").forEach((x) => x.classList.toggle("on", x === b));
+    for (const t of ["care", "shop", "log"]) $("page-" + t).hidden = tab !== t;
     render();
   };
 });
