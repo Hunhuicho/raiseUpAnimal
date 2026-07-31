@@ -75,6 +75,17 @@
   #bondbar { width: 76px; height: 5px; background: var(--line); border-radius: 3px; margin-top: 3px; overflow: hidden; }
   #bondbar > i { display: block; height: 100%; background: var(--pink); width: 0; transition: width .3s; }
 
+  /* ---------- 지금 필요한 것 (한 줄) ---------- */
+  #needline {
+    display: flex; align-items: center; gap: 9px;
+    padding: 11px 14px; font-size: 13.5px; font-weight: 800; line-height: 1.4;
+    border-left-width: 7px; transition: border-color .3s;
+  }
+  #needline .ni { font-size: 19px; line-height: 1; flex-shrink: 0; }
+  #needline .nt { min-width: 0; }
+  #needline .pay { color: var(--gold); }
+  #needline.calm { color: var(--ink-soft); }
+
   /* ---------- 방 ---------- */
   #room {
     position: relative; height: 240px; overflow: hidden; border-radius: 14px;
@@ -280,6 +291,8 @@
       <div id="bondbar"><i></i></div>
     </div>
   </div>
+
+  <div class="panel" id="needline"><span class="ni"></span><span class="nt"></span></div>
 
   <div class="panel" id="room">
     <div id="bubble"></div>
@@ -585,7 +598,43 @@ function mood() {
   return { face: "😖", text: "많이 삐졌어" };
 }
 
-function needLine() {
+// 화면 맨 위 한 줄 — "지금 뭘 해줘야 하고, 그러면 얼마를 받는지"만 말한다
+const NEED_TEXT = {
+  sat: { hard: "너무 배고파요", soft: "슬슬 배고파요",     act: "밥 주면"   },
+  cln: { hard: "꾀죄죄해요",   soft: "슬슬 씻고 싶어요",   act: "씻겨주면" },
+  aff: { hard: "너무 심심해요", soft: "같이 놀고 싶어요",   act: "놀아주면" },
+};
+
+// 지금 할 수 있는 것 중 가장 많이 받는 쪽을 알려준다
+function bestNow(k) {
+  const g = CARE.find((c) => c.k === k);
+  let best = 0;
+  for (const it of g.items) if (canDo(it)) best = Math.max(best, itemReward(it));
+  return best;
+}
+
+function renderNeedLine() {
+  const box = $("needline"), ico = box.querySelector(".ni"), txt = box.querySelector(".nt");
+  const u = urgentKey();
+
+  if (!u) {
+    box.style.borderLeftColor = "var(--green)";
+    box.classList.add("calm");
+    ico.textContent = mood().face;
+    txt.textContent = `${S.name}는 지금 다 괜찮아요 — 분당 ${(coinRate() * 60).toFixed(1)}코인 버는 중`;
+    return;
+  }
+
+  const t = NEED_TEXT[u], best = bestNow(u);
+  box.style.borderLeftColor = CH_COLOR[u];
+  box.classList.remove("calm");
+  ico.textContent = CH_LABEL[u];
+  txt.innerHTML = best > 0
+    ? `${S[u] < 30 ? t.hard : t.soft} — 지금 ${t.act} <span class="pay">+${best}코인</span>`
+    : `${S[u] < 30 ? t.hard : t.soft} — 코인이 모자라요`;
+}
+
+function needBubble() {
   const u = urgentKey();
   if (!u) return null;
   if (u === "sat") return S.sat < 30 ? "배고파…" : "슬슬 배고픈데…";
@@ -977,6 +1026,7 @@ function renderLog() {
 
 function render() {
   renderTop();
+  renderNeedLine();
   renderStats();
   updateIncome();
   updateCare();
@@ -1001,12 +1051,13 @@ function loop(now) {
     idleTimer = 40 + Math.random() * 30;
     const lines = IDLE_LINES[S.type];
     addLog(lines[Math.floor(Math.random() * lines.length)]);
-    const n = needLine();
+    const n = needBubble();
     if (n) say(n);
     $("pet").style.left = (38 + Math.random() * 24) + "%";
   }
 
   renderTop();
+  renderNeedLine();
   renderStats();
   updateIncome();
   updateCare();
