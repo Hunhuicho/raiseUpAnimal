@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>오늘도 무럭무럭</title>
+<style>
+  :root {
+    --bg: #f4ece1;
+    --panel: #fffaf3;
+    --line: #e2d3bf;
+    --ink: #4a3b2e;
+    --ink-soft: #907a63;
+    --gold: #d9a441;
+    --pink: #e58fa0;
+    --blue: #7fb6cc;
+    --green: #6fa85c;
+    --shadow: 0 2px 0 rgba(122,96,68,.18);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0;
+    font-family: "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 12px;
+  }
+  #app { width: 100%; max-width: 470px; }
+
+  .panel {
+    background: var(--panel);
+    border: 2px solid var(--line);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    margin-bottom: 10px;
+  }
+  button {
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+    background: var(--panel);
+    border: 2px solid var(--line);
+    border-radius: 11px;
+    padding: 10px 8px;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: transform .06s, filter .12s;
+  }
+  button:hover:not(:disabled) { filter: brightness(1.04); }
+  button:active:not(:disabled) { transform: translateY(2px); box-shadow: none; }
+  button:disabled { opacity: .4; cursor: not-allowed; box-shadow: none; }
+
+  /* ---------- 상단 바 ---------- */
+  #topbar { display: flex; align-items: center; gap: 10px; padding: 10px 14px; font-weight: 800; }
+  #coins { font-size: 19px; color: var(--gold); }
+  #rate { font-size: 12px; color: var(--ink-soft); font-weight: 700; }
+  #bond { margin-left: auto; font-size: 13px; color: var(--pink); text-align: right; }
+  #bondbar { width: 76px; height: 5px; background: var(--line); border-radius: 3px; margin-top: 3px; overflow: hidden; }
+  #bondbar > i { display: block; height: 100%; background: var(--pink); width: 0; transition: width .3s; }
+
+  /* ---------- 방 ---------- */
+  #room {
+    position: relative; height: 240px; overflow: hidden; border-radius: 14px;
+    background: linear-gradient(#e9dcc6 0 62%, #d3bfa2 62% 100%);
+  }
+  #room::after {
+    content: ""; position: absolute; left: 0; right: 0; top: 62%; height: 3px;
+    background: rgba(122,96,68,.16);
+  }
+  .furn {
+    position: absolute; font-size: 26px; line-height: 1;
+    transform: translate(-50%, -50%);
+    filter: drop-shadow(0 2px 1px rgba(0,0,0,.14));
+    animation: pop .35s ease-out;
+  }
+  @keyframes pop { from { transform: translate(-50%,-50%) scale(0); } to { transform: translate(-50%,-50%) scale(1); } }
+  #pet {
+    position: absolute; left: 50%; top: 68%;
+    transform: translate(-50%, -50%);
+    font-size: 66px; line-height: 1; cursor: pointer;
+    filter: drop-shadow(0 4px 2px rgba(0,0,0,.18));
+    animation: idle 2.6s ease-in-out infinite;
+    user-select: none; transition: left .9s ease-in-out;
+  }
+  @keyframes idle {
+    0%,100% { transform: translate(-50%,-50%) scaleY(1); }
+    50%     { transform: translate(-50%,-52%) scaleY(1.05); }
+  }
+  #pet.happy { animation: hop .5s ease-in-out 3; }
+  @keyframes hop {
+    0%,100% { transform: translate(-50%,-50%); }
+    50%     { transform: translate(-50%,-64%) rotate(-6deg); }
+  }
+  #bubble {
+    position: absolute; left: 50%; top: 24%; transform: translateX(-50%);
+    background: #fff; border: 2px solid var(--line); border-radius: 12px;
+    padding: 6px 11px; font-size: 13px; font-weight: 700;
+    white-space: nowrap; box-shadow: var(--shadow);
+    transition: opacity .3s; pointer-events: none; opacity: 0;
+  }
+  #bubble::after {
+    content: ""; position: absolute; left: 50%; bottom: -8px;
+    margin-left: -6px; border: 6px solid transparent; border-top-color: var(--line);
+  }
+  .float {
+    position: absolute; font-size: 15px; font-weight: 800;
+    pointer-events: none; animation: rise 1.2s ease-out forwards;
+  }
+  @keyframes rise {
+    from { opacity: 1; transform: translate(-50%, 0); }
+    to   { opacity: 0; transform: translate(-50%, -48px); }
+  }
+
+  /* ---------- 게이지 ---------- */
+  #stats { padding: 12px 14px 6px; }
+  .stat { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; font-size: 13px; font-weight: 700; }
+  .stat > .lb { width: 62px; }
+  .bar { flex: 1; height: 11px; background: #ebe0cf; border-radius: 6px; overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 6px; transition: width .3s; }
+  .val { width: 30px; text-align: right; color: var(--ink-soft); font-size: 12px; }
+  .stat.need .lb::after {
+    content: "지금!"; font-size: 9px; color: #fff; background: var(--pink);
+    border-radius: 5px; padding: 1px 4px; margin-left: 4px; vertical-align: 1px;
+  }
+  #moodline {
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    padding: 7px 0 12px; font-size: 15px; font-weight: 800;
+    border-top: 2px dashed var(--line); margin-top: 3px;
+  }
+
+  /* ---------- 수입 내역 ---------- */
+  #incomepanel { padding: 11px 14px 12px; }
+  .ihead { font-size: 11px; font-weight: 800; color: var(--ink-soft); letter-spacing: .03em; margin-bottom: 8px; }
+  .inc { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; padding: 4px 0; }
+  .inc .lb { width: 82px; flex-shrink: 0; white-space: nowrap; }
+  .inc .track { flex: 1; min-width: 0; height: 7px; background: #ebe0cf; border-radius: 4px; overflow: hidden; }
+  .inc .track > i { display: block; height: 100%; border-radius: 4px; transition: width .3s; }
+  .inc .amt {
+    width: 86px; flex-shrink: 0; text-align: right;
+    font-variant-numeric: tabular-nums; font-size: 12px; line-height: 1.3;
+  }
+  .inc.off { opacity: .45; }
+  .inc.off .amt { font-size: 10px; color: var(--ink-soft); white-space: nowrap; }
+  .buffchip {
+    display: block; font-size: 9.5px; font-weight: 800; color: #fff;
+    background: var(--green); border-radius: 6px; padding: 1px 4px;
+    margin-top: 2px; margin-left: auto; width: fit-content;
+  }
+  .itotal {
+    margin-top: 9px; padding-top: 8px; border-top: 2px dashed var(--line);
+    text-align: right; font-size: 13px; font-weight: 800; color: var(--ink-soft);
+  }
+  .itotal b { color: var(--gold); font-size: 16px; }
+
+  /* ---------- 돌보기 ---------- */
+  #care { padding: 10px 10px 12px; }
+  .cgroup + .cgroup { margin-top: 12px; padding-top: 11px; border-top: 2px dashed var(--line); }
+  .ghead { font-size: 12px; font-weight: 800; margin-bottom: 7px; display: flex; align-items: center; gap: 6px; }
+  .ghead .tag {
+    font-size: 10px; color: #fff; background: var(--pink);
+    border-radius: 6px; padding: 2px 6px;
+  }
+  .gitems { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+  .gitems button {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    padding: 8px 3px; position: relative;
+  }
+  .gitems button.urgent { border-color: var(--pink); background: #fff2f4; }
+  .item-n { font-size: 12px; font-weight: 800; line-height: 1.25; }
+  .item-c { font-size: 11px; color: var(--gold); font-weight: 800; }
+  .item-c.free { color: var(--green); }
+  .item-p { font-size: 11px; font-weight: 800; color: var(--green); }
+  .item-b { font-size: 9.5px; color: var(--ink-soft); font-weight: 700; line-height: 1.3; }
+  .item-p.zero { color: var(--ink-soft); opacity: .7; }
+
+  /* ---------- 탭 ---------- */
+  #tabs { display: flex; gap: 8px; margin-bottom: 8px; }
+  #tabs button { flex: 1; padding: 8px; }
+  #tabs button.on { background: var(--ink); color: #fff8ee; border-color: var(--ink); }
+  .tabbody { padding: 10px; max-height: 330px; overflow-y: auto; }
+
+  .row { display: flex; align-items: center; gap: 10px; padding: 9px 4px; border-bottom: 1px dashed var(--line); }
+  .row:last-child { border-bottom: none; }
+  .row .e { font-size: 24px; width: 30px; text-align: center; }
+  .row .t { flex: 1; min-width: 0; }
+  .row .n { font-size: 13px; font-weight: 800; }
+  .row .d { font-size: 11px; color: var(--ink-soft); margin-top: 2px; }
+  .row button { padding: 7px 12px; font-size: 12px; white-space: nowrap; }
+  .row.done { opacity: .55; }
+  .owned { font-size: 11px; font-weight: 800; color: var(--green); white-space: nowrap; }
+  .sect { font-size: 11px; font-weight: 800; color: var(--ink-soft); padding: 8px 4px 2px; letter-spacing: .04em; line-height: 1.6; }
+
+  #logbody .li { font-size: 12px; padding: 6px 4px; border-bottom: 1px dashed var(--line); display: flex; gap: 8px; }
+  #logbody .li:last-child { border-bottom: none; }
+  #logbody .li time { color: var(--ink-soft); flex-shrink: 0; font-variant-numeric: tabular-nums; }
+  .empty { text-align: center; color: var(--ink-soft); font-size: 12px; padding: 24px 0; }
+
+  /* ---------- 모달 ---------- */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(60,45,32,.55);
+    display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 20;
+  }
+  .modal {
+    background: var(--panel); border: 2px solid var(--line); border-radius: 16px;
+    padding: 20px; width: 100%; max-width: 380px; text-align: center;
+    max-height: 90vh; overflow-y: auto;
+  }
+  .modal h2 { margin: 0 0 4px; font-size: 18px; }
+  .modal p { font-size: 13px; color: var(--ink-soft); margin: 0 0 14px; line-height: 1.6; }
+  .picks { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; margin-bottom: 10px; }
+  .picks button { padding: 9px 2px; display: flex; flex-direction: column; gap: 2px; align-items: center; }
+  .picks button.on { border-color: var(--ink); background: #f6ead8; }
+  .picks .e { font-size: 27px; line-height: 1.1; }
+  .picks .n { font-size: 11px; font-weight: 800; }
+  .pickinfo {
+    background: #f6ead8; border-radius: 11px; padding: 10px 12px; margin-bottom: 12px;
+    min-height: 84px; display: flex; flex-direction: column; justify-content: center;
+  }
+  .pickinfo .tg { font-size: 13px; font-weight: 800; margin-bottom: 4px; }
+  .pickinfo .ds { font-size: 11.5px; color: var(--ink-soft); font-weight: 700; line-height: 1.55; }
+  .pickinfo .st { font-size: 10.5px; color: var(--ink-soft); font-weight: 700; margin-top: 6px; }
+  .pickinfo .st b { color: var(--ink); }
+  input[type=text] {
+    width: 100%; font-family: inherit; font-size: 14px; font-weight: 700; text-align: center;
+    padding: 10px; border: 2px solid var(--line); border-radius: 11px;
+    background: #fff; color: var(--ink); margin-bottom: 12px;
+  }
+  .big { width: 100%; padding: 13px; font-size: 15px; background: var(--gold); border-color: #bd8a2e; color: #fff; }
+  .report { text-align: left; font-size: 13px; line-height: 1.9; margin-bottom: 14px; }
+  .report b { color: var(--gold); }
+
+  #footer { text-align: center; font-size: 11px; color: var(--ink-soft); padding: 4px 0 14px; }
+  #footer button { padding: 4px 10px; font-size: 11px; box-shadow: none; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="panel" id="topbar">
+    <div>
+      <div id="coins">🪙 0</div>
+      <div id="rate">분당 0</div>
+    </div>
+    <div id="bond">
+      <div id="bondtext">♡ Lv.1</div>
+      <div id="bondbar"><i></i></div>
+    </div>
+  </div>
+
+  <div class="panel" id="room">
+    <div id="bubble"></div>
+    <div id="pet">🐕</div>
+  </div>
+
+  <div class="panel" id="stats">
+    <div class="stat" id="s-sat"><span class="lb">🍚 포만감</span><div class="bar"><i id="b-sat"></i></div><span class="val" id="v-sat">0</span></div>
+    <div class="stat" id="s-cln"><span class="lb">🫧 청결</span><div class="bar"><i id="b-cln"></i></div><span class="val" id="v-cln">0</span></div>
+    <div class="stat" id="s-aff"><span class="lb">💗 애정</span><div class="bar"><i id="b-aff"></i></div><span class="val" id="v-aff">0</span></div>
+    <div id="moodline"><span id="moodface">😊</span><span id="moodtext">기분 좋음</span><span id="moodnum" style="color:var(--ink-soft)">0</span></div>
+  </div>
+
+  <div class="panel" id="incomepanel">
+    <div class="ihead">지금 이런 이유로 돈이 들어와요</div>
+    <div id="incomelist"></div>
+    <div class="itotal">합계 <b id="itotalval">0</b> / 분</div>
+  </div>
+
+  <div class="panel" id="care"></div>
+
+  <div id="tabs">
+    <button data-tab="shop" class="on">상점</button>
+    <button data-tab="log">일지</button>
+  </div>
+  <div class="panel" id="shoppanel"><div class="tabbody" id="shopbody"></div></div>
+  <div class="panel" id="logpanel" hidden><div class="tabbody" id="logbody"></div></div>
+
+  <div id="footer">자동 저장됩니다 · <button id="reset">처음부터</button></div>
+</div>
+
+<script>
+"use strict";
+
+/* ============================================================
+   오늘도 무럭무럭 — 프로토타입 v0.1
+
+   수익은 세 갈래에서 나온다.
+     1) 채널 수익   : 무엇 때문에 행복한지 (포만감 / 청결 / 애정 각각 단가가 다름)
+     2) 즉시 보상   : 지금 제일 필요한 걸 해줬는지 (부족할수록 많이 받음)
+     3) 품질 버프   : 어떻게 해줬는지 (좋은 걸 해주면 한동안 채널 수익 배율↑)
+   ============================================================ */
+
+const SAVE_KEY = "raiseUpAnimal.v1";
+const OFFLINE_CAP = 8 * 3600;   // 오프라인 인정 최대 8시간
+const OFFLINE_EFF = 0.5;        // 오프라인 코인 효율
+
+/* ===================== 데이터 ===================== */
+
+// 종류마다 "돈 버는 방식"이 다르다. 그림만 바뀌는 선택지는 만들지 않는다.
+//   sat/cln/aff : 게이지 감소 속도 배율 (높을수록 자주 챙겨야 함)
+//   play/pet    : 놀아주기 / 쓰다듬기 효과 배율
+//   ch          : 수입원별 단가 배율 — 이 동물이 어느 행복으로 먹고사는지
+//   coin        : 모든 수익에 붙는 배율
+const PETS = {
+  dog: {
+    emoji: "🐕", name: "강아지", tag: "사람을 제일 좋아해요",
+    desc: "애정이 빨리 닳지만 놀아주면 크게 반응합니다. 💗수익이 높아 부지런한 플레이에 어울려요.",
+    sat: 1.0, cln: 1.0, aff: 1.3, play: 1.5, pet: 1.0, coin: 1.0, ch: { aff: 1.2 },
+  },
+  cat: {
+    emoji: "🐈", name: "고양이", tag: "알아서 잘 씻어요",
+    desc: "스스로 그루밍해서 청결이 거의 안 닳고, 애정도 느긋합니다. 대신 쓰다듬기를 시큰둥하게 받아요.",
+    sat: 1.0, cln: 0.6, aff: 0.7, play: 1.0, pet: 0.6, coin: 1.0, ch: { cln: 1.2 },
+  },
+  rabbit: {
+    emoji: "🐇", name: "토끼", tag: "쉬지 않고 먹어요",
+    desc: "포만감이 가장 빨리 닳지만 🍚수익 단가가 높습니다. 먹이값이 곧 매출인 타입.",
+    sat: 1.4, cln: 0.9, aff: 1.0, play: 1.0, pet: 1.0, coin: 1.05, ch: { sat: 1.3 },
+  },
+  hamster: {
+    emoji: "🐹", name: "햄스터", tag: "작아서 적게 먹어요",
+    desc: "먹이값이 거의 안 들지만 금방 지저분해집니다. 유지비가 가장 싼 대신 손이 자주 갑니다.",
+    sat: 0.6, cln: 1.5, aff: 1.0, play: 1.0, pet: 1.0, coin: 1.0, ch: { sat: 0.8, cln: 1.3 },
+  },
+  parrot: {
+    emoji: "🦜", name: "앵무새", tag: "관심을 아주 많이 원해요",
+    desc: "애정이 가장 빨리 닳습니다. 자주 못 들어오면 힘들지만, 챙겨주면 💗수익이 압도적이에요.",
+    sat: 1.0, cln: 1.0, aff: 1.6, play: 1.2, pet: 1.3, coin: 1.0, ch: { aff: 1.5 },
+  },
+  turtle: {
+    emoji: "🐢", name: "거북이", tag: "모든 게 느긋해요",
+    desc: "게이지가 절반 속도로 닳아 며칠 비워도 괜찮습니다. 대신 수익도 느긋해요. 방치형 플레이용.",
+    sat: 0.5, cln: 0.5, aff: 0.5, play: 0.8, pet: 1.0, coin: 0.75,
+  },
+  hedgehog: {
+    emoji: "🦔", name: "고슴도치", tag: "혼자가 편해요",
+    desc: "애정을 별로 필요로 하지 않지만 자주 씻겨야 합니다. 손이 덜 가는 대신 정이 천천히 쌓여요.",
+    sat: 1.0, cln: 1.3, aff: 0.6, play: 0.9, pet: 0.7, coin: 1.0, ch: { sat: 1.1 },
+  },
+  fish: {
+    emoji: "🐠", name: "금붕어", tag: "물만 갈아주면 돼요",
+    desc: "애정은 거의 안 닳지만 물이 순식간에 더러워집니다. 🫧수익 하나로 먹고사는 특이한 타입.",
+    sat: 0.9, cln: 2.2, aff: 0.3, play: 0.6, pet: 0.5, coin: 1.0, ch: { cln: 2.2, aff: 0.5 },
+  },
+};
+
+// (1) 수입원 — 무엇 때문에 행복한지에 따라 단가가 다르다
+const CHANNELS = [
+  { k: "sat", ico: "🍚", label: "든든함",   per: 7, hint: "밥을 주면 늘어요", need: "밥 주기"   },
+  { k: "cln", ico: "🫧", label: "뽀송함",   per: 5, hint: "씻기면 늘어요",   need: "씻겨주기" },
+  { k: "aff", ico: "💗", label: "사랑받음", per: 9, hint: "놀아주면 늘어요", need: "놀아주기" },
+];
+const CH_FLOOR = 50;      // 이 아래로 떨어진 게이지는 돈을 벌지 못한다
+
+// (2) 지금 제일 필요한 것
+const URGENT_LINE = 70;   // 이보다 낮은 게이지 중 가장 낮은 것이 "지금 제일 필요한 것"
+const URGENT_BONUS = 1.5;
+
+// (3) 돌보기 — 같은 일이라도 어떻게 해주느냐에 따라 보상과 버프가 다르다.
+//     cost  : 즉시 지출
+//     pay   : 그 게이지가 텅 비었을 때 받는 최대 보상 (채워져 있으면 그만큼 덜 받음)
+//     buff  : 끝난 뒤 일정 시간 동안 해당 채널 수익에 붙는 배율
+const CARE = [
+  {
+    k: "sat", ico: "🍚", title: "먹이",
+    items: [
+      { id: "feed_low",  label: "남은 밥",   cost: 10, eff: { sat: 16 },          ch: "sat", pay:  5, note: "찬밥이지만 배는 참" },
+      { id: "feed_mid",  label: "사료",      cost: 24, eff: { sat: 32 },          ch: "sat", pay: 12, buff: { mult: 1.2, secs: 300 } },
+      { id: "feed_high", label: "특식",      cost: 58, eff: { sat: 50, aff: 8 },  ch: "sat", pay: 24, buff: { mult: 1.7, secs: 600 } },
+    ],
+  },
+  {
+    k: "cln", ico: "🫧", title: "씻기기",
+    items: [
+      { id: "wash_low",  label: "물수건",    cost: 12, eff: { cln: 20 },          ch: "cln", pay:  5, note: "대충 닦아줌" },
+      { id: "wash_mid",  label: "샴푸 목욕", cost: 34, eff: { cln: 48 },          ch: "cln", pay: 10, buff: { mult: 1.2, secs: 300 } },
+      { id: "wash_high", label: "스파 케어", cost: 78, eff: { cln: 75, aff: 6 },  ch: "cln", pay: 22, buff: { mult: 1.8, secs: 600 } },
+    ],
+  },
+  {
+    k: "aff", ico: "💗", title: "함께 놀기",
+    items: [
+      { id: "pet",   label: "쓰다듬기", cost:  0, cd:  4, eff: { aff: 5 },           ch: "aff", pay:  6, bond: 1, scale: "pet", note: "언제나 무료" },
+      { id: "treat", label: "간식",     cost: 62, cd:  0, eff: { aff: 16, sat: 12 }, ch: "aff", pay: 14, bond: 2, buff: { mult: 1.4, secs: 480 } },
+      { id: "play",  label: "놀아주기", cost:  0, cd: 25, eff: { aff: 20 },          ch: "aff", pay: 16, bond: 6, scale: "play", buff: { mult: 1.3, secs: 300 }, needs: "toy" },
+    ],
+  },
+];
+
+const ALL_ITEMS = CARE.flatMap((g) => g.items);
+
+// 설비 — 1회 구매, 영구. 산 물건은 반드시 방에 나타난다.
+const FURNITURE = [
+  { id: "toy",     name: "장난감 바구니", emoji: "🧺", cost:  250, desc: "놀아주기 해금",              x: 13, y: 88 },
+  { id: "bowl",    name: "좋은 밥그릇",   emoji: "🥣", cost:  400, desc: "먹이 효과 +50% · 🍚수익 ×1.3", x: 72, y: 90 },
+  { id: "cushion", name: "푹신한 방석",   emoji: "🛏️", cost:  600, desc: "애정 감소 −25%",             x: 27, y: 76 },
+  { id: "brush",   name: "자동 브러시",   emoji: "🧽", cost:  850, desc: "청결 감소 −40%",             x: 88, y: 74 },
+  { id: "feeder",  name: "자동 급식기",   emoji: "⏲️", cost: 1200, desc: "포만감 감소 −35%",           x: 87, y: 90 },
+  { id: "window",  name: "창가 자리",     emoji: "🪟", cost: 1800, desc: "햇볕에 말라서 🫧수익 ×2",     x: 76, y: 26 },
+  { id: "tower",   name: "놀이 타워",     emoji: "🪜", cost: 2600, desc: "행복도 +6 · 💗수익 ×1.6",     x:  9, y: 50 },
+  { id: "collar",  name: "이름표 목걸이", emoji: "🎗️", cost: 4000, desc: "모든 수익 ×1.8",             x: 40, y: 26 },
+  { id: "garden",  name: "작은 정원",     emoji: "🪴", cost: 7000, desc: "모든 감소 −20% · 수익 ×1.5",  x: 95, y: 55 },
+];
+
+const BOND_STEPS = [50, 130, 260, 460, 760, 1200, 1800, 2600];
+const DECAY = { sat: 1.2 / 60, cln: 0.6 / 60, aff: 0.9 / 60 };   // 초당 감소
+const WEIGHT = { sat: 0.40, cln: 0.25, aff: 0.35 };              // 행복도 가중치
+
+const IDLE_LINES = {
+  dog:      ["꼬리를 흔들며 현관을 쳐다봤다", "슬리퍼를 물고 방을 한 바퀴 돌았다", "창밖 소리에 귀를 쫑긋 세웠다", "배를 보이고 드러누웠다", "혼자 공을 굴리며 놀았다"],
+  cat:      ["햇빛 드는 자리를 찾아 옮겨 앉았다", "높은 곳에 올라가 아래를 내려다봤다", "한참 동안 앞발을 핥았다", "상자에 들어가서 안 나왔다", "이유 없이 우다다를 했다"],
+  rabbit:   ["코를 씰룩거리며 냄새를 맡았다", "폴짝 뛰어올라 몸을 비틀었다", "구석에 앉아 조용히 되새김질했다", "종이 상자를 야금야금 갉았다", "귀를 접고 낮잠을 잤다"],
+  hamster:  ["쳇바퀴를 한참 돌렸다", "볼주머니에 먹이를 잔뜩 채웠다", "톱밥 속으로 파고들어 숨었다", "작은 앞발로 세수를 했다", "구석에 먹이를 몰래 숨겨뒀다"],
+  parrot:   ["아까 들은 말을 그대로 따라했다", "횃대 위에서 몸을 흔들며 춤췄다", "깃털을 하나하나 다듬었다", "고개를 갸웃하며 이쪽을 봤다", "갑자기 큰 소리로 노래했다"],
+  turtle:   ["아주 천천히 방을 가로질렀다", "등딱지에 머리를 넣고 잠들었다", "따뜻한 자리를 찾아 볕을 쬐었다", "물그릇에 발을 담갔다", "한참을 가만히 있었다"],
+  hedgehog: ["동그랗게 몸을 말았다", "밤새 부스럭거리며 돌아다녔다", "낯선 냄새에 가시를 세웠다", "휴지 더미 속으로 파고들었다", "코를 킁킁대며 구석을 살폈다"],
+  fish:     ["수초 사이를 유유히 지나갔다", "수면 위로 뽀글 공기방울을 냈다", "유리벽에 비친 자기를 한참 봤다", "바닥 자갈을 입으로 헤집었다", "한자리에서 지느러미만 살랑였다"],
+};
+
+/* ===================== 상태 ===================== */
+
+let S = null;
+let lastFrame = 0, bubbleTimer = 0, idleTimer = 0, tab = "shop";
+
+function freshState(type, name) {
+  return {
+    type, name,
+    sat: 80, cln: 85, aff: 70,
+    coins: 120,
+    bondExp: 0,
+    owned: {},
+    cooldown: {},
+    buffs: {},          // { 채널키: { mult, left } }
+    log: [],
+    lastSeen: Date.now(),
+    born: Date.now(),
+  };
+}
+
+/* ===================== 계산 ===================== */
+
+const $ = (id) => document.getElementById(id);
+const pet = () => PETS[S.type];
+const has = (id) => !!S.owned[id];
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const fmt = (n) => Math.floor(n).toLocaleString("ko-KR");
+
+function bondLevel() {
+  let lv = 1;
+  for (const t of BOND_STEPS) { if (S.bondExp >= t) lv++; else break; }
+  return lv;
+}
+
+function bondProgress() {
+  const lv = bondLevel();
+  const prev = lv === 1 ? 0 : BOND_STEPS[lv - 2];
+  const next = BOND_STEPS[lv - 1];
+  if (next === undefined) return 1;
+  return clamp((S.bondExp - prev) / (next - prev), 0, 1);
+}
+
+function decayRates() {
+  const p = pet();
+  const g = has("garden") ? 0.8 : 1;
+  return {
+    sat: DECAY.sat * p.sat * (has("feeder")  ? 0.65 : 1) * g,
+    cln: DECAY.cln * p.cln * (has("brush")   ? 0.60 : 1) * g,
+    aff: DECAY.aff * p.aff * (has("cushion") ? 0.75 : 1) * g,
+  };
+}
+
+function happiness() {
+  let h = S.sat * WEIGHT.sat + S.cln * WEIGHT.cln + S.aff * WEIGHT.aff;
+  if (has("tower")) h += 6;
+  return clamp(h, 0, 100);
+}
+
+// 모든 수입원에 공통으로 붙는 배율
+function coinMultiplier() {
+  let m = pet().coin;
+  if (has("collar")) m *= 1.8;
+  if (has("garden")) m *= 1.5;
+  m *= 1 + (bondLevel() - 1) * 0.1;
+  if (happiness() >= 90) m *= 1.25;      // 최상 기분 보너스
+  return m;
+}
+
+// 수입원별 전용 배율 — 설비 + 품질 버프
+function channelMultiplier(k) {
+  let m = 1;
+  const byPet = pet().ch && pet().ch[k];   // 이 동물이 어느 행복으로 먹고사는지
+  if (byPet) m *= byPet;
+  if (k === "sat" && has("bowl"))   m *= 1.3;
+  if (k === "cln" && has("window")) m *= 2.0;
+  if (k === "aff" && has("tower"))  m *= 1.6;
+  const b = S.buffs[k];
+  if (b && b.left > 0) m *= b.mult;
+  return m;
+}
+
+// 게이지가 50 미만이면 그 수입원은 0 — 돌보기가 선택이 아니라 전제가 되도록
+function channelRate(k, per) {
+  const t = clamp((S[k] - CH_FLOOR) / (100 - CH_FLOOR), 0, 1);
+  if (t <= 0) return 0;
+  return (per / 60) * t * channelMultiplier(k) * coinMultiplier();
+}
+
+function income() {
+  const parts = CHANNELS.map((c) => ({ ...c, rate: channelRate(c.k, c.per) }));
+  return { parts, total: parts.reduce((s, p) => s + p.rate, 0) };
+}
+
+const coinRate = () => income().total;
+
+/* --- 지금 제일 필요한 것 --- */
+
+// 부족한 만큼만 보상한다. 배부른데 또 먹이면 거의 못 번다 = 연타 꼼수가 저절로 막힌다.
+function neediness(k) { return clamp((100 - S[k]) / 100, 0, 1); }
+
+function urgentKey() {
+  let best = null, low = Infinity;
+  for (const c of CHANNELS) if (S[c.k] < low) { low = S[c.k]; best = c.k; }
+  return low < URGENT_LINE ? best : null;   // 다 넉넉하면 급한 건 없다
+}
+
+function itemReward(it) {
+  const bonus = urgentKey() === it.ch ? URGENT_BONUS : 1;
+  return Math.round(it.pay * neediness(it.ch) * bonus * coinMultiplier());
+}
+
+function mood() {
+  const h = happiness();
+  if (h >= 90) return { face: "🥰", text: "최고로 행복해!" };
+  if (h >= 75) return { face: "😊", text: "기분 좋음" };
+  if (h >= 55) return { face: "🙂", text: "그럭저럭" };
+  if (h >= 35) return { face: "😕", text: "시무룩" };
+  if (h >= 15) return { face: "😢", text: "속상해" };
+  return { face: "😖", text: "많이 삐졌어" };
+}
+
+function needLine() {
+  const u = urgentKey();
+  if (!u) return null;
+  if (u === "sat") return S.sat < 30 ? "배고파…" : "슬슬 배고픈데…";
+  if (u === "cln") return S.cln < 30 ? "찝찝해…" : "좀 씻고 싶어…";
+  return S.aff < 30 ? "심심해…" : "같이 놀자!";
+}
+
+/* ===================== 시뮬레이션 ===================== */
+
+function step(dt, efficiency = 1) {
+  const d = decayRates();
+  S.sat = clamp(S.sat - d.sat * dt, 0, 100);
+  S.cln = clamp(S.cln - d.cln * dt, 0, 100);
+  S.aff = clamp(S.aff - d.aff * dt, 0, 100);
+
+  S.coins += coinRate() * dt * efficiency;
+  if (happiness() >= 80) S.bondExp += 0.05 * dt;   // 행복을 유지하는 것만으로도 관계가 쌓인다
+
+  // 버프와 쿨다운은 실제 시각이 아니라 경과 시간으로 센다 — 오프라인 정산에서도 그대로 동작하도록
+  for (const k in S.buffs) {
+    S.buffs[k].left -= dt;
+    if (S.buffs[k].left <= 0) delete S.buffs[k];
+  }
+  for (const k in S.cooldown) {
+    S.cooldown[k] -= dt;
+    if (S.cooldown[k] <= 0) delete S.cooldown[k];
+  }
+}
+
+// 껐던 시간을 60초 단위로 되감는다. 게이지가 닳는 만큼 수익도 자연히 줄어든다.
+function settleOffline(seconds) {
+  const before = S.coins;
+  let left = Math.min(seconds, OFFLINE_CAP);
+  while (left > 0) {
+    const dt = Math.min(60, left);
+    step(dt, OFFLINE_EFF);
+    left -= dt;
+  }
+  return Math.floor(S.coins - before);
+}
+
+/* ===================== 액션 ===================== */
+
+function canDo(it) {
+  if (it.needs && !has(it.needs)) return false;
+  if (S.cooldown[it.id] > 0) return false;
+  if (it.cost > S.coins) return false;
+  return true;
+}
+
+function doCare(it) {
+  if (!canDo(it)) return;
+
+  // 보상은 효과를 적용하기 "전" 상태로 계산한다 — 얼마나 필요했는지가 기준이므로
+  const wasUrgent = urgentKey() === it.ch;
+  const reward = itemReward(it);
+  S.coins += reward - it.cost;
+
+  const scale = it.scale ? pet()[it.scale] : 1;
+  const foodBoost = has("bowl") ? 1.5 : 1;
+  const gained = [];
+
+  for (const [k, v] of Object.entries(it.eff)) {
+    const amount = v * scale * (k === "sat" ? foodBoost : 1);
+    const before = S[k];
+    S[k] = clamp(S[k] + amount, 0, 100);
+    const real = Math.round(S[k] - before);
+    if (real > 0) gained.push({ k, real });
+  }
+  if (it.bond) S.bondExp += it.bond * scale;
+
+  // 품질 버프 — 더 좋은 걸 해줬으면 더 세거나 더 길게 걸린다. 약한 버프가 센 걸 덮어쓰지 않도록.
+  if (it.buff) {
+    const cur = S.buffs[it.ch];
+    if (!cur || it.buff.mult >= cur.mult) {
+      S.buffs[it.ch] = { mult: it.buff.mult, left: it.buff.secs };
+    } else {
+      cur.left = Math.max(cur.left, it.buff.secs * 0.5);
+    }
+  }
+
+  gained.forEach((g, i) => {
+    const icon = g.k === "sat" ? "🍚" : g.k === "cln" ? "🫧" : "💗";
+    setTimeout(() => floatText(`${icon}+${g.real}`, CH_COLOR[g.k]), i * 140);
+  });
+  if (reward > 0) setTimeout(() => floatText(`🪙+${reward}`, "var(--gold)"), gained.length * 140);
+
+  if (it.cd) S.cooldown[it.id] = it.cd;
+
+  const net = reward - it.cost;
+  addLog(wasUrgent
+    ? `제때 ${it.label} — 딱 필요했던 거라 ${reward}코인을 받았다 (${net >= 0 ? "+" : ""}${net})`
+    : `${it.label} — ${reward}코인을 받았다 (${net >= 0 ? "+" : ""}${net})`);
+  if (it.buff) addLog(`${it.label} 덕분에 기분이 오래갔다 — ${CH_LABEL[it.ch]} 수익 ×${it.buff.mult}`);
+
+  const el = $("pet");
+  el.classList.remove("happy"); void el.offsetWidth; el.classList.add("happy");
+  say(wasUrgent ? "이게 딱 필요했어!" : reactionTo(it));
+  render();
+  save();
+}
+
+function reactionTo(it) {
+  switch (it.id) {
+    case "feed_low":  return "음… 그래도 배는 부르다";
+    case "feed_mid":  return "잘 먹겠습니다!";
+    case "feed_high": return "이런 건 처음 먹어봐!";
+    case "wash_low":  return "이 정도면 됐지 뭐";
+    case "wash_mid":  return S.type === "cat" ? "물은 싫은데…" : "개운하다!";
+    case "wash_high": return "너무 좋아… 녹는다…";
+    case "pet":       return S.type === "cat" ? "…한 번만 더." : "기분 최고!";
+    case "treat":     return "이거 좋아해!";
+    case "play":      return "더! 더!";
+    default:          return "고마워!";
+  }
+}
+
+function buy(item) {
+  if (has(item.id) || S.coins < item.cost) return;
+  S.coins -= item.cost;
+  S.owned[item.id] = true;
+  addLog(`${item.name}을(를) 샀다 — ${item.cost}코인`);
+  say(`${item.name}이다!`);
+  floatText("✨ 새 용품!", "var(--green)");
+  render();
+  save();
+}
+
+/* ===================== 화면 ===================== */
+
+const CH_COLOR = { sat: "#d9a441", cln: "#7fb6cc", aff: "#e58fa0" };
+const CH_LABEL = { sat: "🍚", cln: "🫧", aff: "💗" };
+
+function say(text, ms = 2600) {
+  const b = $("bubble");
+  b.textContent = text;
+  b.style.opacity = "1";
+  clearTimeout(bubbleTimer);
+  bubbleTimer = setTimeout(() => { b.style.opacity = "0"; }, ms);
+}
+
+function floatText(text, color) {
+  const el = document.createElement("div");
+  el.className = "float";
+  el.textContent = text;
+  el.style.color = color;
+  el.style.left = (44 + Math.random() * 12) + "%";
+  el.style.top = "54%";
+  $("room").appendChild(el);
+  setTimeout(() => el.remove(), 1200);
+}
+
+function addLog(text) {
+  S.log.unshift({ t: Date.now(), text });
+  if (S.log.length > 50) S.log.length = 50;
+  if (tab === "log") renderLog();
+}
+
+/* --- 방 --- */
+// 이미 놓인 가구는 건드리지 않는다 — 새로 산 것만 등장 애니메이션과 함께 추가
+function renderRoom() {
+  for (const f of FURNITURE) {
+    const exists = $("furn-" + f.id);
+    if (!has(f.id)) { if (exists) exists.remove(); continue; }
+    if (exists) continue;
+    const el = document.createElement("div");
+    el.className = "furn";
+    el.id = "furn-" + f.id;
+    el.textContent = f.emoji;
+    el.style.left = f.x + "%";
+    el.style.top = f.y + "%";
+    el.title = f.name;
+    $("room").insertBefore(el, $("bubble"));
+  }
+  $("pet").textContent = pet().emoji;
+}
+
+/* --- 게이지 --- */
+function renderStats() {
+  const urgent = urgentKey();
+  for (const c of CHANNELS) {
+    $("b-" + c.k).style.width = S[c.k] + "%";
+    $("b-" + c.k).style.background = CH_COLOR[c.k];
+    $("v-" + c.k).textContent = Math.round(S[c.k]);
+    $("s-" + c.k).classList.toggle("need", urgent === c.k);
+  }
+  const m = mood();
+  $("moodface").textContent = m.face;
+  $("moodtext").textContent = m.text;
+  $("moodnum").textContent = Math.round(happiness());
+}
+
+/* --- 상단 --- */
+function renderTop() {
+  $("coins").textContent = "🪙 " + fmt(S.coins);
+  const perMin = coinRate() * 60;
+  $("rate").textContent = perMin > 0 ? `분당 +${perMin.toFixed(1)}` : "기분이 나빠서 수익 없음";
+  $("rate").style.color = perMin > 0 ? "var(--ink-soft)" : "var(--pink)";
+  $("bondtext").textContent = `♡ 친밀도 Lv.${bondLevel()}`;
+  $("bondbar").firstElementChild.style.width = (bondProgress() * 100) + "%";
+}
+
+/* --- 수입 내역 --- */
+const incomeEls = new Map();
+
+function buildIncome() {
+  const box = $("incomelist");
+  box.innerHTML = "";
+  incomeEls.clear();
+  for (const c of CHANNELS) {
+    const row = document.createElement("div");
+    row.className = "inc";
+    row.innerHTML = `
+      <span class="lb">${c.ico} ${c.label}</span>
+      <span class="track"><i style="background:${CH_COLOR[c.k]}"></i></span>
+      <span class="amt"><span class="num"></span><span class="buffchip" hidden></span></span>`;
+    box.appendChild(row);
+    incomeEls.set(c.k, {
+      row, bar: row.querySelector("i"),
+      amt: row.querySelector(".num"),
+      chip: row.querySelector(".buffchip"),
+    });
+  }
+  updateIncome();
+}
+
+function updateIncome() {
+  const { parts, total } = income();
+  for (const p of parts) {
+    const el = incomeEls.get(p.k);
+    if (!el) continue;
+    const perMin = p.rate * 60;
+    const max = p.per * channelMultiplier(p.k) * coinMultiplier();   // 게이지 100일 때의 값
+    el.bar.style.width = (max > 0 ? clamp((perMin / max) * 100, 0, 100) : 0) + "%";
+    el.row.classList.toggle("off", perMin <= 0);
+    el.amt.textContent = perMin > 0 ? `+${perMin.toFixed(1)} / 분` : p.hint;
+
+    const b = S.buffs[p.k];
+    el.chip.hidden = !b;
+    if (b) {
+      const mm = Math.floor(b.left / 60), ss = Math.floor(b.left % 60);
+      el.chip.textContent = `×${b.mult} ${mm}:${String(ss).padStart(2, "0")}`;
+    }
+  }
+  $("itotalval").textContent = (total * 60).toFixed(1);
+}
+
+/* --- 돌보기 --- */
+const careEls = new Map();
+
+function buildCare() {
+  const box = $("care");
+  box.innerHTML = "";
+  careEls.clear();
+
+  for (const g of CARE) {
+    const wrap = document.createElement("div");
+    wrap.className = "cgroup";
+    wrap.innerHTML = `<div class="ghead">${g.ico} ${g.title}<span class="tag" hidden>지금 제일 필요해요</span></div>`;
+    const items = document.createElement("div");
+    items.className = "gitems";
+
+    for (const it of g.items) {
+      const b = document.createElement("button");
+      b.innerHTML = `
+        <span class="item-n"></span>
+        <span class="item-c"></span>
+        <span class="item-p"></span>
+        <span class="item-b"></span>`;
+      b.onclick = () => doCare(it);
+      items.appendChild(b);
+      careEls.set(it.id, {
+        btn: b,
+        n: b.querySelector(".item-n"),
+        c: b.querySelector(".item-c"),
+        p: b.querySelector(".item-p"),
+        bf: b.querySelector(".item-b"),
+      });
+    }
+    wrap.appendChild(items);
+    box.appendChild(wrap);
+    careEls.set("group:" + g.k, { tag: wrap.querySelector(".tag") });
+  }
+  updateCare();
+}
+
+function updateCare() {
+  const urgent = urgentKey();
+
+  for (const g of CARE) {
+    const ge = careEls.get("group:" + g.k);
+    if (ge) ge.tag.hidden = urgent !== g.k;
+  }
+
+  for (const it of ALL_ITEMS) {
+    const el = careEls.get(it.id);
+    if (!el) continue;
+    const locked = it.needs && !has(it.needs);
+    const cd = S.cooldown[it.id];
+
+    el.n.textContent = locked ? "🔒 " + it.label : it.label;
+
+    let costText, free = false;
+    if (cd > 0) costText = Math.ceil(cd) + "초";
+    else if (it.cost) costText = "🪙 " + it.cost;
+    else { costText = "무료"; free = true; }
+    el.c.textContent = costText;
+    el.c.classList.toggle("free", free);
+
+    // 지금 해주면 얼마를 받는지 미리 보여준다 — 무엇을 해줘야 이득인지 한눈에 읽히도록
+    const reward = locked ? 0 : itemReward(it);
+    el.p.textContent = reward > 0 ? `받음 +${reward}` : "받음 +0";
+    el.p.classList.toggle("zero", reward <= 0);
+
+    el.bf.textContent = locked
+      ? "장난감 필요"
+      : it.buff ? `${CH_LABEL[it.ch]}수익 ×${it.buff.mult} ${Math.round(it.buff.secs / 60)}분`
+                : (it.note || "");
+
+    const isUrgent = !locked && urgent === it.ch;
+    el.btn.classList.toggle("urgent", isUrgent);
+    const off = !canDo(it);
+    if (el.btn.disabled !== off) el.btn.disabled = off;
+  }
+}
+
+/* --- 상점 --- */
+const shopEls = new Map();
+
+function buildShop() {
+  const box = $("shopbody");
+  box.innerHTML = `<div class="sect">설비 — 한 번 사면 계속 남습니다</div>`;
+  shopEls.clear();
+
+  for (const f of FURNITURE) {
+    const row = document.createElement("div");
+    row.className = "row";
+    row.innerHTML = `
+      <div class="e">${f.emoji}</div>
+      <div class="t"><div class="n">${f.name}</div><div class="d">${f.desc}</div></div>`;
+
+    const b = document.createElement("button");
+    b.textContent = "🪙 " + fmt(f.cost);
+    b.onclick = () => buy(f);
+    row.appendChild(b);
+
+    const tag = document.createElement("span");
+    tag.className = "owned";
+    tag.textContent = "보유 중";
+    tag.hidden = true;
+    row.appendChild(tag);
+
+    box.appendChild(row);
+    shopEls.set(f.id, { row, btn: b, tag });
+  }
+
+  const note = document.createElement("div");
+  note.className = "sect";
+  note.style.paddingTop = "14px";
+  note.textContent = "먹이·목욕 같은 소모품은 위 돌보기 버튼을 누를 때 코인이 바로 빠져나갑니다. 좋은 걸 해줄수록 받는 보상과 지속 배율이 커집니다.";
+  box.appendChild(note);
+  updateShop();
+}
+
+function updateShop() {
+  for (const f of FURNITURE) {
+    const el = shopEls.get(f.id);
+    if (!el) continue;
+    const owned = has(f.id);
+    el.row.classList.toggle("done", owned);
+    el.btn.hidden = owned;
+    el.tag.hidden = !owned;
+    const off = S.coins < f.cost;
+    if (el.btn.disabled !== off) el.btn.disabled = off;
+  }
+}
+
+/* --- 일지 --- */
+function renderLog() {
+  const box = $("logbody");
+  if (!S.log.length) { box.innerHTML = `<div class="empty">아직 기록이 없어요.</div>`; return; }
+  box.innerHTML = S.log.map((l) => {
+    const d = new Date(l.t);
+    const hh = String(d.getHours()).padStart(2, "0");
+    const mm = String(d.getMinutes()).padStart(2, "0");
+    return `<div class="li"><time>${hh}:${mm}</time><span>${l.text}</span></div>`;
+  }).join("");
+}
+
+function render() {
+  renderTop();
+  renderStats();
+  updateIncome();
+  updateCare();
+  updateShop();
+  renderRoom();
+  if (tab === "log") renderLog();
+}
+
+/* ===================== 루프 ===================== */
+
+function loop(now) {
+  requestAnimationFrame(loop);
+  if (!S) return;
+
+  const dt = Math.min((now - lastFrame) / 1000, 1);
+  lastFrame = now;
+  step(dt);
+
+  // 반려동물이 혼자 뭔가를 한다 — 40~70초마다
+  idleTimer -= dt;
+  if (idleTimer <= 0) {
+    idleTimer = 40 + Math.random() * 30;
+    const lines = IDLE_LINES[S.type];
+    addLog(lines[Math.floor(Math.random() * lines.length)]);
+    const n = needLine();
+    if (n) say(n);
+    $("pet").style.left = (38 + Math.random() * 24) + "%";
+  }
+
+  renderTop();
+  renderStats();
+  updateIncome();
+  updateCare();
+  if (tab === "shop") updateShop();
+}
+
+/* ===================== 저장 ===================== */
+
+function save() {
+  if (!S) return;
+  S.lastSeen = Date.now();
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) { /* 저장 불가 환경 */ }
+}
+
+function load() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+
+/* ===================== 시작 ===================== */
+
+// 동물마다 돈 버는 방식이 다르므로, 고르기 전에 그 차이를 읽을 수 있어야 한다
+function petSummary(p) {
+  const speed = (v) => v >= 1.3 ? "빨리 닳음" : v <= 0.7 ? "거의 안 닳음" : "보통";
+  const ch = p.ch || {};
+  const best = Object.entries(ch).filter(([, v]) => v > 1).sort((a, b) => b[1] - a[1])[0];
+  const earn = best
+    ? `${CH_LABEL[best[0]]} ${CHANNELS.find((c) => c.k === best[0]).label} 수익 <b>×${best[1]}</b>`
+    : `모든 수익 <b>×${p.coin}</b>`;
+  return `🍚 ${speed(p.sat)} · 🫧 ${speed(p.cln)} · 💗 ${speed(p.aff)}<br>수익 특성 — ${earn}`;
+}
+
+function showPicker() {
+  let chosen = "dog";
+  const ov = document.createElement("div");
+  ov.className = "overlay";
+  ov.innerHTML = `
+    <div class="modal">
+      <h2>누구와 함께 살까요?</h2>
+      <p>종류마다 돌보는 방법도, 돈 버는 방식도 다릅니다.</p>
+      <div class="picks">
+        ${Object.entries(PETS).map(([k, p]) => `
+          <button data-k="${k}" class="${k === "dog" ? "on" : ""}">
+            <span class="e">${p.emoji}</span>
+            <span class="n">${p.name}</span>
+          </button>`).join("")}
+      </div>
+      <div class="pickinfo">
+        <div class="tg"></div>
+        <div class="ds"></div>
+        <div class="st"></div>
+      </div>
+      <input type="text" id="pname" maxlength="8" placeholder="이름을 지어주세요" value="복실이">
+      <button class="big" id="start">함께 살기 시작</button>
+    </div>`;
+  document.body.appendChild(ov);
+
+  const info = (k) => {
+    const p = PETS[k];
+    ov.querySelector(".pickinfo .tg").textContent = `${p.emoji} ${p.name} — ${p.tag}`;
+    ov.querySelector(".pickinfo .ds").textContent = p.desc;
+    ov.querySelector(".pickinfo .st").innerHTML = petSummary(p);
+  };
+  info(chosen);
+
+  ov.querySelectorAll(".picks button").forEach((b) => {
+    b.onclick = () => {
+      chosen = b.dataset.k;
+      ov.querySelectorAll(".picks button").forEach((x) => x.classList.toggle("on", x === b));
+      info(chosen);
+    };
+  });
+  $("start").onclick = () => {
+    const name = ($("pname").value || "").trim() || "복실이";
+    ov.remove();
+    S = freshState(chosen, name);
+    addLog(`${name}와(과) 함께 살기 시작했다`);
+    begin();
+    say("잘 부탁해!", 3500);
+  };
+}
+
+function showReport(seconds, earned) {
+  const hrs = Math.floor(seconds / 3600);
+  const mins = Math.floor((seconds % 3600) / 60);
+  const away = hrs > 0 ? `${hrs}시간 ${mins}분` : `${mins}분`;
+  const capped = seconds > OFFLINE_CAP;
+  const did = [...IDLE_LINES[S.type]].sort(() => Math.random() - 0.5).slice(0, 3);
+  const u = urgentKey();
+
+  const ov = document.createElement("div");
+  ov.className = "overlay";
+  ov.innerHTML = `
+    <div class="modal">
+      <h2>${S.name}가 기다리고 있었어요</h2>
+      <p>${away} 동안 자리를 비웠습니다.${capped ? "<br>(정산은 최대 8시간까지 인정됩니다)" : ""}</p>
+      <div class="report">
+        🪙 그동안 모은 코인 <b>+${fmt(earned)}</b><br>
+        😊 지금 기분 <b>${Math.round(happiness())}</b> · ${mood().text}
+        ${u ? `<br>❗ 지금 제일 필요한 건 <b>${CH_LABEL[u]} ${CHANNELS.find((c) => c.k === u).need}</b>` : ""}
+      </div>
+      <div class="report" style="font-size:12px;color:var(--ink-soft);line-height:1.8">
+        ${did.map((d) => "· " + d).join("<br>")}
+      </div>
+      <button class="big" id="ok">다녀왔어!</button>
+    </div>`;
+  document.body.appendChild(ov);
+  $("ok").onclick = () => ov.remove();
+}
+
+function begin() {
+  buildIncome();
+  buildCare();
+  buildShop();
+  render();
+  lastFrame = performance.now();
+  idleTimer = 25;
+  requestAnimationFrame(loop);
+  setInterval(save, 5000);
+  window.addEventListener("beforeunload", save);
+  document.addEventListener("visibilitychange", () => { if (document.hidden) save(); });
+}
+
+document.querySelectorAll("#tabs button").forEach((b) => {
+  b.onclick = () => {
+    tab = b.dataset.tab;
+    document.querySelectorAll("#tabs button").forEach((x) => x.classList.toggle("on", x === b));
+    $("shoppanel").hidden = tab !== "shop";
+    $("logpanel").hidden = tab !== "log";
+    render();
+  };
+});
+
+$("pet").onclick = () => {
+  const it = ALL_ITEMS.find((x) => x.id === "pet");
+  if (canDo(it)) doCare(it); else say("…");
+};
+
+$("reset").onclick = () => {
+  if (!confirm("모든 기록이 사라집니다. 정말 처음부터 시작할까요?")) return;
+  localStorage.removeItem(SAVE_KEY);
+  location.reload();
+};
+
+(function init() {
+  const saved = load();
+  if (!saved) { showPicker(); return; }
+  S = saved;
+  S.cooldown = S.cooldown || {};
+  S.buffs = S.buffs || {};
+  S.log = S.log || [];
+
+  const away = Math.max(0, (Date.now() - (S.lastSeen || Date.now())) / 1000);
+  begin();
+  if (away > 60) {
+    const earned = settleOffline(away);
+    addLog(`${Math.floor(away / 60)}분 만에 돌아왔다 — 그동안 ${fmt(earned)}코인이 쌓였다`);
+    render();
+    showReport(away, earned);
+  }
+})();
+</script>
+</body>
+</html>
