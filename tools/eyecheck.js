@@ -39,7 +39,7 @@ const LIMIT = 0.06;                  // 눈 넓이의 6%까지는 눈감아 준�
       for (const t of Object.keys(PET_ART)) {
         S.type = t; S.wear = { head: null, body: null }; render();
         // 눈 위치는 캐릭터 SVG에서 직접 읽는다
-        const eyes = [...document.querySelectorAll('#pet svg')[0].querySelectorAll('ellipse')]
+        const eyes = [...document.querySelector('#pets .pet').querySelectorAll('svg')[0].querySelectorAll('ellipse')]
           .filter(e => e.getAttribute('fill') === '#3a2c44')
           .map(e => { const b = e.getBBox(); return { x: b.x * 2, y: b.y * 2, w: b.width * 2, h: b.height * 2 }; });
         if (!eyes.length) continue;
