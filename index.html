@@ -1006,6 +1006,7 @@ function freshState(type, name) {
     asleep: false,
     wear: { head: null, body: null },
     walls: {},
+    stored: {},
     wish: null,
     wishIn: 40,
     owned: {},
@@ -1022,6 +1023,8 @@ function freshState(type, name) {
 const $ = (id) => document.getElementById(id);
 const pet = () => PETS[S.type];
 const has = (id) => !!S.owned[id];
+// 치우기는 눈에 보이는 것만 바꾼다. 효과까지 사라지면 아무도 안 치울 테니까.
+const shown = (id) => has(id) && !(S.stored && S.stored[id]);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 // 지금 입고 있는 것들 (머리 + 몸)
 const worn = () => ["head", "body"]
@@ -1405,6 +1408,16 @@ function applyWall(w) {
   save();
 }
 
+function storeItem(f) {
+  if (!has(f.id)) return;
+  const put = !S.stored[f.id];
+  if (put) S.stored[f.id] = true; else delete S.stored[f.id];
+  const rm = ROOMS.find((r) => r.id === f.room);
+  addLog(put ? `${f.name}을(를) 서랍에 넣었다` : `${f.name}을(를) ${rm.name}에 다시 놓았다`);
+  render();
+  save();
+}
+
 function buy(item) {
   if (has(item.id) || S.coins < item.cost) return;
   S.coins -= item.cost;
@@ -1515,7 +1528,7 @@ function renderRoom() {
   bg.style.setProperty("--f2", r.f2);
   for (const f of FURNITURE) {
     const exists = $("furn-" + f.id);
-    if (!has(f.id) || f.room !== S.room) { if (exists) exists.remove(); continue; }
+    if (!shown(f.id) || f.room !== S.room) { if (exists) exists.remove(); continue; }
     if (exists) continue;
     const el = document.createElement("div");
     el.className = "furn";
@@ -1927,20 +1940,20 @@ function buildDrawer() {
   drawerEls.set("cnt:wall", { count: wcount, note: wnote });
 
   // 설비 — 어디에 놓였는지 보여주는 목록
-  const [fcount] = section("🪑 놓아둔 물건");
+  const [fcount, fnote] = section("🪑 놓아둔 물건", true);
   const fgrid = document.createElement("div");
   fgrid.className = "shopgrid";
   for (const f of FURNITURE) {
     const rm = ROOMS.find((r) => r.id === f.room);
     const b = document.createElement("button");
     b.innerHTML = `<span class="e2">${f.emoji}</span><span class="n">${f.name}</span><span class="c"></span>`;
-    b.onclick = () => { goRoom(f.room); tab = "care"; syncTabs(); };
-    b.title = `${f.name} — ${rm.name}에 있음`;
+    b.onclick = () => storeItem(f);
+    b.title = `${f.name} — ${rm.name}`;
     fgrid.appendChild(b);
     drawerEls.set("d:" + f.id, { btn: b, c: b.querySelector(".c"), furn: f, room: rm });
   }
   box.appendChild(fgrid);
-  drawerEls.set("cnt:furn", { count: fcount });
+  drawerEls.set("cnt:furn", { count: fcount, note: fnote });
 
   const empty = document.createElement("div");
   empty.className = "sect";
@@ -1990,17 +2003,25 @@ function updateDrawer() {
     el.btn.classList.toggle("done", inUse);
   }
 
-  let got = 0;
+  let got = 0, put = 0;
   for (const f of FURNITURE) {
     const el = drawerEls.get("d:" + f.id);
     if (!el) continue;
     const owned = has(f.id);
     el.btn.hidden = !owned;
     if (owned) got++;
-    el.c.textContent = el.room.icon + " " + el.room.name;
+    const away = !!S.stored[f.id];
+    if (away) put++;
+    el.c.textContent = away ? "꺼내놓기" : `치우기 ${el.room.icon}`;
+    el.btn.classList.toggle("done", away);
   }
   const fc = drawerEls.get("cnt:furn");
-  if (fc) fc.count.textContent = `${got} / ${FURNITURE.length}`;
+  if (fc) {
+    fc.count.textContent = `${got - put} / ${got} 놓아둠`;
+    if (fc.note) fc.note.textContent = put
+      ? `${put}개를 서랍에 넣어뒀어요 — 치워도 효과는 그대로입니다.`
+      : "누르면 서랍에 넣어둘 수 있어요. 치워도 효과는 그대로입니다.";
+  }
 
   const total = OUTFITS.filter((o) => has(o.id)).length + got +
                 WALLPAPERS.filter((w) => w.cost && has(w.id)).length;
@@ -2238,6 +2259,7 @@ $("reset").onclick = () => {
   S.room = S.room || "living";
   S.asleep = !!S.asleep;
   S.walls = S.walls || {};
+  S.stored = S.stored || {};
   S.wear = S.wear || { head: S.outfit || null, body: null };   // 예전 세이브 이어받기
   if (S.wear.head === undefined) S.wear.head = null;
   if (S.wear.body === undefined) S.wear.body = null;
