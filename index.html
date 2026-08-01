@@ -657,6 +657,26 @@ const ACC_ART = {
     `<circle cx="90" cy="13" r="7.5" fill="#fdf6ec"/>` +
     `<path d="M42 8 q7 -8 16 -9" stroke="#fff" stroke-opacity=".3" stroke-width="4"/>`,
 
+  o_pin:
+    `<path d="M88 6 q-4 -6 2 -7 q5 1 3 7" fill="#8dc98a"/>` +
+    `<path d="M96 12 q6 12 -1 21 q-11 4 -15 -9 q-1 -11 16 -12 z" fill="#e8555f"/>` +
+    `<g fill="#fff6e6" stroke="none">` +
+    `<circle cx="88" cy="19" r="1.7"/><circle cx="94" cy="24" r="1.7"/>` +
+    `<circle cx="86" cy="27" r="1.7"/><circle cx="93" cy="16" r="1.6"/></g>`,
+
+  o_party:
+    // 고깔은 챙이 넓어 조금만 내려와도 눈에 걸린다. 머리 위로 확실히 띄운다.
+    `<path d="M62 20 L76 -16 L90 20 z" fill="#7fc2e0"/>` +
+    `<path d="M67 7 q9 4 17 0 M64 14 q12 5 23 0" stroke="#e8555f" stroke-width="3.6"/>` +
+    `<ellipse cx="76" cy="20" rx="15" ry="5" fill="#fdf6ec"/>` +
+    `<circle cx="76" cy="-18" r="5.4" fill="#f7cf58"/>`,
+
+  o_phone:
+    `<path d="M28 44 q0 -34 32 -34 q32 0 32 34" fill="none" stroke-width="7"/>` +
+    `<path d="M18 38 h14 q5 0 5 5 v13 q0 5 -5 5 h-14 q-5 0 -5 -5 v-13 q0 -5 5 -5 z" fill="#f28aa4"/>` +
+    `<path d="M88 38 h14 q5 0 5 5 v13 q0 5 -5 5 h-14 q-5 0 -5 -5 v-13 q0 -5 5 -5 z" fill="#f28aa4"/>` +
+    `<path d="M21 44 h7 M92 44 h7" stroke="#fff" stroke-opacity=".6" stroke-width="3.4"/>`,
+
   o_crown:
     `<path d="M39 24 L45 3 L52 15 L60 0 L68 15 L75 3 L81 24 z" fill="#f7cf58"/>` +
     `<path d="M39 24 q21 5 42 0" stroke-width="4.4"/>` +
@@ -724,6 +744,31 @@ const ACC_ART = {
     `<path d="M47 79 q13 9 26 0 q-3 -7 -13 -7 q-10 0 -13 7 z" fill="#f8c3d8"/>` +
     `<path d="M34 93 q26 7 52 0" stroke="#e07fa6" stroke-width="4"/>` +
     `<path d="M60 82 q-6 -4 -8 0 q2 4 8 2 q6 2 8 -2 q-2 -4 -8 0 z" fill="#fdeef5"/>`,
+
+  b_swim:
+    `<path d="M36 99 q0 -21 24 -21 q24 0 24 21 q-24 5 -48 0 z" fill="#f28aa4"/>` +
+    `<path d="M37 88 q23 6 46 0 M37 95 q23 6 46 0" stroke="#fdf6ec" stroke-width="5"/>` +
+    `<path d="M48 79 q12 8 24 0" stroke-width="4"/>` +
+    `<circle cx="60" cy="82" r="4" fill="#f7cf58"/>`,
+
+  b_sport:
+    `<path d="M34 99 q0 -21 26 -21 q26 0 26 21 q-26 5 -52 0 z" fill="#4a4058"/>` +
+    `<path d="M40 80 q20 8 40 0" stroke="#f2f0f6" stroke-width="4"/>` +
+    `<path d="M39 84 v15 M81 84 v15" stroke="#f7cf58" stroke-width="4.6"/>` +
+    `<path d="M52 89 h16 v9 h-16 z" fill="#5f5470"/>`,
+
+  b_vest:
+    `<path d="M40 99 q-4 -20 8 -21 l12 8 12 -8 q12 1 8 21 q-20 5 -40 0 z" fill="#8dc98a"/>` +
+    `<path d="M48 78 l12 10 12 -10" stroke-width="4"/>` +
+    `<circle cx="60" cy="93" r="2.6" fill="#f7cf58" stroke="none"/>` +
+    `<circle cx="60" cy="99" r="2.6" fill="#f7cf58" stroke="none"/>`,
+
+  b_coat:
+    `<path d="M32 101 q0 -23 28 -23 q28 0 28 23 q-28 5 -56 0 z" fill="#a8845e"/>` +
+    `<path d="M60 79 v22" stroke-width="3.6"/>` +
+    `<path d="M48 78 l12 9 12 -9 l4 6 -16 11 -16 -11 z" fill="#8f6d4a"/>` +
+    `<path d="M34 94 q26 7 52 0" stroke="#7a5c3d" stroke-width="5.6"/>` +
+    `<circle cx="60" cy="94" r="3.4" fill="#f7cf58"/>`,
 
   b_cape:
     `<path d="M40 79 q-24 15 -20 30 q11 5 20 0 z" fill="#e2607a"/>` +
@@ -941,38 +986,46 @@ const ROOMS = [
 // 벽지 — 방마다 따로 고를 수 있다
 const WALLPAPERS = [
   { id: "w_plain",  name: "기본",      cost:    0, sw: "#efe4d4" },
-  { id: "w_mint",   name: "민트",      cost:  280, sw: "#d8ecdd", w1: "#eaf7ee", w2: "#d5e9db" },
-  { id: "w_lilac",  name: "라벤더",    cost:  280, sw: "#e2daf0", w1: "#f2edfa", w2: "#ded5ef" },
-  { id: "w_peach",  name: "살구",      cost:  450, sw: "#f8ddcd", w1: "#fdeee4", w2: "#f6d9c6" },
-  { id: "w_sky",    name: "하늘",      cost:  450, sw: "#d5e7f5", w1: "#e9f3fb", w2: "#d2e4f2" },
-  { id: "w_dot",    name: "물방울",    cost: 780, sw: "#f2e2ef", w1: "#fbf0f8", w2: "#f0dcec", pattern: "dot" },
-  { id: "w_star",   name: "별무늬",    cost: 1000, sw: "#dfe3f2", w1: "#eef1fb", w2: "#dae0f0", pattern: "star" },
-  { id: "w_check",  name: "체크",      cost: 1350, sw: "#ecdfc9", w1: "#faf1de", w2: "#eaddc2", pattern: "check" },
+  { id: "w_mint",   name: "민트",      cost:  120, sw: "#d8ecdd", w1: "#eaf7ee", w2: "#d5e9db" },
+  { id: "w_lilac",  name: "라벤더",    cost:  120, sw: "#e2daf0", w1: "#f2edfa", w2: "#ded5ef" },
+  { id: "w_peach",  name: "살구",      cost:  190, sw: "#f8ddcd", w1: "#fdeee4", w2: "#f6d9c6" },
+  { id: "w_sky",    name: "하늘",      cost:  190, sw: "#d5e7f5", w1: "#e9f3fb", w2: "#d2e4f2" },
+  { id: "w_dot",    name: "물방울",    cost: 330, sw: "#f2e2ef", w1: "#fbf0f8", w2: "#f0dcec", pattern: "dot" },
+  { id: "w_star",   name: "별무늬",    cost: 420, sw: "#dfe3f2", w1: "#eef1fb", w2: "#dae0f0", pattern: "star" },
+  { id: "w_check",  name: "체크",      cost: 560, sw: "#ecdfc9", w1: "#faf1de", w2: "#eaddc2", pattern: "check" },
 ];
 
 // 옷 — 캐릭터 위에 실제로 그려진다. 한 번에 하나만 입는다.
 const OUTFITS = [
   // 🎀 머리 — 얼굴 위에 얹는다
-  { id: "o_ribbon", name: "리본",     slot: "head", cost:  170, desc: "💗수익 ×1.15",   ch: { aff: 1.15 } },
-  { id: "o_flower", name: "꽃",       slot: "head", cost:  340, desc: "🫧수익 ×1.2",    ch: { cln: 1.2  } },
-  { id: "o_cap",    name: "야구모자", slot: "head", cost:  500, desc: "🍚수익 ×1.2",    ch: { sat: 1.2  } },
-  { id: "o_straw",  name: "밀짚모자", slot: "head", cost: 780, desc: "🫧수익 ×1.3",    ch: { cln: 1.3  } },
-  { id: "o_glass",  name: "동그란 안경", slot: "head", cost: 1100, desc: "모든 수익 ×1.15", all: 1.15 },
-  { id: "o_sun",    name: "선글라스", slot: "head", cost: 1450, desc: "모든 수익 ×1.2",  all: 1.2 },
-  { id: "o_beret",  name: "베레모",   slot: "head", cost: 1800, desc: "💗수익 ×1.4",    ch: { aff: 1.4 } },
-  { id: "o_santa",  name: "산타모자", slot: "head", cost: 2100, desc: "🍚수익 ×1.45",   ch: { sat: 1.45 } },
-  { id: "o_crown",  name: "왕관",     slot: "head", cost: 3100, desc: "모든 수익 ×1.4",  all: 1.4  },
+  { id: "o_ribbon", name: "리본",       slot: "head", cost:   70, desc: "💗수익 ×1.15",   ch: { aff: 1.15 } },
+  { id: "o_pin",    name: "딸기 핀",     slot: "head", cost:  130, desc: "🍚수익 ×1.25",   ch: { sat: 1.25 } },
+  { id: "o_flower", name: "꽃",         slot: "head", cost:  140, desc: "🫧수익 ×1.2",    ch: { cln: 1.2  } },
+  { id: "o_cap",    name: "야구모자",    slot: "head", cost:  210, desc: "🍚수익 ×1.2",    ch: { sat: 1.2  } },
+  { id: "o_party",  name: "파티 고깔",   slot: "head", cost:  260, desc: "모든 수익 ×1.1",  all: 1.1 },
+  { id: "o_straw",  name: "밀짚모자",    slot: "head", cost:  330, desc: "🫧수익 ×1.3",    ch: { cln: 1.3  } },
+  { id: "o_phone",  name: "헤드폰",      slot: "head", cost:  420, desc: "💗수익 ×1.25",   ch: { aff: 1.25 } },
+  { id: "o_glass",  name: "동그란 안경", slot: "head", cost:  460, desc: "모든 수익 ×1.15", all: 1.15 },
+  { id: "o_sun",    name: "선글라스",    slot: "head", cost:  610, desc: "모든 수익 ×1.2",  all: 1.2 },
+  { id: "o_beret",  name: "베레모",      slot: "head", cost:  750, desc: "💗수익 ×1.4",    ch: { aff: 1.4 } },
+  { id: "o_santa",  name: "산타모자",    slot: "head", cost:  880, desc: "🍚수익 ×1.45",   ch: { sat: 1.45 } },
+  { id: "o_crown",  name: "왕관",        slot: "head", cost: 1000, desc: "모든 수익 ×1.4",  all: 1.4  },
   // 👕 몸 — 실제로 입힌다
-  { id: "b_tee",     name: "줄무늬 티", slot: "body", cost:  390, desc: "💗수익 ×1.15",  ch: { aff: 1.15 } },
-  { id: "b_pajama",  name: "잠옷",     slot: "body", cost: 560, desc: "자는 동안 수익 +0.2", sleepBonus: 0.2 },
-  { id: "b_rain",    name: "노란 우비", slot: "body", cost: 730, desc: "🫧수익 ×1.3",   ch: { cln: 1.3  } },
-  { id: "b_overall", name: "멜빵바지", slot: "body", cost: 1000, desc: "🍚수익 ×1.3",   ch: { sat: 1.3  } },
-  { id: "b_knit",    name: "니트 스웨터", slot: "body", cost: 1250, desc: "모든 감소 −12%", decay: 0.88 },
-  { id: "b_hoodie",  name: "후드티",   slot: "body", cost: 1650, desc: "💗수익 ×1.35",  ch: { aff: 1.35 } },
-  { id: "b_tux",     name: "턱시도",   slot: "body", cost: 2000, desc: "모든 수익 ×1.25", all: 1.25 },
-  { id: "b_dress",   name: "드레스",   slot: "body", cost: 1750, desc: "💗수익 ×1.5",   ch: { aff: 1.5 } },
-  { id: "b_cape",    name: "망토",     slot: "body", cost: 2500, desc: "모든 수익 ×1.3", all: 1.3 },
+  { id: "b_tee",     name: "줄무늬 티",  slot: "body", cost:  160, desc: "💗수익 ×1.15",  ch: { aff: 1.15 } },
+  { id: "b_pajama",  name: "잠옷",       slot: "body", cost:  230, desc: "자는 동안 수익 +0.2", sleepBonus: 0.2 },
+  { id: "b_swim",    name: "수영복",     slot: "body", cost:  290, desc: "🫧수익 ×1.4",   ch: { cln: 1.4  } },
+  { id: "b_rain",    name: "노란 우비",  slot: "body", cost:  300, desc: "🫧수익 ×1.3",   ch: { cln: 1.3  } },
+  { id: "b_sport",   name: "운동복",     slot: "body", cost:  380, desc: "산책·뛰어놀기 +25%", sport: 1.25 },
+  { id: "b_overall", name: "멜빵바지",   slot: "body", cost:  420, desc: "🍚수익 ×1.3",   ch: { sat: 1.3  } },
+  { id: "b_vest",    name: "조끼",       slot: "body", cost:  480, desc: "🍚수익 ×1.2",   ch: { sat: 1.2  } },
+  { id: "b_knit",    name: "니트 스웨터", slot: "body", cost:  520, desc: "모든 감소 −12%", decay: 0.88 },
+  { id: "b_hoodie",  name: "후드티",     slot: "body", cost:  690, desc: "💗수익 ×1.35",  ch: { aff: 1.35 } },
+  { id: "b_dress",   name: "드레스",     slot: "body", cost:  730, desc: "💗수익 ×1.5",   ch: { aff: 1.5 } },
+  { id: "b_coat",    name: "코트",       slot: "body", cost:  780, desc: "모든 감소 −10%", decay: 0.9 },
+  { id: "b_tux",     name: "턱시도",     slot: "body", cost:  840, desc: "모든 수익 ×1.25", all: 1.25 },
+  { id: "b_cape",    name: "망토",       slot: "body", cost: 1000, desc: "모든 수익 ×1.3", all: 1.3 },
 ];
+
 
 // 상점·서랍 썸네일에서 옷만 잘라 보여줄 때 쓰는 확대/이동값
 const SLOT_VIEW = { head: "translate(-14 26)", body: "translate(-30 -62) scale(1.35)" };
@@ -981,34 +1034,44 @@ const roomOf = (ch) => ROOMS.find((r) => r.care === ch);
 // 설비 — 1회 구매, 영구. 각자 어울리는 방의 구석에 놓인다.
 const FURNITURE = [
   // 🛋️ 거실
-  { id: "collar",  name: "이름표 목걸이", emoji: "🎗️", cost: 2250, desc: "모든 수익 ×1.8",             room: "living",  x:  9, y: 11, s: 0.9  },
-  { id: "tower",   name: "놀이 타워",     emoji: "🪜", cost: 1450, desc: "행복도 +6 · 💗수익 ×1.6",     room: "living",  x:  8, y: 64, s: 1.2  },
-  { id: "toy",     name: "장난감 바구니", emoji: "🧺", cost:  140, desc: "놀아주기 해금",              room: "living",  x: 11, y: 90, s: 1.2  },
-  { id: "garden",  name: "작은 정원",     emoji: "🪴", cost: 3900, desc: "모든 감소 −20% · 수익 ×1.5",  room: "yard",    x: 90, y: 76, s: 1.2  },
-  { id: "tree",    name: "큰 나무",       emoji: "🌳", cost: 840, desc: "산책·뛰어놀기 효과 +30%",      room: "yard",    x: 11, y: 62, s: 1.3  },
-  { id: "ball",    name: "공놀이 세트",   emoji: "⚽", cost:  390, desc: "💗수익 ×1.2",                room: "yard",    x: 15, y: 92, s: 1.05 },
+  { id: "toy",     name: "장난감 바구니", emoji: "🧺", cost:  60, desc: "놀아주기 해금",              room: "living",  x: 11, y: 90, s: 1.2  },
+  { id: "doll",    name: "애착 인형",     emoji: "🧸", cost: 110, desc: "쓰다듬기 효과 +50%",          room: "living",  x: 25, y: 93, s: 1.0  },
+  { id: "rocking", name: "흔들의자",     emoji: "🪑", cost: 190, desc: "💗수익 ×1.15",               room: "living",  x: 90, y: 62, s: 1.1  },
+  { id: "sofa",    name: "푹신한 소파",   emoji: "🛋️", cost: 240, desc: "행복도 +4 · 💗수익 ×1.15",   room: "living",  x: 88, y: 87, s: 1.25 },
+  { id: "tv",      name: "텔레비전",     emoji: "📺", cost: 360, desc: "애정 감소 −20%",             room: "living",  x: 90, y: 26, s: 1.05 },
+  { id: "photo",   name: "가족사진",     emoji: "🖼️", cost: 520, desc: "행복도 +3 · 모든 수익 ×1.1",  room: "living",  x: 25, y: 14, s: 1.0  },
+  { id: "tower",   name: "놀이 타워",     emoji: "🪜", cost: 600, desc: "행복도 +6 · 💗수익 ×1.6",     room: "living",  x:  8, y: 64, s: 1.2  },
+  { id: "collar",  name: "이름표 목걸이", emoji: "🎗️", cost: 900, desc: "모든 수익 ×1.8",             room: "living",  x:  9, y: 11, s: 0.9  },
   // 🍽️ 주방
-  { id: "bowl",    name: "좋은 밥그릇",   emoji: "🥣", cost:  220, desc: "먹이 효과 +50% · 🍚수익 ×1.3", room: "kitchen", x: 14, y: 88, s: 1.15 },
-  { id: "feeder",  name: "자동 급식기",   emoji: "⏲️", cost: 670, desc: "포만감 감소 −35%",           room: "kitchen", x: 90, y: 84, s: 1.2  },
+  { id: "bowl",    name: "좋은 밥그릇",   emoji: "🥣", cost:  90, desc: "먹이 효과 +50% · 🍚수익 ×1.3", room: "kitchen", x: 14, y: 88, s: 1.15 },
+  { id: "water",   name: "정수기",       emoji: "💧", cost: 160, desc: "포만감 감소 −15% · 🍚수익 ×1.1", room: "kitchen", x: 13, y: 72, s: 1.0  },
+  { id: "oven",    name: "간식 오븐",     emoji: "🍳", cost: 230, desc: "간식 효과 +40%",             room: "kitchen", x: 86, y: 46, s: 1.05 },
+  { id: "feeder",  name: "자동 급식기",   emoji: "⏲️", cost: 280, desc: "포만감 감소 −35%",           room: "kitchen", x: 90, y: 84, s: 1.2  },
+  { id: "vitamin", name: "영양제",       emoji: "🧂", cost: 400, desc: "포만감 감소 −15%",           room: "kitchen", x: 12, y: 54, s: 0.95 },
+  { id: "fridge",  name: "냉장고",       emoji: "🧊", cost: 520, desc: "먹이 값 −25%",               room: "kitchen", x: 89, y: 68, s: 1.15 },
   // 🛁 욕실
-  { id: "window",  name: "창가 자리",     emoji: "🪟", cost: 1000, desc: "햇볕에 말라서 🫧수익 ×2",     room: "bath",    x: 89, y: 13, s: 1.2  },
-  { id: "brush",   name: "자동 브러시",   emoji: "🧽", cost:  480, desc: "청결 감소 −40%",             room: "bath",    x: 11, y: 86, s: 1.15 },
-  { id: "sofa",    name: "푹신한 소파",   emoji: "🛋️", cost: 560, desc: "행복도 +4 · 💗수익 ×1.15",   room: "living",  x: 88, y: 87, s: 1.25 },
-  { id: "tv",      name: "텔레비전",     emoji: "📺", cost: 880, desc: "애정 감소 −20%",             room: "living",  x: 90, y: 26, s: 1.05 },
-  { id: "doll",    name: "애착 인형",     emoji: "🧸", cost:  280, desc: "쓰다듬기 효과 +50%",          room: "living",  x: 25, y: 93, s: 1.0  },
-  // 🍽️ 주방
-  { id: "fridge",  name: "냉장고",       emoji: "🧊", cost: 1250, desc: "먹이 값 −25%",               room: "kitchen", x: 88, y: 68, s: 1.15 },
-  { id: "water",   name: "정수기",       emoji: "💧", cost:  390, desc: "포만감 감소 −15% · 🍚수익 ×1.1", room: "kitchen", x: 11, y: 72, s: 1.0  },
-  // 🛁 욕실
-  { id: "tub",     name: "욕조",         emoji: "🛁", cost:  500, desc: "씻기기 효과 +40%",            room: "bath",    x: 85, y: 84, s: 1.25 },
-  { id: "shampoo", name: "고급 샴푸",     emoji: "🧴", cost: 840, desc: "🫧수익 ×1.35",               room: "bath",    x: 14, y: 74, s: 0.95 },
-  { id: "mirror",  name: "김서림 방지 거울", emoji: "🪞", cost: 1700, desc: "청결 감소 −25% · 🫧수익 ×1.2", room: "bath",  x: 12, y: 20, s: 1.05 },
+  { id: "brush",   name: "자동 브러시",   emoji: "🧽", cost: 200, desc: "청결 감소 −40%",             room: "bath",    x: 11, y: 86, s: 1.15 },
+  { id: "tub",     name: "욕조",         emoji: "🛁", cost: 210, desc: "씻기기 효과 +40%",            room: "bath",    x: 85, y: 84, s: 1.25 },
+  { id: "shower",  name: "샤워기",       emoji: "🚿", cost: 300, desc: "씻기기 값 −25%",             room: "bath",    x: 88, y: 44, s: 1.1  },
+  { id: "tooth",   name: "칫솔 세트",     emoji: "🪥", cost: 340, desc: "🫧수익 ×1.15",              room: "bath",    x: 25, y: 92, s: 1.0  },
+  { id: "shampoo", name: "고급 샴푸",     emoji: "🧴", cost: 350, desc: "🫧수익 ×1.35",              room: "bath",    x: 14, y: 74, s: 0.95 },
+  { id: "window",  name: "창가 자리",     emoji: "🪟", cost: 420, desc: "햇볕에 말라서 🫧수익 ×2",     room: "bath",    x: 89, y: 13, s: 1.2  },
+  { id: "mirror",  name: "김서림 방지 거울", emoji: "🪞", cost: 700, desc: "청결 감소 −25% · 🫧수익 ×1.2", room: "bath", x: 12, y: 20, s: 1.05 },
   // 🛏️ 침실
-  { id: "cushion", name: "푹신한 방석",   emoji: "🛏️", cost:  340, desc: "애정 감소 −25%",             room: "bedroom", x: 86, y: 88, s: 1.25 },
-  { id: "lamp",    name: "무드등",       emoji: "🕯️", cost:  450, desc: "자는 동안 수익 ×0.8까지 회복",  room: "bedroom", x: 11, y: 85, s: 1.05 },
-  { id: "blanket", name: "포근한 담요",   emoji: "🧣", cost: 730, desc: "자는 동안 게이지 감소 −30% 더", room: "bedroom", x: 90, y: 72, s: 1.05 },
-  { id: "clock",   name: "밤 시계",      emoji: "⏰", cost: 1100, desc: "자는 동안 애정이 천천히 회복",   room: "bedroom", x: 12, y: 22, s: 1.0  },
+  { id: "cushion", name: "푹신한 방석",   emoji: "🛏️", cost: 140, desc: "애정 감소 −25%",             room: "bedroom", x: 86, y: 88, s: 1.25 },
+  { id: "lamp",    name: "무드등",       emoji: "🕯️", cost: 190, desc: "자는 동안 수익 ×0.8까지 회복",  room: "bedroom", x: 11, y: 86, s: 1.05 },
+  { id: "radio",   name: "자장가 라디오", emoji: "📻", cost: 260, desc: "자는 동안 게이지 감소 −15% 더", room: "bedroom", x: 12, y: 58, s: 1.05 },
+  { id: "blanket", name: "포근한 담요",   emoji: "🧣", cost: 300, desc: "자는 동안 게이지 감소 −30% 더", room: "bedroom", x: 90, y: 72, s: 1.05 },
+  { id: "moon",    name: "밤하늘 등",     emoji: "🌙", cost: 450, desc: "자는 동안 수익 +0.1",         room: "bedroom", x: 88, y: 20, s: 1.0  },
+  { id: "clock",   name: "밤 시계",      emoji: "⏰", cost: 460, desc: "자는 동안 애정이 천천히 회복",   room: "bedroom", x: 12, y: 22, s: 1.0  },
+  // 🌳 마당
+  { id: "ball",    name: "공놀이 세트",   emoji: "⚽", cost: 160, desc: "💗수익 ×1.2",                room: "yard",    x: 15, y: 92, s: 1.05 },
+  { id: "sun2",    name: "해바라기",     emoji: "🌻", cost: 240, desc: "🍚수익 ×1.15",               room: "yard",    x: 93, y: 46, s: 1.05 },
+  { id: "house",   name: "아늑한 집",     emoji: "🏡", cost: 330, desc: "행복도 +4",                  room: "yard",    x: 80, y: 92, s: 1.2  },
+  { id: "tree",    name: "큰 나무",       emoji: "🌳", cost: 350, desc: "산책·뛰어놀기 효과 +30%",      room: "yard",    x: 11, y: 62, s: 1.3  },
+  { id: "garden",  name: "작은 정원",     emoji: "🪴", cost: 990, desc: "모든 감소 −20% · 수익 ×1.5",  room: "yard",    x: 93, y: 72, s: 1.2  },
 ];
+
 
 const BOND_STEPS = [50, 130, 260, 460, 760, 1200, 1800, 2600];
 const DECAY = { sat: 1.2 / 60, cln: 0.6 / 60, aff: 0.9 / 60 };   // 초당 감소
@@ -1088,12 +1151,12 @@ function bondProgress() {
 
 function decayRates() {
   const p = pet();
-  const sleep = S.asleep ? SLEEP_DECAY * (has("blanket") ? 0.7 : 1) : 1;
+  const sleep = S.asleep ? SLEEP_DECAY * (has("blanket") ? 0.7 : 1) * (has("radio") ? 0.85 : 1) : 1;
   let cloth = 1;
   for (const o of worn()) if (o.decay) cloth *= o.decay;
   const g = (has("garden") ? 0.8 : 1) * sleep * cloth;
   return {
-    sat: DECAY.sat * p.sat * (has("feeder")  ? 0.65 : 1) * (has("water")  ? 0.85 : 1) * g,
+    sat: DECAY.sat * p.sat * (has("feeder")  ? 0.65 : 1) * (has("water")  ? 0.85 : 1) * (has("vitamin") ? 0.85 : 1) * g,
     cln: DECAY.cln * p.cln * (has("brush")   ? 0.60 : 1) * (has("mirror") ? 0.75 : 1) * g,
     aff: DECAY.aff * p.aff * (has("cushion") ? 0.75 : 1) * (has("tv")     ? 0.80 : 1) * g,
   };
@@ -1103,6 +1166,8 @@ function happiness() {
   let h = S.sat * WEIGHT.sat + S.cln * WEIGHT.cln + S.aff * WEIGHT.aff;
   if (has("tower")) h += 6;
   if (has("sofa"))  h += 4;
+  if (has("house")) h += 4;
+  if (has("photo")) h += 3;
   return clamp(h, 0, 100);
 }
 
@@ -1110,12 +1175,14 @@ function happiness() {
 function coinMultiplier() {
   let m = pet().coin;
   if (has("collar")) m *= 1.8;
+  if (has("photo"))  m *= 1.1;
   if (has("garden")) m *= 1.5;
   m *= 1 + (bondLevel() - 1) * 0.1;
   for (const o of worn()) if (o.all) m *= o.all;
   if (happiness() >= 90) m *= 1.25;      // 최상 기분 보너스
   if (S.asleep) {                                       // 무드등·잠옷이 있으면 덜 손해
     let si = has("lamp") ? 0.8 : SLEEP_INCOME;
+    if (has("moon")) si += 0.1;
     for (const o of worn()) if (o.sleepBonus) si = Math.min(1, si + o.sleepBonus);
     m *= si;
   }
@@ -1129,6 +1196,9 @@ function channelMultiplier(k) {
   if (byPet) m *= byPet;
   if (k === "sat" && has("bowl"))    m *= 1.3;
   if (k === "sat" && has("water"))   m *= 1.1;
+  if (k === "sat" && has("sun2"))    m *= 1.15;
+  if (k === "cln" && has("tooth"))   m *= 1.15;
+  if (k === "aff" && has("rocking")) m *= 1.15;
   if (k === "cln" && has("window"))  m *= 2.0;
   if (k === "cln" && has("shampoo")) m *= 1.35;
   if (k === "cln" && has("mirror"))  m *= 1.2;
@@ -1308,7 +1378,10 @@ function settleOffline(seconds) {
 // 먹이 값은 냉장고가 있으면 싸진다 — 값을 쓰는 곳이 여러 군데라 한 함수로 모은다
 function itemCost(it) {
   if (!it.cost) return 0;
-  return Math.round(it.cost * (it.ch === "sat" && has("fridge") ? 0.75 : 1));
+  let m = 1;
+  if (it.ch === "sat" && has("fridge")) m *= 0.75;
+  if (it.ch === "cln" && has("shower")) m *= 0.75;
+  return Math.round(it.cost * m);
 }
 
 function canDo(it) {
@@ -1322,6 +1395,7 @@ function goRoom(id) {
   if (S.room === id) return;
   S.room = id;
   if (id !== "bedroom") S.asleep = false;   // 다른 방으로 데려가면 잠이 깬다
+  Sound.setTrack(S.asleep ? "night" : "day");
   render();
   save();
 }
@@ -1330,6 +1404,7 @@ function toggleSleep() {
   S.asleep = !S.asleep;
   addLog(S.asleep ? `${S.name}가 잠들었다` : `${S.name}가 잠에서 깼다`);
   Sound.sfx("sleep");
+  Sound.setTrack(S.asleep ? "night" : "day");
   say(S.asleep ? "쿨…" : "잘 잤다!");
   render();
   save();
@@ -1358,6 +1433,7 @@ function doCare(it) {
   }
   if (!canDo(it)) return;
   S.asleep = false;                          // 돌봐주면 잠이 깬다
+  Sound.setTrack("day");
 
   // 보상은 효과를 적용하기 "전" 상태로 계산한다 — 얼마나 필요했는지가 기준이므로
   const wasUrgent = urgentKey() === it.ch;
@@ -1368,6 +1444,9 @@ function doCare(it) {
   let scale = it.scale ? pet()[it.scale] : 1;
   if (it.id === "pet" && has("doll")) scale *= 1.5;
   if ((it.id === "walk" || it.id === "romp") && has("tree")) scale *= 1.3;
+  if (it.id === "treat" && has("oven")) scale *= 1.4;
+  if (it.id === "walk" || it.id === "romp")
+    for (const o of worn()) if (o.sport) scale *= o.sport;
   const foodBoost = has("bowl") ? 1.5 : 1;
   const washBoost = has("tub") ? 1.4 : 1;
   const gained = [];
@@ -2293,27 +2372,38 @@ $("pet").onclick = () => {
    소리를 막으므로 첫 클릭에서 시동을 건다. */
 
 const SOUND_KEY = "raiseUpAnimal.sound";
-const BPM = 76, BEAT = 60 / BPM, BAR = BEAT * 4;
 const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
 
-// 8마디: C – Am – F – G 를 두 마디씩
-const CHORDS = [
-  [60, 64, 67], [60, 64, 67], [57, 60, 64], [57, 60, 64],
-  [53, 57, 60], [53, 57, 60], [55, 59, 62], [55, 59, 62],
-];
-const MELODY = [
-  [72, null, 69, null, 67, null, 69, null],
-  [67, null, 64, null, 67, null, null, null],
-  [69, null, 72, null, 69, null, 67, null],
-  [64, null, 62, null, 64, null, null, null],
-  [65, null, 69, null, 72, null, 69, null],
-  [67, null, 65, null, 64, null, null, null],
-  [62, null, 67, null, 71, null, 74, null],
-  [72, null, 67, null, 64, null, null, null],
-];
+/* 곡은 둘. 평소에는 발랄하게, 잘 때는 잔잔하게. */
+const TRACKS = {
+  // 낮 — C·G·Am·F, 통통 튀는 아르페지오
+  day: {
+    bpm: 116, swing: 0.06,
+    chords: [[60,64,67],[60,64,67],[55,59,62],[55,59,62],[57,60,64],[57,60,64],[53,57,60],[53,57,60]],
+    melody: [
+      [72,76,79,76,72,76,79,84], [83,79,76,79,76,null,72,74],
+      [74,79,83,79,74,79,83,86], [81,79,76,74,71,null,74,76],
+      [72,76,81,76,72,76,81,84], [79,76,72,76,79,null,84,83],
+      [77,72,69,72,77,81,84,81], [79,76,72,67,72,76,79,null],
+    ],
+    pad: 0.028, bass: 0.10, lead: 0.075, spark: true,
+  },
+  // 밤 — C·Am·F·G, 느릿한 자장가
+  night: {
+    bpm: 76, swing: 0,
+    chords: [[60,64,67],[60,64,67],[57,60,64],[57,60,64],[53,57,60],[53,57,60],[55,59,62],[55,59,62]],
+    melody: [
+      [72,null,69,null,67,null,69,null], [67,null,64,null,67,null,null,null],
+      [69,null,72,null,69,null,67,null], [64,null,62,null,64,null,null,null],
+      [65,null,69,null,72,null,69,null], [67,null,65,null,64,null,null,null],
+      [62,null,67,null,71,null,74,null], [72,null,67,null,64,null,null,null],
+    ],
+    pad: 0.05, bass: 0.11, lead: 0.09, spark: false,
+  },
+};
 
 const Sound = {
-  ctx: null, master: null, timer: 0, started: false,
+  ctx: null, master: null, bus: null, timer: 0, started: false, track: "night",
   on: (() => { try { return localStorage.getItem(SOUND_KEY) !== "off"; } catch (e) { return true; } })(),
 
   boot() {
@@ -2326,36 +2416,55 @@ const Sound = {
     this.master.connect(this.ctx.destination);
   },
 
-  // 부드러운 한 음
-  tone(freq, at, dur, type, peak, glide) {
+  tone(freq, at, dur, type, peak, dest, glide) {
     const c = this.ctx, o = c.createOscillator(), g = c.createGain();
     o.type = type;
     o.frequency.setValueAtTime(freq, at);
     if (glide) o.frequency.exponentialRampToValueAtTime(glide, at + dur);
     g.gain.setValueAtTime(0.0001, at);
-    g.gain.exponentialRampToValueAtTime(peak, at + Math.min(0.08, dur * 0.2));
+    g.gain.exponentialRampToValueAtTime(peak, at + Math.min(0.06, dur * 0.25));
     g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
-    o.connect(g); g.connect(this.master);
+    o.connect(g); g.connect(dest || this.master);
     o.start(at); o.stop(at + dur + 0.02);
   },
 
+  // 짧은 잡음 — 낮 곡의 셰이커
+  shake(at, peak) {
+    const c = this.ctx, n = 0.05, buf = c.createBuffer(1, c.sampleRate * n, c.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
+    const src = c.createBufferSource(); src.buffer = buf;
+    const hp = c.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 5200;
+    const g = c.createGain(); g.gain.value = peak;
+    src.connect(hp); hp.connect(g); g.connect(this.bus || this.master);
+    src.start(at);
+  },
+
   scheduleLoop(from) {
-    for (let bar = 0; bar < 8; bar++) {
-      const t0 = from + bar * BAR;
-      const ch = CHORDS[bar];
-      // 낮게 깔리는 화음
-      ch.forEach((n, i) => this.tone(hz(n), t0, BAR * 0.95, "triangle", 0.05 - i * 0.008));
-      // 베이스
-      this.tone(hz(ch[0] - 12), t0, BEAT * 1.6, "sine", 0.11);
-      this.tone(hz(ch[0] - 12), t0 + BEAT * 2, BEAT * 1.4, "sine", 0.08);
-      // 멜로디
-      MELODY[bar].forEach((n, i) => {
+    const T = TRACKS[this.track];
+    const beat = 60 / T.bpm, bar = beat * 4;
+    for (let i = 0; i < 8; i++) {
+      const t0 = from + i * bar, ch = T.chords[i];
+      ch.forEach((n, k) => this.tone(hz(n), t0, bar * 0.95, "triangle", T.pad - k * 0.006, this.bus));
+      this.tone(hz(ch[0] - 12), t0, beat * 1.4, "sine", T.bass, this.bus);
+      this.tone(hz(ch[0] - 12), t0 + beat * 2, beat * 1.2, "sine", T.bass * 0.75, this.bus);
+      T.melody[i].forEach((n, k) => {
         if (n == null) return;
-        this.tone(hz(n), t0 + i * BEAT * 0.5, BEAT * 0.9, "sine", 0.09);
-        this.tone(hz(n + 12), t0 + i * BEAT * 0.5, BEAT * 0.5, "sine", 0.022);
+        const at = t0 + k * beat * 0.5 + (k % 2 ? beat * T.swing : 0);
+        const dur = beat * (T.swing ? 0.4 : 0.9);
+        this.tone(hz(n), at, dur, "sine", T.lead, this.bus);
+        this.tone(hz(n + 12), at, dur * 0.55, "sine", T.lead * 0.25, this.bus);
       });
+      if (T.spark) for (let k = 1; k < 8; k += 2) this.shake(t0 + k * beat * 0.5, 0.05);
     }
-    return from + 8 * BAR;
+    return from + 8 * bar;
+  },
+
+  newBus() {
+    const g = this.ctx.createGain();
+    g.gain.value = 1;
+    g.connect(this.master);
+    return g;
   },
 
   start() {
@@ -2363,11 +2472,26 @@ const Sound = {
     if (!this.ctx || this.started) return;
     this.started = true;
     if (this.ctx.state === "suspended") this.ctx.resume();
+    this.bus = this.newBus();
     const run = () => {
       const end = this.scheduleLoop(this.ctx.currentTime + 0.1);
       this.timer = setTimeout(run, (end - this.ctx.currentTime - 0.3) * 1000);
     };
     run();
+  },
+
+  // 자면 밤 곡, 깨면 낮 곡. 예약해 둔 음은 옛 버스를 서서히 줄여 지운다.
+  setTrack(name) {
+    if (this.track === name) return;
+    this.track = name;
+    if (!this.ctx || !this.started) return;
+    clearTimeout(this.timer);
+    const old = this.bus, t = this.ctx.currentTime;
+    old.gain.setValueAtTime(old.gain.value, t);
+    old.gain.linearRampToValueAtTime(0.0001, t + 0.6);
+    setTimeout(() => old.disconnect(), 1200);
+    this.started = false;
+    this.start();
   },
 
   toggle() {
@@ -2382,7 +2506,6 @@ const Sound = {
     return this.on;
   },
 
-  // 효과음
   sfx(kind) {
     if (!this.on) return;
     this.boot();
@@ -2392,14 +2515,18 @@ const Sound = {
     if (kind === "care")  [72, 79].forEach((n, i) => this.tone(hz(n), t + i * 0.07, 0.22, "sine", 0.14));
     if (kind === "buy")   [67, 72, 76].forEach((n, i) => this.tone(hz(n), t + i * 0.06, 0.2, "triangle", 0.13));
     if (kind === "wish")  [76, 79, 84].forEach((n, i) => this.tone(hz(n), t + i * 0.08, 0.34, "sine", 0.15));
-    if (kind === "sleep") this.tone(hz(55), t, 0.7, "sine", 0.12, hz(48));
+    if (kind === "sleep") this.tone(hz(55), t, 0.7, "sine", 0.12, null, hz(48));
     if (kind === "photo") { this.tone(1800, t, 0.05, "square", 0.07); this.tone(1200, t + 0.06, 0.07, "square", 0.05); }
   },
 };
 
 // 브라우저는 사용자가 한 번 건드리기 전에는 소리를 내주지 않는다
 ["pointerdown", "keydown"].forEach((e) =>
-  window.addEventListener(e, () => { if (Sound.on) Sound.start(); }, { once: true }));
+  window.addEventListener(e, () => {
+    if (!Sound.on) return;
+    Sound.track = (S && S.asleep) ? "night" : "day";
+    Sound.start();
+  }, { once: true }));
 
 /* ===================== 저장 · 사진 · 새로 시작 ===================== */
 
