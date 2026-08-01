@@ -683,13 +683,13 @@ const art = (inner) =>
 // 옷은 머리 위에 올라간다. 종마다 머리 높이가 달라 보정값을 따로 둔다.
 const ACC_FIT = {
   dog: [0, 0], cat: [0, 0], rabbit: [0, 5], hamster: [0, 1], parrot: [0, 2],
-  turtle: [0, -8], hedgehog: [0, 10], fish: [-18, 12],
+  turtle: [0, 0], hedgehog: [0, 6], fish: [-18, 12],
 };
 
 // 몸통 위치는 네 발 동물끼리 같지만 거북이·고슴도치·금붕어는 다르다
 const BODY_FIT = {
   dog: [0, 0], cat: [0, 0], rabbit: [0, 0], hamster: [0, 0], parrot: [0, 0],
-  turtle: [0, -14], hedgehog: [0, 0], fish: [-6, 2],
+  turtle: [0, 0], hedgehog: [0, 0], fish: [-6, 2],
 };
 
 const ACC_ART = {
@@ -876,12 +876,12 @@ const ACC_ART = {
 const EYES = {
   dog: [[46, 44], [74, 44], 8],    cat: [[46, 44], [74, 44], 8],
   rabbit: [[47, 49], [73, 49], 7.8], hamster: [[46, 45], [74, 45], 8],
-  parrot: [[47, 42], [73, 42], 7.6], turtle: [[50, 33], [70, 33], 7],
-  hedgehog: [[48, 52], [72, 52], 7], fish: [[40, 56], null, 8],
+  parrot: [[47, 42], [73, 42], 7.6], turtle: [[47, 43], [73, 43], 7.8],
+  hedgehog: [[49, 53], [71, 53], 7], fish: [[40, 56], null, 8],
 };
 const SKIN = {
   dog: "#f7dcb2", cat: "#f9bb7a", rabbit: "#f3efeb", hamster: "#f7cd92",
-  parrot: "#f7dc6a", turtle: "#a4d68f", hedgehog: "#f7e2c6", fish: "#fffaf2",
+  parrot: "#f7dc6a", turtle: "#9ed189", hedgehog: "#f7e2c6", fish: "#fffaf2",
 };
 
 // 눈을 감은 얼굴 — 살빛으로 눈을 덮고 그 위에 웃는 호를 얹는다
@@ -999,27 +999,33 @@ const PET_ART = {
     `<path d="M51 55 q9 -4 18 0 q0 15 -9 18 q-9 -3 -9 -18 z" fill="#f9ae45"/>` +
     `<path d="M51 62 q9 4 18 0" stroke-width="3"/>`),
 
+  // 등딱지가 몸통이다. 각진 사다리꼴이 아니라 둥근 돔에 테두리와 무늬가 있어야 껍질로 읽힌다.
   turtle: art(GROUND +
-    `<ellipse cx="31" cy="103" rx="10.5" ry="7" fill="#a4d68f"/>` +
-    `<ellipse cx="89" cy="103" rx="10.5" ry="7" fill="#a4d68f"/>` +
-    `<path d="M20 101 q0 -42 40 -42 q40 0 40 42 z" fill="#d0a962"/>` +
-    `<path d="M60 60 v41 M31 84 h58 M42 67 l-11 15 M78 67 l11 15" stroke="#ad8442" stroke-width="3.4"/>` +
-    `<ellipse cx="60" cy="36" rx="27" ry="24" fill="#a4d68f"/>` +
-    gloss(46, 24, 10, 5.5, -22) +
-    eye(50, 33, 7) + eye(70, 33, 7) + cheek(34, 44, "#eea394") + cheek(86, 44, "#eea394") +
-    smile(60, 45)),
+    `<path d="M95 94 q15 3 15 -9" stroke-width="8" stroke="#9ed189"/>` +
+    `<path d="M26 106 q0 -34 34 -34 q34 0 34 34 z" fill="#d8b06a"/>` +
+    `<path d="M60 72 v34 M60 88 l-25 6 M60 88 l25 6 M60 88 l-17 -14 M60 88 l17 -14"
+       stroke="#b8894a" stroke-width="3.4"/>` +
+    `<path d="M26 99 q34 9 68 0" stroke="#b8894a" stroke-width="4.6"/>` +
+    `<ellipse cx="26" cy="101" rx="11" ry="7" fill="#9ed189"/>` +
+    `<ellipse cx="94" cy="101" rx="11" ry="7" fill="#9ed189"/>` +
+    `<ellipse cx="60" cy="44" rx="32" ry="29" fill="#9ed189"/>` +
+    gloss(43, 27, 12, 6.5, -22) +
+    eye(47, 43, 7.8) + eye(73, 43, 7.8) + cheek(29, 55, "#e8a08f") + cheek(91, 55, "#e8a08f") +
+    `<circle cx="55" cy="55" r="2.3" fill="${OUT}" stroke="none"/>` +
+    `<circle cx="65" cy="55" r="2.3" fill="${OUT}" stroke="none"/>` +
+    smile(60, 62)),
 
-  // 얼굴이 몸통 자리에 있으면 옷이 얼굴을 덮는다. 다른 종처럼 몸통을 두고 얼굴을 올렸다.
+  // 가시는 얼굴 위로 확실히 솟아야 보인다. 실루엣 자체를 톱니로 만든다.
   hedgehog: art(GROUND +
     BODY("#f7e2c6", "#fff4e6") +
-    `<path d="M22 78 q2 -56 38 -56 q36 0 38 56 z" fill="#a68d7b"/>` +
-    `<path d="M31 46 l-11 -10 M42 31 l-7 -13 M55 24 l-2 -13 M69 24 l2 -13 M82 31 l7 -13 M93 46 l11 -10"
-       stroke="#907765" stroke-width="4"/>` +
-    `<ellipse cx="60" cy="54" rx="30" ry="24" fill="#f7e2c6"/>` +
-    gloss(45, 42, 11, 6, -22) +
-    eye(48, 52, 7) + eye(72, 52, 7) + cheek(34, 63, "#f2a79e") + cheek(86, 63, "#f2a79e") +
-    `<ellipse cx="60" cy="64" rx="5.2" ry="4.2" fill="${OUT}" stroke="none"/>` +
-    `<path d="M60 68 v3.5" stroke-width="3"/>`),
+    `<path d="M16 70 L21 38 L30 53 L36 22 L45 44 L52 10 L60 36 L68 10 L75 44 L84 22 L90 53 L99 38 L104 70`
+      + ` q-44 12 -88 0 z" fill="#a68d7b"/>` +
+    `<path d="M26 58 q34 10 68 0" stroke="#8f7768" stroke-width="3.6"/>` +
+    `<ellipse cx="60" cy="55" rx="27" ry="20" fill="#f7e2c6"/>` +
+    gloss(45, 45, 10, 5.5, -22) +
+    eye(49, 53, 7) + eye(71, 53, 7) + cheek(34, 63, "#f2a79e") + cheek(86, 63, "#f2a79e") +
+    `<path d="M53 65 q7 7 14 0 q-2 10 -7 10 q-5 0 -7 -10 z" fill="#f2d3ae"/>` +
+    `<ellipse cx="60" cy="74" rx="4.4" ry="3.6" fill="${OUT}" stroke="none"/>`),
 
   fish: art(
     `<ellipse cx="60" cy="113" rx="29" ry="5" fill="${OUT}" opacity=".1" stroke="none"/>` +
