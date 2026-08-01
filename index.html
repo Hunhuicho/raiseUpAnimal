@@ -370,6 +370,18 @@
     border-radius: 50%; width: 15px; height: 15px; line-height: 15px;
   }
   .picks .pick:empty { display: none; }
+  .slot {
+    display: flex; align-items: center; gap: 9px; text-align: left;
+    background: #f6ead8; border-radius: 12px; padding: 9px 10px; margin-bottom: 8px;
+  }
+  .slot-pets { display: flex; flex-shrink: 0; }
+  .slot-pets span { width: 34px; height: 34px; }
+  .slot-pets span + span { margin-left: -12px; }
+  .slot-pets svg { width: 100%; height: 100%; display: block; }
+  .slot-t { flex: 1; min-width: 0; }
+  .slot-n { font-size: 13px; font-weight: 800; }
+  .slot-d { font-size: 10.5px; color: var(--ink-soft); font-weight: 700; margin-top: 2px; }
+  .slot button { padding: 8px 10px; font-size: 11.5px; white-space: nowrap; }
   .pickcount { font-size: 12px; font-weight: 800; color: var(--green); margin-bottom: 8px; }
   .pickcount.empty { color: var(--ink-soft); }
   .nameRow { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
@@ -490,7 +502,8 @@
 
   <div id="tools">
     <button id="btn-save"><span class="ti">💾</span><span class="tl">저장하기</span></button>
-    <button id="btn-photo"><span class="ti">📷</span><span class="tl">사진 찍기</span></button>
+    <button id="btn-undo"><span class="ti">⏪</span><span class="tl">저장 취소</span></button>
+    <button id="btn-photo"><span class="ti">📷</span><span class="tl">사진</span></button>
     <button id="btn-sound"><span class="ti">🔊</span><span class="tl">소리</span></button>
     <button id="btn-reset"><span class="ti">🔄</span><span class="tl">새로 시작</span></button>
   </div>
@@ -510,6 +523,7 @@
    ============================================================ */
 
 const SAVE_KEY = "raiseUpAnimal.v1";
+const PREV_KEY = "raiseUpAnimal.prev";   // 직전 기록 — 되돌리기와 선택 화면에 쓴다
 const OFFLINE_CAP = 8 * 3600;   // 오프라인 인정 최대 8시간
 const OFFLINE_EFF = 0.5;        // 오프라인 코인 효율
 
@@ -2307,11 +2321,33 @@ function save() {
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) { /* 저장 불가 환경 */ }
 }
 
-function load() {
+function load(key) {
   try {
-    const raw = localStorage.getItem(SAVE_KEY);
+    const raw = localStorage.getItem(key || SAVE_KEY);
     return raw ? JSON.parse(raw) : null;
   } catch (e) { return null; }
+}
+
+// 지금 저장돼 있는 것을 백업으로 옮긴다. 되돌릴 자리를 만들어 두는 것.
+function snapshot() {
+  try {
+    const cur = localStorage.getItem(SAVE_KEY);
+    if (cur) localStorage.setItem(PREV_KEY, cur);
+  } catch (e) { /* 저장 불가 환경 */ }
+}
+
+// 세이브 한 줄 요약 — 선택 화면과 되돌리기 안내에 쓴다
+function saveSummary(obj) {
+  if (!obj) return null;
+  const pets = obj.pets || (obj.type ? [{ type: obj.type, name: obj.name }] : []);
+  if (!pets.length) return null;
+  const days = Math.max(1, Math.floor((Date.now() - (obj.born || Date.now())) / 86400000) + 1);
+  const ago = Math.max(0, Math.round((Date.now() - (obj.lastSeen || Date.now())) / 60000));
+  return {
+    pets, days, coins: Math.floor(obj.coins || 0),
+    items: Object.keys(obj.owned || {}).length,
+    ago: ago < 1 ? "방금" : ago < 60 ? `${ago}분 전` : `${Math.floor(ago / 60)}시간 전`,
+  };
 }
 
 /* ===================== 시작 ===================== */
@@ -2334,6 +2370,7 @@ function showPicker() {
   ov.innerHTML = `
     <div class="modal">
       <h2>누구와 함께 살까요?</h2>
+      <div id="saveslots"></div>
       <p>한 마리, 또는 두 마리까지 고를 수 있어요.<br>둘이면 둘 다 벌지만 둘 다 돌봐야 합니다.</p>
       <div class="pickcount" id="pickcount"></div>
       <div class="picks">
@@ -2349,6 +2386,36 @@ function showPicker() {
       <button class="big" id="start">함께 살기 시작</button>
     </div>`;
   document.body.appendChild(ov);
+
+  // 남아 있는 기록을 보여준다 — 실수로 새로 시작해도 여기서 되살릴 수 있게
+  const slots = [
+    { key: SAVE_KEY, label: "이어서 하기", tag: "저장된 기록" },
+    { key: PREV_KEY, label: "이 기록으로 시작", tag: "직전 기록" },
+  ].map((x) => ({ ...x, sm: saveSummary(load(x.key)) })).filter((x) => x.sm);
+
+  if (slots.length) {
+    const box = ov.querySelector("#saveslots");
+    box.innerHTML = slots.map((x, i) => `
+      <div class="slot">
+        <div class="slot-pets">${x.sm.pets.map((a) => `<span>${PET_ART[a.type] || ""}</span>`).join("")}</div>
+        <div class="slot-t">
+          <div class="slot-n">${x.sm.pets.map((a) => a.name).join(" · ")}</div>
+          <div class="slot-d">${x.tag} · 🪙 ${fmt(x.sm.coins)} · 물건 ${x.sm.items}개 · ${x.sm.ago}</div>
+        </div>
+        <button data-s="${i}">${x.label}</button>
+      </div>`).join("");
+    box.querySelectorAll("button").forEach((b) => {
+      b.onclick = () => {
+        const pick = slots[+b.dataset.s];
+        const obj = load(pick.key);
+        if (!obj) { toast("기록을 읽지 못했어요"); return; }
+        ov.remove();
+        try { localStorage.setItem(SAVE_KEY, JSON.stringify(obj)); } catch (e) { /* 저장 불가 */ }
+        resumeFrom(obj, pick.key === SAVE_KEY);
+        toast(`${(obj.pets || []).map((a) => a.name).join(" · ")} 기록을 불러왔어요`);
+      };
+    });
+  }
 
   const info = (k) => {
     const x = PETS[k];
@@ -2443,6 +2510,7 @@ function begin() {
   buildCare();
   buildShop();
   buildDrawer();
+  updateUndo();
   if (!storageOK) {
     $("savenote").textContent = "이 환경에서는 저장이 안 돼요 (새로고침하면 처음부터)";
     $("savenote").style.color = "var(--pink)";
@@ -2661,11 +2729,41 @@ function toast(text) {
 
 $("btn-save").onclick = () => {
   if (!storageOK) { toast("이 환경에서는 저장이 안 돼요"); return; }
+  snapshot();          // 이 저장을 되돌릴 수 있도록 직전 기록을 남긴다
   save();
+  updateUndo();
   const d = new Date();
   $("savenote").textContent =
     `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}에 저장됨 · 자동으로도 저장됩니다`;
   toast("저장했어요");
+};
+
+function updateUndo() {
+  const has = !!load(PREV_KEY);
+  const b = $("btn-undo");
+  b.disabled = !has;
+  b.title = has ? "마지막 저장 직전으로 되돌립니다" : "되돌릴 기록이 없습니다";
+}
+
+$("btn-undo").onclick = async () => {
+  const prev = load(PREV_KEY);
+  const sm = saveSummary(prev);
+  if (!sm) { toast("되돌릴 기록이 없어요"); return; }
+  const ok = await askConfirm(
+    "그 시점으로 되돌릴까요?",
+    `${sm.pets.map((a) => a.name).join(" · ")} · 🪙 ${fmt(sm.coins)} · 물건 ${sm.items}개 (${sm.ago} 기록)`
+    + "<br>지금 상태는 반대로 되돌리기 자리에 들어가니, 다시 눌러 원래대로 올 수 있어요.",
+    "되돌리기");
+  if (!ok) return;
+  // 지금 것과 백업을 맞바꾼다 — 되돌리기를 다시 눌러 취소할 수 있게
+  try {
+    save();
+    const cur = localStorage.getItem(SAVE_KEY);
+    localStorage.setItem(PREV_KEY, cur);
+    localStorage.setItem(SAVE_KEY, JSON.stringify(prev));
+  } catch (e) { /* 저장 불가 환경 */ }
+  resumeFrom(prev, false);
+  toast("되돌렸어요");
 };
 
 $("btn-sound").onclick = () => {
@@ -2708,6 +2806,8 @@ $("btn-reset").onclick = async () => {
     + " 새 동물을 다시 고르게 됩니다. 저장 기록도 지워져서 되돌릴 수 없어요.",
     "기록을 지우고 새로 시작");
   if (!ok) return;
+  save();
+  snapshot();          // 지운 기록을 선택 화면에서 되살릴 수 있도록 남겨 둔다
   try { localStorage.removeItem(SAVE_KEY); } catch (e) { /* 저장 불가 환경 */ }
   // 새로고침이 막히는 환경도 있으므로 그 자리에서 초기화한다
   S = null;
@@ -2716,6 +2816,7 @@ $("btn-reset").onclick = async () => {
   $("room").querySelectorAll(".furn").forEach((x) => x.remove());
   tab = "care";
   toast("처음부터 시작합니다");
+  updateUndo();
   showPicker();
 };
 
@@ -2873,40 +2974,45 @@ $("btn-photo").onclick = async () => {
   ov.querySelector("#dl").onclick = () => { addLog("사진을 찍었다 📷"); toast("사진을 저장했어요"); };
 };
 
-(function init() {
-  const saved = load();
-  if (!saved) { showPicker(); return; }
-  S = saved;
+/* 세이브 하나를 받아 지금 게임으로 삼는다. 옛 구조도 여기서 손봐 준다. */
+function adoptSave(obj) {
+  S = obj;
   // 한 마리만 있던 옛 세이브를 배열 구조로 옮긴다
   if (!S.pets) {
     S.pets = [{
       type: S.type, name: S.name, sat: S.sat, cln: S.cln, aff: S.aff,
       bondExp: S.bondExp || 0, asleep: !!S.asleep,
-      wear: S.wear || { head: null, body: null },
+      wear: S.wear || { head: S.outfit || null, body: null },
       buffs: S.buffs || {}, cooldown: S.cooldown || {},
     }];
-    for (const k of ["type", "name", "sat", "cln", "aff", "bondExp", "asleep", "wear", "buffs", "cooldown"]) delete S[k];
+    for (const k of PET_FIELDS) delete S[k];
   }
   S.active = Math.min(S.active || 0, S.pets.length - 1);
   for (const a of S.pets) {
     a.wear = a.wear || { head: null, body: null };
+    if (a.wear.head === undefined) a.wear.head = null;
+    if (a.wear.body === undefined) a.wear.body = null;
     a.buffs = a.buffs || {};
     a.cooldown = a.cooldown || {};
   }
   bindActive(S);
   S.log = S.log || [];
   S.room = S.room || "living";
-  S.asleep = !!S.asleep;
   S.walls = S.walls || {};
   S.stored = S.stored || {};
-  S.wear = S.wear || { head: S.outfit || null, body: null };   // 예전 세이브 이어받기
-  if (S.wear.head === undefined) S.wear.head = null;
-  if (S.wear.body === undefined) S.wear.body = null;
+  S.owned = S.owned || {};
   delete S.outfit;
   if (S.wish === undefined) S.wish = null;
   if (S.wishIn === undefined) S.wishIn = 40;
+}
 
-  const away = Math.max(0, (Date.now() - (S.lastSeen || Date.now())) / 1000);
+// 오프라인 정산까지 마치고 게임을 띄운다
+function resumeFrom(obj, settle) {
+  adoptSave(obj);
+  const away = settle ? Math.max(0, (Date.now() - (S.lastSeen || Date.now())) / 1000) : 0;
+  document.querySelectorAll(".overlay").forEach((x) => x.remove());
+  $("pets").innerHTML = "";
+  $("room").querySelectorAll(".furn").forEach((x) => x.remove());
   begin();
   if (away > 60) {
     const earned = settleOffline(away);
@@ -2914,6 +3020,12 @@ $("btn-photo").onclick = async () => {
     render();
     showReport(away, earned);
   }
+}
+
+(function init() {
+  const saved = load();
+  if (!saved) { showPicker(); return; }
+  resumeFrom(saved, true);
 })();
 </script>
 </body>
