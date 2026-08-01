@@ -150,6 +150,8 @@
     background: repeating-linear-gradient(90deg,
       rgba(150,120,86,.07) 0 1px, transparent 1px 24px);
   }
+  /* 하늘에 벽지 결이 있으면 안 된다 */
+  #roombg[data-out] .wall::after { background: none; }
   #roombg .baseboard {
     position: absolute; left: 0; right: 0; top: var(--floorline, 300px); height: 12px;
     background: linear-gradient(#f8efdd, #e6d7bf);
@@ -166,6 +168,12 @@
     background:
       repeating-linear-gradient(90deg, rgba(108,78,46,.15) 0 2px, transparent 2px 58px),
       repeating-linear-gradient(0deg,  rgba(108,78,46,.09) 0 1px, transparent 1px 30px);
+  }
+  /* 모래와 잔디에 나뭇결이 있을 리 없다 — 바깥은 자잘한 알갱이로 */
+  #roombg[data-out] .floor::after {
+    background:
+      radial-gradient(circle, rgba(90,70,40,.13) 1.1px, transparent 1.6px) 0 0 / 22px 18px,
+      radial-gradient(circle, rgba(255,255,255,.20) 1px, transparent 1.5px) 11px 9px / 22px 18px;
   }
 
   /* ---------- 부탁 ---------- */
@@ -291,6 +299,180 @@
       repeating-linear-gradient(0deg,  rgba(90,120,132,.16) 0 2px, transparent 2px 42px);
   }
 
+  /* ---------- 나들이 풍경 ----------
+     밖은 "벽에 벽지를 바른 방"이 아니다. 하늘이 있고 지평선이 있고
+     그 너머에 뭔가 서 있어야 나온 것 같다. 벽 자리에 그 장소의 풍경을 깐다.
+     전부 CSS 그러데이션과 clip-path — 그림 파일은 하나도 안 쓴다. */
+  #roombg .scenery {
+    position: absolute; left: 0; right: 0; top: 0;
+    height: var(--floorline, 300px); overflow: hidden; pointer-events: none;
+  }
+  #roombg .scenery .sc { position: absolute; inset: 0; }
+  #roombg .scenery::before, #roombg .scenery::after,
+  #roombg .scenery .sc::before, #roombg .scenery .sc::after { content: ""; position: absolute; }
+  /* 집 안에서는 아무것도 그리지 않는다 */
+  #roombg:not([data-out]) .scenery { display: none; }
+  /* 밖에는 걸레받이 대신 땅의 경계 */
+  #roombg[data-out] .baseboard { background: linear-gradient(rgba(0,0,0,.10), transparent); }
+
+  /* 🌳 마당 — 해와 울타리 */
+  #roombg[data-room="yard"] .scenery::before {
+    right: 11%; top: 9%; width: 62px; height: 62px; border-radius: 50%;
+    background: radial-gradient(circle, #fff2c4 0 58%, #ffdf94 59%);
+    box-shadow: 0 0 0 13px rgba(255,236,180,.30), 0 0 0 27px rgba(255,236,180,.15);
+  }
+  #roombg[data-room="yard"] .scenery::after {          /* 울타리 */
+    left: -2%; right: -2%; bottom: 0; height: 54px;
+    background:
+      repeating-linear-gradient(90deg, #e3d0ae 0 13px, transparent 13px 34px),
+      linear-gradient(transparent 0 16px, #d8c29c 16px 23px, transparent 23px 36px, #d8c29c 36px 43px, transparent 43px);
+    opacity: .8;
+  }
+  #roombg[data-room="yard"] .scenery .sc::before {     /* 먼 산울타리 */
+    left: -5%; right: -5%; bottom: 40px; height: 46px;
+    background: radial-gradient(closest-side, #a8c98c 98%, transparent) repeat-x 0 100% / 90px 46px;
+    opacity: .55;
+  }
+
+  /* 🏞️ 공원 — 구름과 나무 줄 */
+  #roombg[data-room="park"] .scenery::before {         /* 구름 */
+    left: 0; right: 0; top: 10%; height: 76px;
+    background:
+      radial-gradient(circle at 14% 66%, #fff 0 21px, transparent 22px),
+      radial-gradient(circle at 21% 48%, #fff 0 26px, transparent 27px),
+      radial-gradient(circle at 29% 68%, #fff 0 19px, transparent 20px),
+      radial-gradient(circle at 68% 60%, #fff 0 17px, transparent 18px),
+      radial-gradient(circle at 75% 42%, #fff 0 23px, transparent 24px),
+      radial-gradient(circle at 83% 62%, #fff 0 18px, transparent 19px);
+    opacity: .9;
+    animation: sc-drift 90s linear infinite;
+  }
+  #roombg[data-room="park"] .scenery::after {          /* 나무 줄 */
+    left: -6%; right: -6%; bottom: 0; height: 90px;
+    background:
+      radial-gradient(circle at 50% 100%, #79ab5f 0 44px, transparent 45px) repeat-x -20px 100% / 118px 90px,
+      radial-gradient(circle at 50% 100%, #8cbc70 0 36px, transparent 37px) repeat-x 40px 100% / 96px 74px;
+  }
+  #roombg[data-room="park"] .scenery .sc::before {     /* 산책로 */
+    left: 0; right: 0; bottom: 0; height: 12px;
+    background: linear-gradient(transparent, rgba(120,95,60,.16));
+  }
+
+  /* 🏖️ 바닷가 — 바다와 물결 */
+  #roombg[data-room="beach"] .scenery::before {        /* 바다 */
+    left: 0; right: 0; bottom: 0; height: 38%;
+    background: linear-gradient(#4fa8cf, #7cc8e2 55%, #a7dcee);
+  }
+  #roombg[data-room="beach"] .scenery::after {         /* 잔물결 */
+    left: -20%; right: -20%; bottom: 0; height: 38%;
+    background:
+      repeating-linear-gradient(90deg, rgba(255,255,255,.42) 0 30px, transparent 30px 78px) 0 22% / 100% 3px,
+      repeating-linear-gradient(90deg, rgba(255,255,255,.32) 0 22px, transparent 22px 64px) 0 48% / 100% 3px,
+      repeating-linear-gradient(90deg, rgba(255,255,255,.26) 0 34px, transparent 34px 90px) 0 76% / 100% 3px;
+    background-repeat: no-repeat;
+    animation: sc-swell 9s ease-in-out infinite;
+  }
+  #roombg[data-room="beach"] .scenery .sc::before {    /* 해 */
+    right: 14%; top: 12%; width: 54px; height: 54px; border-radius: 50%;
+    background: radial-gradient(circle, #fff6d6 0 58%, #ffe2a0 59%);
+    box-shadow: 0 0 0 12px rgba(255,240,200,.28);
+  }
+  #roombg[data-room="beach"] .scenery .sc::after {     /* 젖은 모래 */
+    left: 0; right: 0; bottom: 0; height: 10px;
+    background: linear-gradient(transparent, rgba(90,140,160,.22));
+  }
+
+  /* ⛰️ 뒷산 — 능선 세 겹으로 깊이를 만든다 */
+  #roombg[data-room="hill"] .scenery::before {
+    left: 0; right: 0; bottom: 0; height: 62%;
+    background: #b6c7c0;
+    clip-path: polygon(0 100%, 0 62%, 13% 26%, 27% 60%, 43% 14%, 59% 54%, 74% 24%, 88% 58%, 100% 34%, 100% 100%);
+  }
+  #roombg[data-room="hill"] .scenery::after {
+    left: 0; right: 0; bottom: 0; height: 46%;
+    background: #93ad9b;
+    clip-path: polygon(0 100%, 0 70%, 10% 40%, 24% 76%, 40% 30%, 55% 70%, 71% 36%, 86% 74%, 100% 48%, 100% 100%);
+  }
+  #roombg[data-room="hill"] .scenery .sc::before {
+    left: 0; right: 0; bottom: 0; height: 26%;
+    background: #7a9683;
+    clip-path: polygon(0 100%, 0 74%, 14% 44%, 30% 80%, 46% 40%, 63% 78%, 80% 46%, 100% 76%, 100% 100%);
+  }
+  #roombg[data-room="hill"] .scenery .sc::after {      /* 옅은 안개 */
+    left: 0; right: 0; bottom: 0; height: 30%;
+    background: linear-gradient(transparent, rgba(255,255,255,.42));
+  }
+
+  /* ☕ 애견카페 — 창과 매달린 조명, 나무 벽 */
+  #roombg[data-room="cafe"] .scenery::before {         /* 창 */
+    left: 8%; top: 14%; width: 128px; height: 96px; border-radius: 10px;
+    background:
+      linear-gradient(#cfe6f2, #eaf5fa),
+      #cfe6f2;
+    box-shadow: 0 0 0 5px #c8a87e, 0 3px 10px rgba(0,0,0,.10);
+  }
+  #roombg[data-room="cafe"] .scenery::after {          /* 창틀 십자 */
+    left: 8%; top: 14%; width: 128px; height: 96px;
+    background:
+      linear-gradient(#c8a87e, #c8a87e) 50% 0 / 5px 100% no-repeat,
+      linear-gradient(#c8a87e, #c8a87e) 0 50% / 100% 5px no-repeat;
+  }
+  #roombg[data-room="cafe"] .scenery .sc::before {     /* 매달린 전구 */
+    right: 12%; top: 0; width: 150px; height: 74px;
+    background:
+      linear-gradient(#8a6f4e, #8a6f4e) 20px 0 / 2px 34px no-repeat,
+      radial-gradient(circle at 21px 44px, #ffd98a 0 11px, transparent 12px),
+      linear-gradient(#8a6f4e, #8a6f4e) 74px 0 / 2px 52px no-repeat,
+      radial-gradient(circle at 75px 62px, #ffd98a 0 11px, transparent 12px),
+      linear-gradient(#8a6f4e, #8a6f4e) 128px 0 / 2px 26px no-repeat,
+      radial-gradient(circle at 129px 36px, #ffd98a 0 11px, transparent 12px);
+  }
+  #roombg[data-room="cafe"] .scenery .sc::after {      /* 나무 벽 결 */
+    left: 0; right: 0; bottom: 0; height: 34px;
+    background: repeating-linear-gradient(90deg, rgba(150,110,70,.14) 0 2px, transparent 2px 46px),
+                linear-gradient(transparent, rgba(150,110,70,.16));
+  }
+
+  /* 🖥️ PC방 — 줄지어 켜진 모니터와 네온 띠 */
+  #roombg[data-room="pcbang"] .scenery::before {       /* 줄지어 선 모니터 */
+    left: -4%; right: -4%; bottom: 16px; height: 58px;
+    background:
+      /* 받침대 */
+      repeating-linear-gradient(90deg, transparent 0 38px, #3a4166 38px 54px, transparent 54px 104px)
+        0 44px / 100% 14px no-repeat,
+      /* 화면 */
+      repeating-linear-gradient(90deg, transparent 0 10px, #93dcf0 10px 82px, transparent 82px 104px)
+        0 7px / 100% 30px no-repeat,
+      /* 본체 */
+      repeating-linear-gradient(90deg, transparent 0 4px, #2f3550 4px 88px, transparent 88px 104px)
+        0 0 / 100% 44px no-repeat;
+    filter: drop-shadow(0 0 10px rgba(140, 215, 240, .45));
+    animation: sc-glow 4.5s ease-in-out infinite;
+  }
+  #roombg[data-room="pcbang"] .scenery::after {        /* 책상 */
+    left: 0; right: 0; bottom: 0; height: 16px;
+    background: linear-gradient(#5a5f80, #474b6a);
+  }
+  #roombg[data-room="pcbang"] .scenery .sc::before {   /* 네온 띠 */
+    left: 0; right: 0; top: 22%; height: 5px;
+    background: linear-gradient(90deg, #7ee0d2, #9db8f5, #e3a4de, #7ee0d2);
+    filter: blur(1px); opacity: .75;
+  }
+  #roombg[data-room="pcbang"] .scenery .sc::after {    /* 천장 조명 */
+    left: 0; right: 0; top: 0; height: 30%;
+    background: radial-gradient(ellipse at 50% 0%, rgba(255,255,255,.30), transparent 70%);
+  }
+
+  @keyframes sc-drift { to { background-position-x: 900px; } }
+  @keyframes sc-swell {
+    0%, 100% { transform: translateX(0); }
+    50%      { transform: translateX(16px); }
+  }
+  @keyframes sc-glow {
+    0%, 100% { opacity: .9; }
+    50%      { opacity: 1; }
+  }
+
   /* 벽지 무늬 */
   #roombg[data-pattern="dot"] .wall::after {
     background: radial-gradient(circle, rgba(150,110,140,.16) 2.6px, transparent 3px) 0 0 / 34px 34px;
@@ -386,6 +568,81 @@
     30%      { transform: translate(-50%, -47%) rotate(9deg); }
     45%      { transform: translate(-50%, -50%) rotate(0); }
   }
+
+  /* ---------- 직접 올려주기 ----------
+     무대 위에 물건이 놓이고, 그 아이 몸에 놓을 자리가 표시된다.
+     끌어다 놓으면 붙는다. 보는 게 아니라 하는 것이므로 손맛이 중요하다. */
+  #hands { position: absolute; inset: 0; z-index: 6; }
+  #room.hands-mode .pet { animation: none; }   /* 올려놓는 동안에는 가만히 있어준다 */
+
+  .h-hint {
+    position: absolute; left: 50%; top: 2px; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 8px; white-space: nowrap;
+    padding: 6px 8px 6px 12px; border-radius: 999px;
+    background: var(--panel); border: 2px solid var(--green);
+    font-size: 12px; font-weight: 800; box-shadow: var(--shadow);
+    max-width: 96%;
+  }
+  .h-hint b { overflow: hidden; text-overflow: ellipsis; }
+  .h-skip {
+    flex-shrink: 0; padding: 4px 9px; font-size: 10.5px; font-weight: 800;
+    border-radius: 999px; box-shadow: none; color: var(--ink-soft);
+  }
+
+  /* 놓을 자리 */
+  .h-target {
+    position: absolute; transform: translate(-50%, -50%);
+    display: grid; place-items: center; pointer-events: none;
+  }
+  .h-target i {
+    width: var(--ring, 54px); height: var(--ring, 54px); border-radius: 50%;
+    border: 3px dashed var(--green); background: rgba(140, 190, 120, .16);
+    animation: h-pulse 1.5s ease-in-out infinite;
+  }
+  .h-target span {
+    position: absolute; bottom: -17px; white-space: nowrap;
+    font-size: 10.5px; font-weight: 800; color: var(--green);
+    background: var(--panel); border-radius: 999px; padding: 1px 7px;
+    border: 1.5px solid var(--green);
+  }
+  .h-target.near i {
+    transform: scale(1.18); border-style: solid;
+    background: rgba(140, 190, 120, .32); animation: none;
+  }
+  @keyframes h-pulse {
+    0%, 100% { transform: scale(1);    opacity: .9; }
+    50%      { transform: scale(1.14); opacity: 1; }
+  }
+
+  /* 아래에 늘어놓은 물건들 */
+  /* 가운데 아래는 그 아이 발치이므로 트레이는 왼쪽에 세로로 세운다 */
+  .h-tray {
+    position: absolute; left: 4px; bottom: 4px;
+    display: flex; flex-direction: column-reverse; align-items: flex-start; gap: 6px;
+  }
+  .h-item {
+    width: 56px; height: 46px; cursor: var(--cur-tap); touch-action: none;
+    filter: drop-shadow(0 3px 3px rgba(74, 59, 46, .22));
+    transition: transform .16s;
+  }
+  .h-item svg { width: 100%; height: 100%; overflow: visible; display: block; }
+  .h-tray .h-item { animation: h-bob 1.9s ease-in-out infinite; }
+  .h-tray .h-item:nth-child(2) { animation-delay: .3s; }
+  .h-tray .h-item:nth-child(3) { animation-delay: .6s; }
+  @keyframes h-bob {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-5px); }
+  }
+  .h-item.dragging {
+    position: absolute; z-index: 3; animation: none;
+    transform: scale(1.12); transition: none;
+  }
+  .h-item.placed { position: absolute; animation: none; transition: none; }
+  .h-item.miss { transform: scale(.8); opacity: .5; }
+
+  /* 무대가 좁으면 물건도 작게 */
+  body.side-open.narrow .h-item { width: 44px; height: 36px; }
+  body.side-open.narrow .h-hint { font-size: 10.5px; padding: 5px 6px 5px 9px; }
 
   /* ---------- 직접 해주는 장면 ----------
      .ac  는 자리만 잡고(반려동물과 같은 칸), .acm 이 움직인다.
@@ -683,6 +940,8 @@
     padding: 8px 3px; position: relative;
   }
   .gitems button.urgent { border-color: var(--pink); background: #fff2f4; }
+  /* 글자만 있으면 무엇을 하는 건지 한 박자 늦게 읽힌다 — 그림이 먼저 말해준다 */
+  .item-i { font-size: 21px; line-height: 1.1; margin-bottom: 1px; }
   .item-n { font-size: 12px; font-weight: 800; line-height: 1.25; }
   .item-c { font-size: 11px; color: var(--gold); font-weight: 800; }
   .item-c.free { color: var(--green); }
@@ -777,7 +1036,9 @@
       flex-direction: row; flex-wrap: wrap; justify-content: flex-start;
       align-items: baseline; gap: 4px 8px; text-align: left; padding: 9px 10px;
     }
-    body.side-open .gitems .item-n, body.side-open .shopgrid .n { flex: 1 0 100%; }
+    body.side-open .gitems .item-i { flex: 0 0 auto; font-size: 19px; margin: 0; }
+    body.side-open .gitems .item-n { flex: 1 1 auto; }
+    body.side-open .shopgrid .n { flex: 1 0 100%; }
     body.side-open .gitems .item-b, body.side-open .shopgrid .d { flex: 1 0 100%; }
     body.side-open .shopgrid .e { flex: 0 0 auto; font-size: 20px; }
   }
@@ -995,6 +1256,7 @@
 
 <div id="roombg" aria-hidden="true">
   <div class="wall"></div>
+  <div class="scenery"><div class="sc"></div></div>
   <div class="baseboard"></div>
   <div class="floor"></div>
 </div>
@@ -1036,6 +1298,8 @@
       <div id="pets"></div>
       <!-- 해주는 장면이 그려지는 층. 반려동물과 같은 자리에 겹치되 몸짓은 따라가지 않는다 -->
       <div id="act" aria-hidden="true"></div>
+      <!-- 직접 올려주기 — 물건을 끌어다 그 아이 몸에 놓는 층 -->
+      <div id="hands" hidden></div>
     </div>
 
     <div class="panel" id="stats">
@@ -1092,6 +1356,7 @@
           <button id="btn-save"><span class="ti">💾</span><span class="tl">저장하기</span></button>
           <button id="btn-undo"><span class="ti">⏪</span><span class="tl">저장 취소</span></button>
           <button id="btn-photo"><span class="ti">📷</span><span class="tl">사진</span></button>
+          <button id="btn-hands"><span class="ti">✋</span><span class="tl">직접 해주기</span></button>
           <button id="btn-sound"><span class="ti">🔊</span><span class="tl">소리</span></button>
           <button id="btn-reset"><span class="ti">🔄</span><span class="tl">새로 시작</span></button>
         </div>
@@ -1618,6 +1883,106 @@ const JUG = `<g transform="rotate(-34 100 74)">`
 const POUR_WATER = `<g stroke="#8fc9dd" stroke-width="4.2" stroke-linecap="round" opacity=".85">`
   + `<path d="M74 66 q-4 10 -2 20 M82 62 q-3 11 0 20"/></g>`;
 
+/* ===== 직접 올려주기 =====
+   버튼을 누르고 구경하는 것과 내가 오이를 눈 위에 올려주는 것은 다르다.
+   손으로 하는 일은 손으로 하게 한다.
+
+   trays 에 놓인 물건을 끌어다 그 아이 몸의 자리(to)에 놓으면 하나씩 채워지고,
+   다 채우면 그때 효과가 들어간다(applyCare).
+
+   자리는 종마다 다르다 — 눈 위치는 EYES 표에서 그대로 가져온다. */
+const chip = (w, h, inner) =>
+  `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="${OUT}"`
+  + ` stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
+
+const C_TOWEL  = chip(60, 40, `<path d="M6 22 q24 -16 48 0 l-4 12 q-20 -10 -40 0 z" fill="#e2f1f7"/>`
+  + `<path d="M50 18 q9 -3 8 6 q-1 7 -8 5" fill="#e2f1f7"/>`);
+const C_CUKE   = chip(40, 40, `<circle cx="20" cy="20" r="15" fill="#cfe8a8"/>`
+  + `<circle cx="20" cy="20" r="6.5" fill="#eaf6d6" stroke="none"/>`);
+const C_CLOTH  = chip(56, 44, `<path d="M6 8 h44 q4 0 4 4 v20 q0 4 -4 4 h-44 q-4 0 -4 -4 v-20 q0 -4 4 -4 z" fill="#c6e6f0"/>`
+  + `<path d="M6 20 h44 M6 30 h44" stroke-width="2.4" opacity=".55"/>`);
+const C_SPONGE = chip(52, 40, `<path d="M8 8 h32 q6 0 6 6 v14 q0 6 -6 6 h-32 q-6 0 -6 -6 v-14 q0 -6 6 -6 z" fill="#f4d96a"/>`
+  + `<path d="M8 8 h32 q6 0 6 6 v3 h-44 v-3 q0 -6 6 -6 z" fill="#f7ecb0"/>`);
+const C_BOWL   = (rim, inner, food) => chip(60, 44,
+  `<path d="M6 16 h48 l-6 16 q-1 5 -8 5 h-20 q-7 0 -8 -5 z" fill="${rim}"/>`
+  + `<ellipse cx="30" cy="16" rx="24" ry="7" fill="${inner}"/>`
+  + (food ? `<ellipse cx="30" cy="14" rx="16" ry="4.6" fill="${food}" stroke="none"/>` : ""));
+const C_BAG    = chip(44, 56, `<path d="M8 12 h28 v38 h-28 z" fill="#e3b878"/>`
+  + `<path d="M8 12 q14 -7 28 0" fill="#cfa263"/>`
+  + `<circle cx="22" cy="30" r="6.5" fill="#fff3df" stroke="none"/>`
+  + `<path d="M19 30 h6 M22 27 v6" stroke-width="2.4"/>`);
+const C_PLATE  = chip(64, 44, `<path d="M8 30 q0 -22 24 -22 q24 0 24 22 z" fill="#dde3ea"/>`
+  + `<circle cx="32" cy="6" r="4" fill="#dde3ea"/>`
+  + `<ellipse cx="32" cy="32" rx="28" ry="8" fill="#f3ebdf"/>`);
+const C_COOKIE = chip(40, 40, `<circle cx="20" cy="20" r="15" fill="#e0ac6c"/>`
+  + `<g fill="#8a5a34" stroke="none"><circle cx="16" cy="15" r="2.6"/>`
+  + `<circle cx="25" cy="22" r="2.4"/><circle cx="15" cy="25" r="2.2"/></g>`);
+const C_BRUSH  = chip(60, 44, `<path d="M46 10 q11 -2 11 8 q0 10 -11 8 z" fill="#b98d5e"/>`
+  + `<path d="M8 8 h38 q4 0 4 5 v12 q0 5 -4 5 h-38 q-4 0 -4 -5 v-12 q0 -5 4 -5 z" fill="#e0b073"/>`
+  + `<g stroke-width="2.8"><path d="M13 30 v8 M22 30 v8 M31 30 v8 M40 30 v8"/></g>`);
+const C_CATNIP = chip(52, 40, `<path d="M44 12 q-16 -14 -32 -2 q16 12 32 2 z" fill="#a9d38a"/>`
+  + `<path d="M46 24 q-18 -10 -32 4 q18 8 32 -4 z" fill="#93c775"/>`);
+const C_CHEW   = chip(56, 32, `<path d="M8 8 h34 q7 0 7 8 t-7 8 h-34 q-7 0 -7 -8 t7 -8 z" fill="#cfa76f"/>`
+  + `<path d="M8 8 q-6 8 0 16 M42 8 q6 8 0 16" stroke-width="2.6"/>`);
+const C_WHEEL  = chip(56, 56, `<circle cx="28" cy="26" r="22" fill="#f6e2c0"/>`
+  + `<circle cx="28" cy="26" r="14" fill="#fffaf3" stroke="none"/>`
+  + `<g stroke-width="2.8"><path d="M28 4 v44 M6 26 h44 M12 10 l32 32 M44 10 l-32 32"/></g>`);
+const C_TALK   = chip(56, 44, `<path d="M8 6 h40 q5 0 5 5 v16 q0 5 -5 5 h-26 q-8 8 -8 8 v-8 h-6 q-5 0 -5 -5 v-16 q0 -5 5 -5 z" fill="#fff"/>`
+  + `<g fill="#3a2c44" stroke="none"><circle cx="19" cy="19" r="3"/>`
+  + `<circle cx="29" cy="19" r="3"/><circle cx="39" cy="19" r="3"/></g>`);
+const C_POLISH = chip(56, 44, `<path d="M8 12 h34 q5 0 5 5 v12 q0 5 -5 5 h-34 q-5 0 -5 -5 v-12 q0 -5 5 -5 z" fill="#f6e6c8"/>`
+  + `<g stroke="#f5c246" stroke-width="3.2"><path d="M50 12 v-8 M46 8 h8"/></g>`);
+const C_WORM   = chip(52, 40, `<path d="M10 22 q10 -14 21 -3 q9 9 -1 16" stroke-width="9" stroke="#e8c07a"/>`
+  + `<circle cx="12" cy="20" r="2.4" fill="#3a2c44" stroke="none"/>`);
+const C_JUG    = chip(56, 48, `<path d="M10 12 h28 q5 0 5 5 v22 q0 5 -5 5 h-28 q-5 0 -5 -5 v-22 q0 -5 5 -5 z" fill="#a9d0e6"/>`
+  + `<path d="M43 20 q11 3 11 11" stroke-width="4"/>`);
+
+/* 몸의 어느 자리인가. 반려동물 그림 칸(0~120) 기준 좌표를 비율로 돌려준다. */
+function spotOf(type, key) {
+  const [a, b] = EYES[type];
+  const P = {
+    brow:  [60, 26], eyeL: a, eyeR: b || a,
+    mouth: [60, 62], body: [60, 88], back: [60, 76], floor: [60, 112],
+  }[key] || [60, 60];
+  return [P[0] / 120, P[1] / 120];
+}
+
+/* 무엇을 어디에 올릴지. 순서대로 하나씩 켜진다. */
+const HANDS = {
+  wash_high: { hint: "수건과 오이를 올려주세요", steps: [
+    { art: C_TOWEL, size: 0.52, to: "brow", label: "이마" },
+    { art: C_CUKE,  to: "eyeL", label: "왼쪽 눈" },
+    { art: C_CUKE,  to: "eyeR", label: "오른쪽 눈" },
+  ]},
+  wash_low: { hint: "물수건으로 얼굴을 닦아주세요", steps: [
+    { art: C_CLOTH, size: 0.58, to: "brow", label: "얼굴" },
+  ]},
+  wash_mid: { hint: "스펀지로 몸을 문질러 주세요", steps: [
+    { art: C_SPONGE, size: 0.42, to: "body", label: "몸" },
+  ]},
+  feed_low: { hint: "밥그릇을 발치에 놓아주세요", steps: [
+    { art: C_BOWL("#c3ae8c", "#e0d0b2", "#b99a6d"), size: .52, to: "floor", label: "발치" },
+  ]},
+  feed_mid: { hint: "그릇을 놓고 사료를 부어주세요", steps: [
+    { art: C_BOWL("#c9b79a", "#e8d9bd"), size: .52, to: "floor", label: "발치" },
+    { art: C_BAG, size: 0.34, to: "floor", label: "그릇 위" },
+  ]},
+  feed_high: { hint: "특식을 차려주세요", steps: [
+    { art: C_PLATE, size: 0.52, to: "floor", label: "발치" },
+  ]},
+  treat: { hint: "간식을 입에 물려주세요", steps: [
+    { art: C_COOKIE, size: 0.26, to: "mouth", label: "입" },
+  ]},
+  own_dog:      { hint: "빗으로 등을 빗어주세요",   steps: [{ art: C_BRUSH,  to: "back",  label: "등" }] },
+  own_cat:      { hint: "캣닢을 코앞에 놓아주세요", steps: [{ art: C_CATNIP, size: 0.34, to: "mouth", label: "코앞" }] },
+  own_rabbit:   { hint: "나무토막을 물려주세요",     steps: [{ art: C_CHEW,   to: "mouth", label: "입" }] },
+  own_hamster:  { hint: "쳇바퀴를 놓아주세요",       steps: [{ art: C_WHEEL,  to: "body",  label: "옆" }] },
+  own_parrot:   { hint: "말을 들려주세요",           steps: [{ art: C_TALK,   to: "brow",  label: "머리 위" }] },
+  own_turtle:   { hint: "천으로 등딱지를 닦아주세요", steps: [{ art: C_POLISH, size: 0.42, to: "back",  label: "등딱지" }] },
+  own_hedgehog: { hint: "벌레 간식을 물려주세요",     steps: [{ art: C_WORM,   to: "mouth", label: "입" }] },
+  own_fish:     { hint: "물을 갈아주세요",           steps: [{ art: C_JUG,    to: "body",  label: "어항" }] },
+};
+
 /* 장면 표.
    secs   — 장면 길이(초)
    pose   — 그 동안 반려동물의 몸짓 (기존 POSES 와 같은 값)
@@ -1847,39 +2212,39 @@ const CARE = [
   {
     k: "sat", ico: "🍚", title: "먹이", room: "kitchen",
     items: [
-      { id: "feed_low",  label: "남은 밥",   cost: 10, eff: { sat: 16 },          ch: "sat", pay:  5, note: "찬밥이지만 배는 참" },
-      { id: "feed_mid",  label: "사료",      cost: 24, eff: { sat: 32 },          ch: "sat", pay: 12, buff: { mult: 1.2, secs: 300 } },
-      { id: "feed_high", label: "특식",      cost: 58, eff: { sat: 50, aff: 8 },  ch: "sat", pay: 24, buff: { mult: 1.7, secs: 600 } },
+      { id: "feed_low", ico: "🍚",  label: "남은 밥",   cost: 10, eff: { sat: 16 },          ch: "sat", pay:  5, note: "찬밥이지만 배는 참" },
+      { id: "feed_mid", ico: "🥫",  label: "사료",      cost: 24, eff: { sat: 32 },          ch: "sat", pay: 12, buff: { mult: 1.2, secs: 300 } },
+      { id: "feed_high", ico: "🍖", label: "특식",      cost: 58, eff: { sat: 50, aff: 8 },  ch: "sat", pay: 24, buff: { mult: 1.7, secs: 600 } },
     ],
   },
   {
     k: "cln", ico: "🫧", title: "씻기기", room: "bath",
     items: [
-      { id: "wash_low",  label: "물수건",    cost: 12, eff: { cln: 20 },          ch: "cln", pay:  5, note: "대충 닦아줌" },
-      { id: "wash_mid",  label: "샴푸 목욕", cost: 34, eff: { cln: 48 },          ch: "cln", pay: 10, buff: { mult: 1.2, secs: 300 } },
-      { id: "wash_high", label: "스파 케어", cost: 78, eff: { cln: 75, aff: 6 },  ch: "cln", pay: 22, buff: { mult: 1.8, secs: 600 } },
+      { id: "wash_low", ico: "🧻",  label: "물수건",    cost: 12, eff: { cln: 20 },          ch: "cln", pay:  5, note: "대충 닦아줌" },
+      { id: "wash_mid", ico: "🧴",  label: "샴푸 목욕", cost: 34, eff: { cln: 48 },          ch: "cln", pay: 10, buff: { mult: 1.2, secs: 300 } },
+      { id: "wash_high", ico: "🛁", label: "스파 케어", cost: 78, eff: { cln: 75, aff: 6 },  ch: "cln", pay: 22, buff: { mult: 1.8, secs: 600 } },
     ],
   },
   {
     k: "aff", ico: "💗", title: "함께 놀기", room: "living",
     items: [
-      { id: "pet",   label: "쓰다듬기", cost:  0, cd:  4, eff: { aff: 5 },           ch: "aff", pay:  6, bond: 1, scale: "pet", note: "언제나 무료" },
-      { id: "treat", label: "간식",     cost: 62, cd:  0, eff: { aff: 16, sat: 12 }, ch: "aff", pay: 14, bond: 2, buff: { mult: 1.4, secs: 480 } },
-      { id: "play",  label: "놀아주기", cost:  0, cd: 25, eff: { aff: 20 },          ch: "aff", pay: 16, bond: 6, scale: "play", buff: { mult: 1.3, secs: 300 }, needs: "toy" },
-      { id: "hide",  label: "어느 컵?", cost: 0, cd: 45, special: "minigame", note: "맞히면 코인과 애정을 크게" },
+      { id: "pet", ico: "🤚",   label: "쓰다듬기", cost:  0, cd:  4, eff: { aff: 5 },           ch: "aff", pay:  6, bond: 1, scale: "pet", note: "언제나 무료" },
+      { id: "treat", ico: "🍪", label: "간식",     cost: 62, cd:  0, eff: { aff: 16, sat: 12 }, ch: "aff", pay: 14, bond: 2, buff: { mult: 1.4, secs: 480 } },
+      { id: "play", ico: "🧸",  label: "놀아주기", cost:  0, cd: 25, eff: { aff: 20 },          ch: "aff", pay: 16, bond: 6, scale: "play", buff: { mult: 1.3, secs: 300 }, needs: "toy" },
+      { id: "hide", ico: "🥤",  label: "어느 컵?", cost: 0, cd: 45, special: "minigame", note: "맞히면 코인과 애정을 크게" },
     ],
   },
   {
     k: "yard", ico: "🌳", title: "바깥 활동", room: "yard",
     items: [
       // 산책은 애정을 크게 채우지만 지저분해진다 — 하고 나면 씻길 일이 생긴다
-      { id: "romp", label: "뛰어놀기", cost: 0, cd: 35, eff: { aff: 13, cln: -7 },
+      { id: "romp", ico: "🏃", label: "뛰어놀기", cost: 0, cd: 35, eff: { aff: 13, cln: -7 },
         ch: "aff", pay: 10, bond: 3, scale: "play", note: "잠깐 뛰어놀기" },
-      { id: "walk", label: "산책", cost: 0, cd: 90, eff: { aff: 27, cln: -20, sat: -12 },
+      { id: "walk", ico: "🦮", label: "산책", cost: 0, cd: 90, eff: { aff: 27, cln: -20, sat: -12 },
         ch: "aff", pay: 22, bond: 9, scale: "play", buff: { mult: 1.5, secs: 480 } },
-      { id: "catch", label: "원반 받기", cost: 0, cd: 60, special: "minigame2",
+      { id: "catch", ico: "🥏", label: "원반 받기", cost: 0, cd: 60, special: "minigame2",
         note: "타이밍 맞춰 세 번 던지기" },
-      { id: "sun",  label: "일광욕", cost: 0, cd: 120, eff: { cln: 16, aff: 5 },
+      { id: "sun", ico: "☀️",  label: "일광욕", cost: 0, cd: 120, eff: { cln: 16, aff: 5 },
         ch: "cln", pay: 12, bond: 2, buff: { mult: 1.25, secs: 360 } },
     ],
   },
@@ -1889,55 +2254,55 @@ const CARE = [
   {
     k: "park", ico: "🏞️", title: "공원 나들이", room: "park",
     items: [
-      { id: "p_grass", label: "잔디밭 뒹굴기", cost: 0, cd: 40, eff: { aff: 16, cln: -9 },
+      { id: "p_grass", ico: "🌱", label: "잔디밭 뒹굴기", cost: 0, cd: 40, eff: { aff: 16, cln: -9 },
         ch: "aff", pay: 12, bond: 4, scale: "play", needs: "park", note: "풀냄새가 좋다" },
-      { id: "p_friend", label: "친구 만나기", cost: 0, cd: 100, eff: { aff: 24, sat: -6 },
+      { id: "p_friend", ico: "🐕", label: "친구 만나기", cost: 0, cd: 100, eff: { aff: 24, sat: -6 },
         ch: "aff", pay: 20, bond: 8, scale: "play", needs: "park", buff: { mult: 1.4, secs: 420 } },
-      { id: "p_fount", label: "분수 구경", cost: 0, cd: 70, eff: { cln: 15, aff: 7 },
+      { id: "p_fount", ico: "⛲", label: "분수 구경", cost: 0, cd: 70, eff: { cln: 15, aff: 7 },
         ch: "cln", pay: 11, bond: 2, needs: "park", buff: { mult: 1.2, secs: 300 } },
     ],
   },
   {
     k: "beach", ico: "🏖️", title: "바닷가", room: "beach",
     items: [
-      { id: "s_wave", label: "파도타기", cost: 0, cd: 80, eff: { cln: 30, aff: 14, sat: -8 },
+      { id: "s_wave", ico: "🌊", label: "파도타기", cost: 0, cd: 80, eff: { cln: 30, aff: 14, sat: -8 },
         ch: "cln", pay: 22, bond: 6, scale: "play", needs: "beach", buff: { mult: 1.6, secs: 480 } },
-      { id: "s_sand", label: "모래성 쌓기", cost: 0, cd: 55, eff: { aff: 15, cln: -12 },
+      { id: "s_sand", ico: "🏰", label: "모래성 쌓기", cost: 0, cd: 55, eff: { aff: 15, cln: -12 },
         ch: "aff", pay: 13, bond: 4, scale: "play", needs: "beach", note: "발이 지저분해진다" },
-      { id: "s_shell", label: "조개 줍기", cost: 0, cd: 110, eff: { aff: 9, sat: 5 },
+      { id: "s_shell", ico: "🐚", label: "조개 줍기", cost: 0, cd: 110, eff: { aff: 9, sat: 5 },
         ch: "aff", pay: 10, bond: 3, needs: "beach", find: [8, 26], note: "예쁜 걸 주워 온다" },
     ],
   },
   {
     k: "cafe", ico: "☕", title: "애견카페", room: "cafe",
     items: [
-      { id: "c_cake", label: "케이크 나눠먹기", cost: 40, eff: { sat: 26, aff: 14 },
+      { id: "c_cake", ico: "🍰", label: "케이크 나눠먹기", cost: 40, eff: { sat: 26, aff: 14 },
         ch: "sat", pay: 18, bond: 3, needs: "cafe", buff: { mult: 1.5, secs: 480 } },
-      { id: "c_meet", label: "친구 사귀기", cost: 0, cd: 90, eff: { aff: 22 },
+      { id: "c_meet", ico: "🐾", label: "친구 사귀기", cost: 0, cd: 90, eff: { aff: 22 },
         ch: "aff", pay: 19, bond: 9, scale: "play", needs: "cafe", buff: { mult: 1.35, secs: 420 } },
-      { id: "c_photo", label: "사진 찍기", cost: 0, cd: 130, eff: { aff: 11 },
+      { id: "c_photo", ico: "📸", label: "사진 찍기", cost: 0, cd: 130, eff: { aff: 11 },
         ch: "aff", pay: 15, bond: 5, needs: "cafe", note: "오늘을 기념" },
     ],
   },
   {
     k: "hill", ico: "⛰️", title: "뒷산", room: "hill",
     items: [
-      { id: "h_climb", label: "등산", cost: 0, cd: 150, eff: { aff: 32, cln: -22, sat: -18 },
+      { id: "h_climb", ico: "⛰️", label: "등산", cost: 0, cd: 150, eff: { aff: 32, cln: -22, sat: -18 },
         ch: "aff", pay: 28, bond: 12, scale: "play", needs: "hill", buff: { mult: 1.7, secs: 600 } },
-      { id: "h_acorn", label: "도토리 찾기", cost: 0, cd: 95, eff: { sat: 12, aff: 8 },
+      { id: "h_acorn", ico: "🌰", label: "도토리 찾기", cost: 0, cd: 95, eff: { sat: 12, aff: 8 },
         ch: "sat", pay: 12, bond: 3, needs: "hill", find: [10, 34], note: "가끔 뭔가를 주워 온다" },
-      { id: "h_stream", label: "계곡 물놀이", cost: 0, cd: 100, eff: { cln: 34, aff: 12 },
+      { id: "h_stream", ico: "💧", label: "계곡 물놀이", cost: 0, cd: 100, eff: { cln: 34, aff: 12 },
         ch: "cln", pay: 20, bond: 5, needs: "hill", buff: { mult: 1.5, secs: 420 } },
     ],
   },
   {
     k: "pc", ico: "🖥️", title: "PC방", room: "pcbang",
     items: [
-      { id: "g_race", label: "레이싱 한 판", cost: 0, cd: 70, eff: { aff: 18, cln: -6 },
+      { id: "g_race", ico: "🏎️", label: "레이싱 한 판", cost: 0, cd: 70, eff: { aff: 18, cln: -6 },
         ch: "aff", pay: 16, bond: 5, scale: "play", needs: "pcbang", buff: { mult: 1.35, secs: 420 } },
-      { id: "g_ramen", label: "컵라면 먹기", cost: 30, eff: { sat: 26, aff: 12 },
+      { id: "g_ramen", ico: "🍜", label: "컵라면 먹기", cost: 30, eff: { sat: 26, aff: 12 },
         ch: "sat", pay: 17, bond: 3, needs: "pcbang", buff: { mult: 1.45, secs: 480 } },
-      { id: "g_run", label: "달리기 게임", cost: 0, cd: 55, special: "minigame3", needs: "pcbang",
+      { id: "g_run", ico: "🕹️", label: "달리기 게임", cost: 0, cd: 55, special: "minigame3", needs: "pcbang",
         note: "하나 넘을 때마다 5코인" },
     ],
   },
@@ -1947,28 +2312,28 @@ const CARE = [
   {
     k: "own", ico: "🐾", title: "이 아이만의 것", room: "living",
     items: [
-      { id: "own_dog", label: "털 빗기기", only: "dog", cost: 0, cd: 55,
+      { id: "own_dog", ico: "🪮", label: "털 빗기기", only: "dog", cost: 0, cd: 55,
         eff: { cln: 24, aff: 10 }, ch: "cln", pay: 15, bond: 5, scale: "pet",
         buff: { mult: 1.35, secs: 420 }, note: "빗질을 제일 좋아해요" },
-      { id: "own_cat", label: "캣닢 주기", only: "cat", cost: 0, cd: 70,
+      { id: "own_cat", ico: "🍃", label: "캣닢 주기", only: "cat", cost: 0, cd: 70,
         eff: { aff: 26 }, ch: "aff", pay: 17, bond: 6,
         buff: { mult: 1.45, secs: 420 }, note: "잠깐 딴 세상에 가요" },
-      { id: "own_rabbit", label: "나무토막 주기", only: "rabbit", cost: 0, cd: 60,
+      { id: "own_rabbit", ico: "🪵", label: "나무토막 주기", only: "rabbit", cost: 0, cd: 60,
         eff: { sat: 20, aff: 10 }, ch: "sat", pay: 15, bond: 4,
         buff: { mult: 1.35, secs: 420 }, note: "이빨이 자라서 갉아야 해요" },
-      { id: "own_hamster", label: "쳇바퀴 굴려주기", only: "hamster", cost: 0, cd: 50,
+      { id: "own_hamster", ico: "🎡", label: "쳇바퀴 굴려주기", only: "hamster", cost: 0, cd: 50,
         eff: { aff: 22, sat: -6 }, ch: "aff", pay: 16, bond: 5, scale: "play",
         buff: { mult: 1.4, secs: 360 }, note: "멈출 줄을 몰라요" },
-      { id: "own_parrot", label: "말 가르치기", only: "parrot", cost: 0, cd: 80,
+      { id: "own_parrot", ico: "🗣️", label: "말 가르치기", only: "parrot", cost: 0, cd: 80,
         eff: { aff: 28 }, ch: "aff", pay: 19, bond: 8,
         buff: { mult: 1.5, secs: 480 }, note: "따라 하다가 이상해져요" },
-      { id: "own_turtle", label: "등딱지 광내기", only: "turtle", cost: 0, cd: 90,
+      { id: "own_turtle", ico: "✨", label: "등딱지 광내기", only: "turtle", cost: 0, cd: 90,
         eff: { cln: 30, aff: 8 }, ch: "cln", pay: 18, bond: 5,
         buff: { mult: 1.5, secs: 480 }, note: "반질반질해져요" },
-      { id: "own_hedgehog", label: "벌레 간식 주기", only: "hedgehog", cost: 0, cd: 65,
+      { id: "own_hedgehog", ico: "🐛", label: "벌레 간식 주기", only: "hedgehog", cost: 0, cd: 65,
         eff: { sat: 22, aff: 12 }, ch: "sat", pay: 16, bond: 5,
         buff: { mult: 1.4, secs: 420 }, note: "제일 좋아하는 거예요" },
-      { id: "own_fish", label: "물 갈아주기", only: "fish", cost: 0, cd: 75,
+      { id: "own_fish", ico: "🚰", label: "물 갈아주기", only: "fish", cost: 0, cd: 75,
         eff: { cln: 34, aff: 8 }, ch: "cln", pay: 18, bond: 4,
         buff: { mult: 1.5, secs: 480 }, note: "물이 맑아야 살아요" },
     ],
@@ -1976,7 +2341,7 @@ const CARE = [
   {
     k: "rest", ico: "😴", title: "재우기", room: "bedroom",
     items: [
-      { id: "sleep", label: "재우기", cost: 0, special: "sleep",
+      { id: "sleep", ico: "😴", label: "재우기", cost: 0, special: "sleep",
         note: "자는 동안 게이지가 천천히 닳고 수익은 줄어요" },
     ],
   },
@@ -2701,6 +3066,17 @@ function doCare(it) {
     return;
   }
   if (!canDo(it)) return;
+
+  // 손으로 직접 해주는 일이면, 먼저 올려놓게 한다. 다 올리면 applyCare 로 이어진다.
+  if (HANDS[it.id] && !handsOff && !handsSkipped) { startHands(it); return; }
+  handsSkipped = false;
+
+  applyCare(it);
+}
+
+/* 실제로 효과를 적용하고 보상을 주는 부분.
+   버튼을 눌러 바로 오기도 하고, 손으로 다 올려놓은 뒤에 오기도 한다. */
+function applyCare(it) {
   S.asleep = false;                          // 돌봐주면 잠이 깬다
   Sound.setTrack("day");
 
@@ -3382,6 +3758,8 @@ function renderRoom() {
   const r = ROOMS.find((x) => x.id === S.room);
   const wp = wallpaperOf(S.room);
   bg.dataset.room = S.room;
+  if (r.outdoor || r.care === "cafe" || r.care === "pc") bg.dataset.out = "1";
+  else delete bg.dataset.out;      // 집 안에서는 풍경을 그리지 않는다
   bg.dataset.pattern = wp.pattern || "";
   bg.style.setProperty("--w1", wp.w1 || r.w1);
   bg.style.setProperty("--w2", wp.w2 || r.w2);
@@ -3467,6 +3845,184 @@ function renderPets() {
 
 /* 활동하는 모습 — 잠깐 자세를 바꾸고 소품을 곁들인다. */
 let poseTimer = 0;
+/* ===== 직접 올려주기 — 조작 =====
+   무대 아래에 물건이 놓이고, 그 아이 몸에 놓을 자리가 표시된다.
+   끌어다 놓으면 하나씩 채워지고, 다 채우면 그때 효과가 들어간다.
+
+   마우스든 손가락이든 같은 코드로 — pointer 이벤트 하나로 처리한다. */
+/* 직접 올릴지 바로 해줄지는 취향이다. 매번 끌어 놓는 게 좋은 사람도 있고
+   빨리 돌리고 싶은 사람도 있다. 도구 탭에서 켜고 끄며, 설정은 남는다.
+   말풍선의 "그냥 해주기"는 이번 한 번만 건너뛴다 — 한 번 눌렀다고 영영
+   꺼져 버리면 다시 켜는 길을 못 찾는다. */
+const HANDS_KEY = "raiseUpAnimal.hands";
+let handsOff = (() => {
+  try { return localStorage.getItem(HANDS_KEY) === "off"; } catch (e) { return false; }
+})();
+let handsSkipped = false;      // 이번 한 번만 건너뛰기
+let handsOn = null;
+
+function setHandsMode(off) {
+  handsOff = off;
+  try { localStorage.setItem(HANDS_KEY, off ? "off" : "on"); } catch (e) { /* 저장 불가 */ }
+  updateHandsBtn();
+}
+function updateHandsBtn() {
+  const b = $("btn-hands");
+  if (!b) return;
+  b.querySelector(".ti").textContent = handsOff ? "⚡" : "✋";
+  b.querySelector(".tl").textContent = handsOff ? "바로 해주기" : "직접 해주기";
+  b.title = handsOff ? "지금은 누르면 바로 됩니다" : "지금은 물건을 직접 올려줍니다";
+}
+
+function endHands(done) {
+  const box = $("hands");
+  box.hidden = true;
+  box.innerHTML = "";
+  $("room").classList.remove("hands-mode");
+  const it = handsOn && handsOn.it;
+  handsOn = null;
+  if (done && it) { applyCare(it); handsSkipped = false; }
+}
+
+function startHands(it) {
+  const plan = HANDS[it.id];
+  if (!plan) { applyCare(it); return; }
+
+  closeSide();                       // 무대가 넓어야 올려놓기 편하다
+  const box = $("hands");
+  box.hidden = false;
+  box.innerHTML = `<div class="h-hint"><b></b><button class="h-skip">그냥 해주기</button></div>`
+    + `<div class="h-target" hidden><i></i><span></span></div>`
+    + `<div class="h-tray"></div>`;
+  $("room").classList.add("hands-mode");
+  box.querySelector(".h-hint b").textContent = plan.hint;
+  box.querySelector(".h-skip").onclick = () => { handsSkipped = true; endHands(true); };
+  box.querySelector(".h-skip").title = "이번만 건너뜁니다 (⚙️ 도구에서 아예 끌 수 있어요)";
+
+  const tray = box.querySelector(".h-tray");
+  const target = box.querySelector(".h-target");
+  handsOn = { it, plan, step: 0 };
+
+  // 놓을 자리를 그 아이 몸 위에 표시한다
+  const showTarget = () => {
+    const s = handsOn.plan.steps[handsOn.step];
+    if (!s) return;
+    const petEl = $("pets").children[S.active];
+    const room = $("room").getBoundingClientRect();
+    const pr = petEl ? petEl.getBoundingClientRect() : room;
+    const [fx, fy] = spotOf(S.type, s.to);
+    target.hidden = false;
+    target.style.left = (pr.left - room.left + pr.width * fx) + "px";
+    target.style.top = (pr.top - room.top + pr.height * fy) + "px";
+    target.querySelector("span").textContent = s.label;
+    const ring = Math.max(38, Math.round(pr.width * (s.size || .4) * 1.15));
+    target.style.setProperty("--ring", ring + "px");
+  };
+
+  // 트레이에 물건을 늘어놓는다
+  plan.steps.forEach((s, i) => {
+    const el = document.createElement("div");
+    el.className = "h-item";
+    el.dataset.i = i;
+    el.innerHTML = s.art;
+    tray.appendChild(el);
+    dragify(el, i, showTarget);
+  });
+  showTarget();
+  Sound.sfx("care");
+}
+
+/* 끌기는 창(window)에서 듣는다. 물건을 트레이에서 무대로 옮겨 붙이는 순간
+   pointer capture 가 풀려버려서, 요소에 붙인 move/up 이 오지 않는다. */
+function dragify(el, idx, showTarget) {
+  el.addEventListener("pointerdown", (e) => {
+    if (!handsOn || handsOn.step !== idx) return;   // 순서대로만
+    e.preventDefault();
+    const r = el.getBoundingClientRect();
+    const room = $("room").getBoundingClientRect();
+    const dx = e.clientX - r.left, dy = e.clientY - r.top;
+
+    // 트레이에서 뽑아 무대 위 절대 위치로 옮긴다
+    el.classList.add("dragging");
+    el.style.left = (r.left - room.left) + "px";
+    el.style.top = (r.top - room.top) + "px";
+    $("hands").appendChild(el);
+
+    const move = (ev) => {
+      const rm = $("room").getBoundingClientRect();
+      el.style.left = (ev.clientX - rm.left - dx) + "px";
+      el.style.top = (ev.clientY - rm.top - dy) + "px";
+      // 자리에 가까우면 표적이 커진다 — 여기가 맞다는 신호
+      const tg = $("hands").querySelector(".h-target");
+      if (tg) tg.classList.toggle("near", distToTarget(el) < HAND_SNAP);
+    };
+    const up = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      window.removeEventListener("pointercancel", up);
+      drop(el, idx, showTarget);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+    window.addEventListener("pointercancel", up);
+  });
+}
+
+function drop(el, idx, showTarget) {
+    if (!handsOn) return;
+    const box = $("hands");
+    const target = box.querySelector(".h-target");
+    target.classList.remove("near");
+
+    /* 거리는 .dragging 을 떼기 "전"에 잰다. 떼는 순간 절대 위치가 풀려
+       물건이 트레이 자리로 되돌아가므로, 늘 빗나간 것으로 나온다. */
+    const hit = distToTarget(el) < HAND_SNAP;
+    el.classList.remove("dragging");
+
+    if (hit) {
+      // 그 자리에 맞게 줄여서 딱 붙인다 — 트레이 크기 그대로 두면 얼굴을 덮는다
+      const step = handsOn.plan.steps[idx];
+      const petEl = $("pets").children[S.active];
+      const pw = petEl ? petEl.offsetWidth : 124;
+      const w = Math.round(pw * (step.size || .4));
+      const ratio = el.offsetHeight / el.offsetWidth;
+      el.style.width = w + "px";
+      el.style.height = Math.round(w * ratio) + "px";
+
+      const tr = target.getBoundingClientRect();
+      const room = $("room").getBoundingClientRect();
+      el.style.left = (tr.left - room.left + tr.width / 2 - w / 2) + "px";
+      el.style.top = (tr.top - room.top + tr.height / 2 - (w * ratio) / 2) + "px";
+      el.classList.add("placed");
+      Sound.sfx("wish");
+      handsOn.step++;
+      if (handsOn.step >= handsOn.plan.steps.length) {
+        target.hidden = true;
+        box.querySelector(".h-hint b").textContent = "고마워요!";
+        setTimeout(() => endHands(true), 620);
+      } else {
+        showTarget();
+      }
+    } else {
+      el.classList.add("miss");                    // 빗나가면 트레이로 돌아간다
+      setTimeout(() => {
+        el.classList.remove("miss");
+        el.style.left = el.style.top = "";
+        $("hands").querySelector(".h-tray").insertBefore(el,
+          [...$("hands").querySelectorAll(".h-tray .h-item")].find((x) => +x.dataset.i > idx) || null);
+      }, 260);
+    }
+}
+
+const HAND_SNAP = 52;   // 이만큼 가까우면 놓인 것으로 친다
+function distToTarget(el) {
+  const t = $("hands").querySelector(".h-target");
+  if (!t || t.hidden) return 1e9;
+  const a = el.getBoundingClientRect(), b = t.getBoundingClientRect();
+  return Math.hypot((a.left + a.width / 2) - (b.left + b.width / 2),
+                    (a.top + a.height / 2) - (b.top + b.height / 2));
+}
+
 /* 장면을 한 판 돌린다. 반려동물의 몸짓(showPose)과 내 손이 하는 일(#act)을
    같이 띄운다. 장면이 없는 활동은 예전처럼 몸짓만 나온다. */
 let actTimer = 0;
@@ -3647,6 +4203,7 @@ function buildCare() {
     for (const it of g.items) {
       const b = document.createElement("button");
       b.innerHTML = `
+        <span class="item-i">${it.ico || "🐾"}</span>
         <span class="item-n"></span>
         <span class="item-c"></span>
         <span class="item-p"></span>
@@ -4730,6 +5287,13 @@ $("btn-undo").onclick = async () => {
   resumeFrom(prev, false);
   toast("되돌렸어요");
 };
+
+$("btn-hands").onclick = () => {
+  setHandsMode(!handsOff);
+  toast(handsOff ? "이제 누르면 바로 해줍니다" : "이제 물건을 직접 올려주세요");
+  Sound.sfx("buy");
+};
+updateHandsBtn();
 
 $("btn-sound").onclick = () => {
   const on = Sound.toggle();
