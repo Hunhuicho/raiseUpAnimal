@@ -19,7 +19,20 @@
   }
   /* 따뜻한 방 하나로 고정된 세계관이라 다크 테마를 따로 두지 않는다.
      대신 뷰어가 다크 모드여도 스크롤바·기본 위젯이 어두워지지 않도록 명시한다. */
-  :root { color-scheme: light; }
+  :root {
+    color-scheme: light;
+    /* 커서도 게임 그림체로 그린다. 손끝이 클릭 지점(hotspot 12 3)이라 정확도는 그대로. */
+    --cur: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M11 16.5V6a2.6 2.6 0 0 1 5.2 0v6.4a2.4 2.4 0 0 1 4.8 0v1.2a2.4 2.4 0 0 1 4.7 0v6.6c0 5-3.4 8.2-8.2 8.2h-2.1c-2.8 0-4.6-1.3-6.1-3.8l-3.4-5.7a2.4 2.4 0 0 1 4-2.6z' fill='%23fff6e6' stroke='%233a2c44' stroke-width='2.3' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E") 12 3, default;
+    --cur-tap: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M11 16.5V6a2.6 2.6 0 0 1 5.2 0v6.4a2.4 2.4 0 0 1 4.8 0v1.2a2.4 2.4 0 0 1 4.7 0v6.6c0 5-3.4 8.2-8.2 8.2h-2.1c-2.8 0-4.6-1.3-6.1-3.8l-3.4-5.7a2.4 2.4 0 0 1 4-2.6z' fill='%23ffe3ea' stroke='%233a2c44' stroke-width='2.3' stroke-linejoin='round' stroke-linecap='round'/%3E%3Cpath d='M9.4 24.5q7 3 13.6 0' fill='none' stroke='%23e58fa0' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E") 12 3, pointer;
+  }
+
+  /* 게임 안에서는 어디에 있든 손 */
+  html, body, #app, #roombg, #room { cursor: var(--cur); }
+  /* 누를 수 있는 것 위에서는 소매가 분홍인 손 */
+  button, #pet,
+  #wishbar[data-go]:not([data-go=""]),
+  #needline[data-go]:not([data-go=""]) { cursor: var(--cur-tap); }
+  button:disabled { cursor: var(--cur); }
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   /* display:flex 같은 선언이 기본 [hidden] 규칙을 이겨서 숨김이 무시된다 */
@@ -61,13 +74,12 @@
     border: 2px solid var(--line);
     border-radius: 11px;
     padding: 10px 8px;
-    cursor: pointer;
     box-shadow: var(--shadow);
     transition: transform .06s, filter .12s;
   }
   button:hover:not(:disabled) { filter: brightness(1.04); }
   button:active:not(:disabled) { transform: translateY(2px); box-shadow: none; }
-  button:disabled { opacity: .4; cursor: not-allowed; box-shadow: none; }
+  button:disabled { opacity: .4; box-shadow: none; }
 
   /* ---------- 상단 바 ---------- */
   #topbar { display: flex; align-items: center; gap: 10px; padding: 10px 14px; font-weight: 800; }
@@ -87,7 +99,6 @@
   #needline .nt { min-width: 0; }
   #needline .pay { color: var(--gold); }
   #needline.calm { color: var(--ink-soft); }
-  #needline[data-go]:not([data-go=""]) { cursor: pointer; }
   #needline[data-go]:not([data-go=""]):hover { filter: brightness(.985); }
 
   /* ---------- 방 = 화면 전체 배경 ----------
@@ -125,7 +136,7 @@
 
   /* ---------- 부탁 ---------- */
   #wishbar {
-    display: flex; align-items: center; gap: 9px; cursor: pointer;
+    display: flex; align-items: center; gap: 9px;
     padding: 10px 13px; font-size: 13px; font-weight: 800;
     border-color: var(--green); background: #f4faef;
   }
@@ -196,7 +207,7 @@
   #pet {
     position: absolute; left: 50%; top: 66%;
     transform: translate(-50%, -50%);
-    width: 124px; height: 124px; cursor: pointer;
+    width: 124px; height: 124px;
     animation: idle 2.6s ease-in-out infinite;
     user-select: none; transition: left .9s ease-in-out;
   }
