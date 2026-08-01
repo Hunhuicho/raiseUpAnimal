@@ -1,0 +1,11 @@
+{
+  "name": "raise-up-animal",
+  "version": "1.0.0",
+  "description": "오늘도 무럭무럭 — 반려동물 육성 게임",
+  "private": true,
+  "scripts": {
+    "build": "node build.mjs",
+    "dev": "node build.mjs && npx --yes serve public -l 4173",
+    "deploy": "node build.mjs && npx --yes wrangler@latest pages deploy public --project-name=raise-up-animal"
+  }
+}

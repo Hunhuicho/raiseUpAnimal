@@ -4,6 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>오늘도 무럭무럭</title>
+<meta name="description" content="반려동물이 기뻐할수록 코인이 쌓이는 육성 게임. 밥 주고 씻기고 함께 놀고, 공원·바닷가·PC방으로 나들이도 갑니다.">
+<meta name="theme-color" content="#f4ece1">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./icon-180.png">
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="무럭무럭">
+<meta property="og:type" content="website">
+<meta property="og:title" content="오늘도 무럭무럭">
+<meta property="og:description" content="반려동물이 기뻐할수록 코인이 쌓이는 육성 게임">
+<meta property="og:image" content="./icon-512.png">
+<meta name="twitter:card" content="summary">
 <style>
   :root {
     --bg: #f4ece1;
@@ -3571,6 +3583,7 @@ function showPicker() {
     S = freshState(picked.map((k, i) => ({ type: k, name: names[i] })));
     addLog(`${names.join("와(과) ")}와(과) 함께 살기 시작했다`);
     begin();
+    save();                 // 고른 아이는 그 자리에서 저장한다 — 5초를 기다릴 이유가 없다
     say("잘 부탁해!", 3500);
   };
 }
@@ -4143,6 +4156,14 @@ function resumeFrom(obj, settle) {
     render();
     showReport(away, earned);
   }
+}
+
+/* 오프라인에서도 놀 수 있게 — 배포된 주소에서만 등록한다.
+   파일을 직접 열었을 때(file://)는 서비스 워커를 쓸 수 없으므로 조용히 넘어간다. */
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(() => { /* 없어도 게임은 돈다 */ });
+  });
 }
 
 (function init() {

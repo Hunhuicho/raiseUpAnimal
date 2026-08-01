@@ -1,0 +1,5 @@
+# Cloudflare Pages 설정.
+# 게임은 파일 하나짜리 정적 사이트라 Worker도, 빌드 도구도 필요 없다.
+name = "raise-up-animal"
+compatibility_date = "2026-08-01"
+pages_build_output_dir = "public"

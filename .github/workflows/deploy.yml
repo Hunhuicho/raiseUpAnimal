@@ -1,0 +1,31 @@
+name: Deploy to Cloudflare Pages
+
+# 브랜치에 푸시하면 바로 배포한다. 빌드랄 게 없어서 20초면 끝난다.
+on:
+  push:
+    branches: [main, claude/pet-game-planning-j6ihhl]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # 의존성이 없으므로 npm install 없이 바로 빌드한다
+      - name: Build
+        run: npm run build
+
+      - name: Deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy public --project-name=raise-up-animal

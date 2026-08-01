@@ -1,0 +1,21 @@
+# 게임 파일은 늘 최신으로 — 고친 걸 바로 보려면 캐시가 걸리면 안 된다
+/
+  Cache-Control: no-cache
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+/index.html
+  Cache-Control: no-cache
+/sw.js
+  Cache-Control: no-cache
+/manifest.webmanifest
+  Cache-Control: no-cache
+
+# 아이콘은 내용이 바뀌면 파일명이 바뀌므로 오래 캐시해도 안전하다
+/icon.svg
+  Cache-Control: public, max-age=604800
+/icon-180.png
+  Cache-Control: public, max-age=604800
+/icon-192.png
+  Cache-Control: public, max-age=604800
+/icon-512.png
+  Cache-Control: public, max-age=604800
