@@ -86,8 +86,10 @@
   #coins { font-size: 19px; color: var(--gold); }
   #rate { font-size: 12px; color: var(--ink-soft); font-weight: 700; }
   #bond { margin-left: auto; font-size: 13px; color: var(--pink); text-align: right; }
-  #bondbar { width: 76px; height: 5px; background: var(--line); border-radius: 3px; margin-top: 3px; overflow: hidden; }
+  #bondbar, #growbar { width: 76px; height: 5px; background: var(--line); border-radius: 3px; margin-top: 3px; overflow: hidden; }
   #bondbar > i { display: block; height: 100%; background: var(--pink); width: 0; transition: width .3s; }
+  /* 성장 막대 — 친밀도와 다른 색이라 무엇이 차오르는지 헷갈리지 않는다 */
+  #growbar > i { display: block; height: 100%; background: var(--green); width: 0; transition: width .3s; }
 
   /* ---------- 지금 필요한 것 (한 줄) ---------- */
   #needline {
@@ -149,7 +151,13 @@
   #wishbar .wc b { display: block; color: var(--green); font-size: 12px; }
 
   /* ---------- 방 고르기 ---------- */
-  #rooms { display: flex; gap: 7px; margin-bottom: 8px; }
+  #rooms { margin-bottom: 8px; }
+  #rooms .rlabel {
+    font-size: 10px; font-weight: 800; color: var(--ink-soft);
+    margin: 0 0 3px 3px; letter-spacing: .3px;
+  }
+  #rooms .rlabel + .rrow { margin-bottom: 7px; }
+  #rooms .rrow { display: flex; gap: 7px; }
   #rooms button {
     flex: 1; padding: 7px 2px; display: flex; flex-direction: column;
     align-items: center; gap: 1px; position: relative;
@@ -157,6 +165,18 @@
   #rooms .ri { font-size: 22px; line-height: 1.15; }
   #rooms .rn { font-size: 10.5px; font-weight: 800; }
   #rooms button.on { background: var(--ink); color: #fff8ee; border-color: var(--ink); }
+  /* 아직 못 여는 곳 — 있다는 것만 보이게, 값과 함께 */
+  #rooms button.locked { border-style: dashed; background: #f4ece1; }
+  #rooms button.locked .ri { filter: grayscale(1); opacity: .45; }
+  #rooms button.locked .rn { color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+  /* 입장료가 있는 곳 — 누르기 전에 알 수 있어야 한다 */
+  #rooms .fee {
+    position: absolute; top: 4px; left: 5px; padding: 0 3px; border-radius: 5px;
+    font-size: 9px; font-weight: 800; color: var(--gold);
+    background: var(--panel); border: 1px solid var(--line);
+  }
+  #rooms button.on .fee { background: var(--ink); border-color: var(--ink); }
+  #rooms button.locked .fee { display: none; }
   #rooms .dot {
     position: absolute; top: 5px; right: 10px;
     width: 9px; height: 9px; border-radius: 50%;
@@ -204,18 +224,25 @@
     animation: pop .35s ease-out;
   }
   @keyframes pop { from { transform: translate(-50%,-50%) scale(0); } to { transform: translate(-50%,-50%) scale(1); } }
+  /* --gs 는 성장 단계별 몸집 배율 — 자란 게 눈에 보여야 자란 보람이 있다 */
   .pet {
     position: absolute; left: 50%; top: 66%;
     transform: translate(-50%, -50%);
-    width: 124px; height: 124px;
+    width: calc(124px * var(--gs, 1)); height: calc(124px * var(--gs, 1));
     animation: idle 2.6s ease-in-out infinite;
     user-select: none; transition: left .9s ease-in-out, width .3s, height .3s, filter .3s;
   }
   /* 캐릭터와 옷은 같은 좌표계 위에 겹쳐 그린다 — 흐름에 두면 옷이 아래로 밀려난다 */
   .pet svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
   /* 여러 마리일 때 지금 돌보는 아이가 앞에 선다 */
-  #pets:has(.pet + .pet) .pet { width: 104px; height: 104px; filter: saturate(.72) brightness(.97); z-index: 1; }
-  #pets:has(.pet + .pet) .pet.on { width: 128px; height: 128px; filter: none; z-index: 3; }
+  #pets:has(.pet + .pet) .pet {
+    width: calc(104px * var(--gs, 1)); height: calc(104px * var(--gs, 1));
+    filter: saturate(.72) brightness(.97); z-index: 1;
+  }
+  #pets:has(.pet + .pet) .pet.on {
+    width: calc(128px * var(--gs, 1)); height: calc(128px * var(--gs, 1));
+    filter: none; z-index: 3;
+  }
   .pet .prop { position: absolute; inset: 0; pointer-events: none; }
   .pet .prop svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 
@@ -507,6 +534,45 @@
   #cg-dots span.ok { background: var(--green); border-color: var(--green); }
   #cg-dots span.no { background: var(--pink); border-color: var(--pink); }
 
+  /* ---------- 🖥️ PC방 미니게임 — 모니터 속에서 그 아이가 직접 달린다 ---------- */
+  #rg-screen {
+    position: relative; height: 150px; margin-bottom: 10px; overflow: hidden;
+    border-radius: 12px; border: 5px solid #3a3550; cursor: var(--cur-tap);
+    background: linear-gradient(#222a4d 0%, #3a4374 62%, #4a5488 100%);
+  }
+  /* 브라운관 느낌의 주사선 — 모니터 안이라는 걸 한눈에 알리는 장치 */
+  #rg-screen::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgba(255,255,255,.055) 0 1px, transparent 1px 3px);
+  }
+  .rg-ground {
+    position: absolute; left: 0; right: 0; bottom: 24px; height: 2px;
+    background: rgba(255,255,255,.4);
+  }
+  #rg-pet {
+    position: absolute; left: 16%; bottom: 20px; width: 66px; height: 66px;
+    transform: translateX(-50%); z-index: 2;
+  }
+  #rg-pet svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  #rg-pet.jump { animation: rg-jump .62s ease-out; }
+  #rg-pet.bump { animation: rg-bump .4s ease-in-out; }
+  @keyframes rg-jump { 0% { bottom: 20px; } 42% { bottom: 80px; } 100% { bottom: 20px; } }
+  @keyframes rg-bump {
+    0%, 100% { transform: translateX(-50%) rotate(0); }
+    30% { transform: translateX(-58%) rotate(-14deg); }
+    70% { transform: translateX(-52%) rotate(6deg); }
+  }
+  .rg-ob {
+    position: absolute; bottom: 24px; font-size: 27px; line-height: 1;
+    animation-name: rg-run; animation-timing-function: linear; animation-fill-mode: forwards;
+  }
+  @keyframes rg-run { from { left: 104%; } to { left: -14%; } }
+  #rg-score {
+    position: absolute; top: 7px; right: 10px; z-index: 3;
+    font-size: 12px; font-weight: 800; color: #fff2d8;
+    font-variant-numeric: tabular-nums; text-shadow: 0 1px 2px rgba(0,0,0,.5);
+  }
+
   #shot { width: 100%; border-radius: 12px; display: block; margin-bottom: 12px; border: 2px solid var(--line); }
   .modal .sub { display: flex; gap: 8px; margin-top: 8px; }
   .modal .sub button { flex: 1; padding: 10px; font-size: 13px; }
@@ -542,6 +608,7 @@
       <div id="paws"></div>
       <div id="bondtext">♡ Lv.1</div>
       <div id="bondbar"><i></i></div>
+      <div id="growbar"><i></i></div>
     </div>
   </div>
 
@@ -952,6 +1019,12 @@ const POSES = {
   feed_low: "eat", feed_mid: "eat", feed_high: "eat", treat: "eat",
   wash_low: "wash", wash_mid: "wash", wash_high: "wash",
   pet: "love", play: "play", romp: "play", walk: "walk", sun: "sun",
+  // 나들이
+  p_grass: "play", p_friend: "play", p_fount: "wash",
+  s_wave: "wash", s_sand: "play", s_shell: "walk",
+  c_cake: "eat", c_meet: "play", c_photo: "love",
+  h_climb: "walk", h_acorn: "walk", h_stream: "wash",
+  g_race: "play", g_ramen: "eat",
 };
 const POSE_SECS = { eat: 2.6, wash: 2.4, play: 2.2, love: 2.0, walk: 3.0, sun: 3.0 };
 // 눈을 감는 활동
@@ -1125,6 +1198,64 @@ const CARE = [
         ch: "cln", pay: 12, bond: 2, buff: { mult: 1.25, secs: 360 } },
     ],
   },
+  /* 아래 넷은 나들이 장소 — 그곳을 열어야 보인다(needs).
+     집에서 하는 일과 달리 한쪽을 채우면 다른 쪽이 깎인다. 다녀오면 씻길 일,
+     밥 줄 일이 생기므로 할 일이 저절로 이어진다. */
+  {
+    k: "park", ico: "🏞️", title: "공원 나들이", room: "park",
+    items: [
+      { id: "p_grass", label: "잔디밭 뒹굴기", cost: 0, cd: 40, eff: { aff: 16, cln: -9 },
+        ch: "aff", pay: 12, bond: 4, scale: "play", needs: "park", note: "풀냄새가 좋다" },
+      { id: "p_friend", label: "친구 만나기", cost: 0, cd: 100, eff: { aff: 24, sat: -6 },
+        ch: "aff", pay: 20, bond: 8, scale: "play", needs: "park", buff: { mult: 1.4, secs: 420 } },
+      { id: "p_fount", label: "분수 구경", cost: 0, cd: 70, eff: { cln: 15, aff: 7 },
+        ch: "cln", pay: 11, bond: 2, needs: "park", buff: { mult: 1.2, secs: 300 } },
+    ],
+  },
+  {
+    k: "beach", ico: "🏖️", title: "바닷가", room: "beach",
+    items: [
+      { id: "s_wave", label: "파도타기", cost: 0, cd: 80, eff: { cln: 30, aff: 14, sat: -8 },
+        ch: "cln", pay: 22, bond: 6, scale: "play", needs: "beach", buff: { mult: 1.6, secs: 480 } },
+      { id: "s_sand", label: "모래성 쌓기", cost: 0, cd: 55, eff: { aff: 15, cln: -12 },
+        ch: "aff", pay: 13, bond: 4, scale: "play", needs: "beach", note: "발이 지저분해진다" },
+      { id: "s_shell", label: "조개 줍기", cost: 0, cd: 110, eff: { aff: 9, sat: 5 },
+        ch: "aff", pay: 10, bond: 3, needs: "beach", find: [8, 26], note: "예쁜 걸 주워 온다" },
+    ],
+  },
+  {
+    k: "cafe", ico: "☕", title: "애견카페", room: "cafe",
+    items: [
+      { id: "c_cake", label: "케이크 나눠먹기", cost: 40, eff: { sat: 26, aff: 14 },
+        ch: "sat", pay: 18, bond: 3, needs: "cafe", buff: { mult: 1.5, secs: 480 } },
+      { id: "c_meet", label: "친구 사귀기", cost: 0, cd: 90, eff: { aff: 22 },
+        ch: "aff", pay: 19, bond: 9, scale: "play", needs: "cafe", buff: { mult: 1.35, secs: 420 } },
+      { id: "c_photo", label: "사진 찍기", cost: 0, cd: 130, eff: { aff: 11 },
+        ch: "aff", pay: 15, bond: 5, needs: "cafe", note: "오늘을 기념" },
+    ],
+  },
+  {
+    k: "hill", ico: "⛰️", title: "뒷산", room: "hill",
+    items: [
+      { id: "h_climb", label: "등산", cost: 0, cd: 150, eff: { aff: 32, cln: -22, sat: -18 },
+        ch: "aff", pay: 28, bond: 12, scale: "play", needs: "hill", buff: { mult: 1.7, secs: 600 } },
+      { id: "h_acorn", label: "도토리 찾기", cost: 0, cd: 95, eff: { sat: 12, aff: 8 },
+        ch: "sat", pay: 12, bond: 3, needs: "hill", find: [10, 34], note: "가끔 뭔가를 주워 온다" },
+      { id: "h_stream", label: "계곡 물놀이", cost: 0, cd: 100, eff: { cln: 34, aff: 12 },
+        ch: "cln", pay: 20, bond: 5, needs: "hill", buff: { mult: 1.5, secs: 420 } },
+    ],
+  },
+  {
+    k: "pc", ico: "🖥️", title: "PC방", room: "pcbang",
+    items: [
+      { id: "g_race", label: "레이싱 한 판", cost: 0, cd: 70, eff: { aff: 18, cln: -6 },
+        ch: "aff", pay: 16, bond: 5, scale: "play", needs: "pcbang", buff: { mult: 1.35, secs: 420 } },
+      { id: "g_ramen", label: "컵라면 먹기", cost: 30, eff: { sat: 26, aff: 12 },
+        ch: "sat", pay: 17, bond: 3, needs: "pcbang", buff: { mult: 1.45, secs: 480 } },
+      { id: "g_run", label: "달리기 게임", cost: 0, cd: 55, special: "minigame3", needs: "pcbang",
+        note: "하나 넘을 때마다 5코인" },
+    ],
+  },
   {
     k: "rest", ico: "😴", title: "재우기", room: "bedroom",
     items: [
@@ -1151,6 +1282,17 @@ const WISHES = [
   { item: "wash_mid",  text: "씻겨주세요!" },
   { item: "wash_high", text: "스파 받고 싶어요…" },
   { item: "sleep",     text: "졸려요… 재워주세요" },
+  // 나들이 — 그곳을 열어둔 사람에게만 부탁한다(pickWish가 needs로 걸러낸다)
+  { item: "p_grass",   text: "잔디밭에서 뒹굴고 싶어…" },
+  { item: "p_friend",  text: "공원에서 친구 만나고 싶어요!" },
+  { item: "s_wave",    text: "바다! 파도타기 하고 싶어요!" },
+  { item: "s_shell",   text: "조개 주우러 가요~" },
+  { item: "c_cake",    text: "카페에서 케이크 먹고 싶어요!" },
+  { item: "c_meet",    text: "카페에 친구 보러 가요!" },
+  { item: "h_climb",   text: "산에 올라가 보고 싶어요!" },
+  { item: "h_stream",  text: "계곡에서 물놀이하고 싶어요!" },
+  { item: "g_race",    text: "PC방에서 레이싱 하고 싶어요!" },
+  { item: "g_ramen",   text: "컵라면 냄새가… 먹고 싶어요" },
 ];
 const WISH_GAP = [80, 150];    // 다음 부탁까지 (초)
 const WISH_TIME = 210;         // 들어줄 수 있는 시간 (초)
@@ -1164,12 +1306,65 @@ const SLEEP_INCOME = 0.55;
 //   x,y : 방 안 위치(%). 전부 벽과 바닥 가장자리에 붙인다 — 가운데는 반려동물 자리다.
 //   s   : 크기 배율. 안쪽(뒤)일수록 작게 해서 깊이를 만든다.
 // 집 — 방마다 하는 일이 다르다. 돌보려면 그 방으로 데려가야 한다.
-const ROOMS = [
+const HOME_ROOMS = [
   { id: "living",  name: "거실", icon: "🛋️", care: "aff",  w1: "#f6eee2", w2: "#ebdfca", f1: "#dcc7aa", f2: "#cbb192" },
   { id: "kitchen", name: "주방", icon: "🍽️", care: "sat",  w1: "#eaf1e4", w2: "#dbe7d3", f1: "#e0d3bd", f2: "#cfbfa4" },
   { id: "bath",    name: "욕실", icon: "🛁", care: "cln",  w1: "#e4eff3", w2: "#d3e5ec", f1: "#e8eef0", f2: "#d6e0e4", tile: true },
   { id: "bedroom", name: "침실", icon: "🛏️", care: "rest", w1: "#efe6ee", w2: "#e2d6e2", f1: "#d9c9b6", f2: "#c8b6a0" },
-  { id: "yard",    name: "마당", icon: "🌳", care: "yard", w1: "#d3eaf9", w2: "#bcdcf2", f1: "#accf8e", f2: "#8fbc71", outdoor: true },
+];
+
+/* 나들이 — 마당에서만 놀면 금방 질린다. 한 번 열어두면 계속 갈 수 있는 바깥
+   장소들. 각각 그곳에서만 할 수 있는 일이 셋씩 있고, 집에서는 못 하는 방식으로
+   게이지가 움직인다(산에 다녀오면 지저분해지고 배가 고파지는 식). */
+const PLACES = [
+  { id: "park",  name: "공원",     icon: "🏞️", care: "park",  cost: 240,
+    desc: "잔디밭 · 친구 · 분수",     w1: "#dff0f8", w2: "#c5e2f0", f1: "#b6d99a", f2: "#93bf75", outdoor: true },
+  { id: "beach", name: "바닷가",   icon: "🏖️", care: "beach", cost: 480,
+    desc: "파도타기 · 모래성 · 조개", w1: "#cbe9f8", w2: "#a3d6ee", f1: "#f3e4bd", f2: "#e2ca97", outdoor: true },
+  { id: "cafe",  name: "애견카페", icon: "☕",  care: "cafe",  cost: 700,
+    desc: "케이크 · 친구 · 사진",     w1: "#f8e9da", w2: "#eed6bf", f1: "#d8ba96", f2: "#c19f79" },
+  { id: "hill",  name: "뒷산",     icon: "⛰️", care: "hill",  cost: 900,
+    desc: "등산 · 도토리 · 계곡",     w1: "#e3eff2", w2: "#c7dfe4", f1: "#c4b285", f2: "#a69168", outdoor: true },
+  // 들어갈 때마다 자리값을 낸다 — 공짜로 노는 곳이 아니라 "돈 내고 노는 곳"이다
+  { id: "pcbang", name: "PC방",    icon: "🖥️", care: "pc",    cost: 1000, fee: 10,
+    desc: "레이싱 · 컵라면 · 달리기 (입장료 10)",
+    w1: "#d8dbf4", w2: "#babee8", f1: "#8287ae", f2: "#6b7095" },
+];
+
+// 마당은 처음부터 열려 있다. 그 뒤로 갈 곳이 하나씩 늘어난다.
+const OUT_ROOMS = [
+  { id: "yard", name: "마당", icon: "🌳", care: "yard", w1: "#d3eaf9", w2: "#bcdcf2", f1: "#accf8e", f2: "#8fbc71", outdoor: true },
+  ...PLACES,
+];
+
+const ROOMS = [...HOME_ROOMS, ...OUT_ROOMS];
+const roomOpen = (r) => !r.cost || has(r.id);
+
+/* 밖에서는 가구를 살 수 없으니 그곳의 풍경을 미리 놓아둔다 —
+   어디에 와 있는지 한눈에 보이도록. 사는 물건이 아니라 배경이다. */
+const SCENERY = [
+  { id: "sc_park1",  room: "park",  e: "⛲",  x: 87, y: 66, s: 1.35 },
+  { id: "sc_park2",  room: "park",  e: "🌳",  x: 10, y: 58, s: 1.45 },
+  { id: "sc_park3",  room: "park",  e: "🌷",  x: 20, y: 92, s: 1.0  },
+  { id: "sc_park4",  room: "park",  e: "🦋",  x: 72, y: 24, s: 0.9  },
+  // 파도는 하늘이 아니라 수평선에 — 바닥이 시작되는 62% 언저리가 물가다
+  { id: "sc_sea1",   room: "beach", e: "⛱️",  x: 84, y: 64, s: 1.4  },
+  { id: "sc_sea2",   room: "beach", e: "🌴",  x: 11, y: 50, s: 1.45 },
+  { id: "sc_sea3",   room: "beach", e: "🌊",  x: 21, y: 58, s: 1.2  },
+  { id: "sc_sea4",   room: "beach", e: "🦀",  x: 88, y: 92, s: 1.05 },
+  { id: "sc_cafe1",  room: "cafe",  e: "☕",  x: 13, y: 86, s: 1.25 },
+  { id: "sc_cafe2",  room: "cafe",  e: "🧁",  x: 26, y: 93, s: 0.95 },
+  { id: "sc_cafe3",  room: "cafe",  e: "🪑",  x: 87, y: 84, s: 1.3  },
+  { id: "sc_cafe4",  room: "cafe",  e: "🪴",  x: 90, y: 44, s: 1.05 },
+  { id: "sc_hill1",  room: "hill",  e: "⛰️",  x: 80, y: 26, s: 1.7  },
+  { id: "sc_hill2",  room: "hill",  e: "🌲",  x: 10, y: 54, s: 1.45 },
+  { id: "sc_hill3",  room: "hill",  e: "🍂",  x: 21, y: 92, s: 1.0  },
+  { id: "sc_hill4",  room: "hill",  e: "🐿️",  x: 89, y: 76, s: 1.0  },
+  { id: "sc_pc1",    room: "pcbang", e: "🖥️", x: 87, y: 56, s: 1.45 },
+  { id: "sc_pc2",    room: "pcbang", e: "⌨️", x: 88, y: 86, s: 1.15 },
+  { id: "sc_pc3",    room: "pcbang", e: "🪑", x: 11, y: 84, s: 1.3  },
+  { id: "sc_pc4",    room: "pcbang", e: "🥤", x: 24, y: 93, s: 0.95 },
+  { id: "sc_pc5",    room: "pcbang", e: "🎧", x: 12, y: 55, s: 1.05 },
 ];
 
 // 벽지 — 방마다 따로 고를 수 있다
@@ -1286,8 +1481,33 @@ function pawsEarned() {
   return Math.max(1, Math.floor(items / 12) + Math.floor(bond / 3));
 }
 
-// 설비를 다 모으면 졸업할 수 있다
-const canGraduate = () => FURNITURE.every((f) => has(f.id));
+// 설비를 다 갖추고 갈 곳도 다 열면 졸업할 수 있다
+const canGraduate = () => FURNITURE.every((f) => has(f.id)) && PLACES.every((p) => has(p.id));
+
+/* 성장 — 함께 지낸 시간이 쌓이면 자란다. 가만히 둬도 자라지만 기분이 좋을수록,
+   그리고 돌봐준 만큼 더 빨리 큰다. 자라면 몸집이 커지고, 덜 보채고, 더 번다.
+   껐다 켠 시간도 그대로 반영되므로 오랜만에 오면 훌쩍 커 있다. */
+const STAGES = [
+  { id: "baby",  name: "아기",   ico: "🍼", at:   0, scale: 0.82, coin: 1.00, decay: 1.25, word: "아직 아기예요" },
+  { id: "child", name: "어린이", ico: "🌱", at:  70, scale: 0.93, coin: 1.12, decay: 1.10, word: "뛰어다니기 시작했어요" },
+  { id: "teen",  name: "청소년", ico: "🌤️", at: 220, scale: 1.04, coin: 1.28, decay: 1.00, word: "부쩍 컸어요" },
+  { id: "adult", name: "어른",   ico: "🌳", at: 520, scale: 1.14, coin: 1.50, decay: 0.85, word: "듬직해졌어요" },
+];
+const GROW_IDLE = 0.5;    // 분당 기본 성장치 — 기분이 좋으면 최대 1.5까지
+const GROW_CARE = 0.8;    // 한 번 돌볼 때마다 더해지는 성장치 (유대 경험치에 비례)
+const stageIdx = (g) => {
+  let i = 0;
+  for (let n = 0; n < STAGES.length; n++) if ((g || 0) >= STAGES[n].at) i = n;
+  return i;
+};
+const stageOf = (a) => STAGES[stageIdx(a.growth)];
+const stage = () => stageOf(S.pets[S.active]);
+// 다음 단계까지 얼마나 왔나 (0~1). 다 컸으면 1.
+function growProgress(a) {
+  const i = stageIdx(a.growth), next = STAGES[i + 1];
+  if (!next) return 1;
+  return clamp(((a.growth || 0) - STAGES[i].at) / (next.at - STAGES[i].at), 0, 1);
+}
 
 const BOND_STEPS = [50, 130, 260, 460, 760, 1200, 1800, 2600];
 const DECAY = { sat: 1.2 / 60, cln: 0.6 / 60, aff: 0.9 / 60 };   // 초당 감소
@@ -1320,6 +1540,8 @@ function newPet(type, name) {
     type, name,
     sat: 80, cln: 85, aff: 70,
     bondExp: 0,
+    growth: 0,          // 성장치 — 시간과 돌봄으로 쌓인다
+    stage: 0,           // 마지막으로 알린 성장 단계 (다 컸는지 판단이 아니라 알림용)
     asleep: false,
     wear: { head: null, body: null },
     buffs: {},          // { 채널키: { mult, left } }
@@ -1331,7 +1553,7 @@ function newPet(type, name) {
    활성 반려동물로 넘겨주는 접근자를 달아 둔다. 열거되지 않으므로 저장할 때
    pets 배열과 중복 기록되지도 않는다. */
 const DEFAULT_NAMES = ["복실이", "까망이"];
-const PET_FIELDS = ["type", "name", "sat", "cln", "aff", "bondExp", "asleep", "wear", "buffs", "cooldown"];
+const PET_FIELDS = ["type", "name", "sat", "cln", "aff", "bondExp", "growth", "stage", "asleep", "wear", "buffs", "cooldown"];
 function bindActive(st) {
   for (const k of PET_FIELDS) {
     Object.defineProperty(st, k, {
@@ -1408,7 +1630,8 @@ function decayRates() {
   const sleep = S.asleep ? SLEEP_DECAY * (has("blanket") ? 0.7 : 1) * (has("radio") ? 0.85 : 1) : 1;
   let cloth = 1;
   for (const o of worn()) if (o.decay) cloth *= o.decay;
-  const g = (has("garden") ? 0.8 : 1) * sleep * cloth;
+  // 아기일수록 자주 보채고, 다 크면 알아서 잘 지낸다
+  const g = (has("garden") ? 0.8 : 1) * sleep * cloth * stage().decay;
   return {
     sat: DECAY.sat * p.sat * (has("feeder")  ? 0.65 : 1) * (has("water")  ? 0.85 : 1) * (has("vitamin") ? 0.85 : 1) * g,
     cln: DECAY.cln * p.cln * (has("brush")   ? 0.60 : 1) * (has("mirror") ? 0.75 : 1) * g,
@@ -1432,6 +1655,7 @@ function coinMultiplier() {
   if (has("photo"))  m *= 1.1;
   if (has("garden")) m *= 1.5;
   m *= 1 + (bondLevel() - 1) * 0.1;
+  m *= stage().coin;                     // 자랄수록 제 몫을 한다
   m *= 1 + ALBUM.paws * PAW_BONUS;       // 지난 가족이 남긴 발도장
   for (const o of worn()) if (o.all) m *= o.all;
   if (happiness() >= 90) m *= 1.25;      // 최상 기분 보너스
@@ -1574,11 +1798,27 @@ function pickWish() {
     if (!it) return false;
     if (it.needs && !has(it.needs)) return false;
     if (it.cost && itemCost(it) > S.coins * 0.8) return false;
+    const g = CARE.find((c) => c.items.includes(it));
+    const rm = g && ROOMS.find((r) => r.id === g.room);
+    if (rm && rm.fee && S.coins < rm.fee) return false;   // 입장료도 못 내는데 부탁하면 놀리는 셈
     return true;
   });
   if (!pool.length) return null;
   const w = pool[Math.floor(Math.random() * pool.length)];
   return { item: w.item, text: w.text, left: WISH_TIME };
+}
+
+/* 한 단계 자랐다. 오프라인 정산 중에는 조용히 기록만 남기고, 돌아왔을 때
+   화면에서 축하한다 — 안 보는 사이에 떠들어봐야 소용이 없으므로. */
+let settling = false;
+function grewUp(a, idx) {
+  const s = STAGES[idx];
+  addLog(`${a.name}가 자랐다 — ${s.ico} ${s.name} · ${s.word}`);
+  if (settling) return;
+  Sound.sfx("buy");
+  say(`나 ${s.name} 됐어!`);
+  floatText(`${s.ico} ${s.name}!`, "var(--green)");
+  toast(`${a.name}가 ${s.ico} ${s.name}(으)로 자랐어요 — 수익 ×${s.coin}`);
 }
 
 function step(dt, efficiency = 1) {
@@ -1590,6 +1830,11 @@ function step(dt, efficiency = 1) {
     a.aff = clamp(a.aff - d.aff * dt, 0, 100);
     if (a.asleep && has("clock")) a.aff = clamp(a.aff + (0.4 / 60) * dt, 0, 100);
     if (happiness() >= 80) a.bondExp += 0.05 * dt;   // 행복을 유지하는 것만으로도 관계가 쌓인다
+
+    // 성장 — 시간이 흐르면 저절로, 기분이 좋으면 더 빨리
+    a.growth = (a.growth || 0) + (dt / 60) * (GROW_IDLE + happiness() / 100);
+    const st = stageIdx(a.growth);
+    if (st > (a.stage || 0)) { a.stage = st; grewUp(a, st); }
 
     // 버프와 쿨다운은 실제 시각이 아니라 경과 시간으로 센다 — 오프라인 정산에서도 그대로 동작하도록
     for (const k in a.buffs) {
@@ -1625,14 +1870,23 @@ function step(dt, efficiency = 1) {
 // 껐던 시간을 60초 단위로 되감는다. 게이지가 닳는 만큼 수익도 자연히 줄어든다.
 function settleOffline(seconds) {
   const before = S.coins;
+  const wasStage = S.pets.map((a) => stageIdx(a.growth));
   let left = Math.min(seconds, OFFLINE_CAP);
+  settling = true;
   while (left > 0) {
     const dt = Math.min(60, left);
     step(dt, OFFLINE_EFF);
     left -= dt;
   }
+  settling = false;
+  // 안 보는 사이에 자랐다면 돌아왔을 때 알려준다
+  S.pets.forEach((a, i) => {
+    const now = stageIdx(a.growth);
+    if (now > wasStage[i]) grownWhileAway.push(`${a.name} → ${STAGES[now].ico} ${STAGES[now].name}`);
+  });
   return Math.floor(S.coins - before);
 }
+let grownWhileAway = [];
 
 /* ===================== 액션 ===================== */
 
@@ -1653,11 +1907,25 @@ function canDo(it) {
 }
 
 function goRoom(id) {
+  const r = ROOMS.find((x) => x.id === id);
+  if (r && !roomOpen(r)) {              // 아직 못 가는 곳 — 어디서 여는지 알려준다
+    toast(`${r.icon} ${r.name}은 상점에서 🪙${fmt(r.cost)}에 열 수 있어요`);
+    tab = "shop";
+    syncTabs();
+    return;
+  }
   if (S.room === id) return;
+  // 입장료가 있는 곳 — 들어갈 때마다 낸다. 모자라면 못 들어간다.
+  if (r && r.fee) {
+    if (S.coins < r.fee) { toast(`${r.icon} ${r.name} 입장료 ${r.fee}코인이 모자라요`); return; }
+    S.coins -= r.fee;
+    addLog(`${r.name}에 들어갔다 — 입장료 ${r.fee}코인`);
+  }
   S.room = id;
   if (id !== "bedroom") S.asleep = false;   // 다른 방으로 데려가면 잠이 깬다
   Sound.setTrack(S.asleep ? "night" : "day");
   render();
+  if (r && r.fee) floatText(`🪙−${r.fee}`, "var(--ink-soft)");
   save();
 }
 
@@ -1685,13 +1953,17 @@ function checkWish(it) {
   S.wishIn = WISH_GAP[0] + Math.random() * (WISH_GAP[1] - WISH_GAP[0]);
 }
 
+/* 미니게임은 늘어난다 — 새로 하나 만들 때 여기에만 등록하면 나머지는 그대로 돈다 */
+const MINIGAMES = { minigame: playHideGame, minigame2: playCatchGame, minigame3: playRunGame };
+const isMinigame = (it) => !!(it.special && MINIGAMES[it.special]);
+
 function doCare(it) {
-  if (it.special === "minigame" || it.special === "minigame2") {
-    if (S.cooldown[it.id] > 0) return;
+  if (isMinigame(it)) {
+    if (S.cooldown[it.id] > 0 || (it.needs && !has(it.needs))) return;
     S.asleep = false;
     Sound.setTrack("day");
     checkWish(it);
-    (it.special === "minigame" ? playHideGame : playCatchGame)(it);
+    MINIGAMES[it.special](it);
     return;
   }
   // 재우기는 다른 돌보기와 흐름이 달라 먼저 빠져나간다 — 부탁 확인은 여기서 따로 해줘야 한다
@@ -1728,6 +2000,15 @@ function doCare(it) {
     if (real !== 0) gained.push({ k, real });
   }
   if (it.bond) S.bondExp += it.bond * scale;
+  S.growth = (S.growth || 0) + GROW_CARE * (it.bond || 1);   // 돌본 만큼 더 빨리 자란다
+
+  // 주워 오기 — 게이지와 상관없이 그날의 운. 밖에 나갈 이유를 하나 더 만든다.
+  let found = 0;
+  if (it.find) {
+    const [lo, hi] = it.find;
+    found = Math.round((lo + Math.random() * (hi - lo)) * coinMultiplier());
+    S.coins += found;
+  }
 
   // 품질 버프 — 더 좋은 걸 해줬으면 더 세거나 더 길게 걸린다. 약한 버프가 센 걸 덮어쓰지 않도록.
   if (it.buff) {
@@ -1746,6 +2027,7 @@ function doCare(it) {
       up ? CH_COLOR[g.k] : "var(--ink-soft)"), i * 140);
   });
   if (reward > 0) setTimeout(() => floatText(`🪙+${reward}`, "var(--gold)"), gained.length * 140);
+  if (found > 0) setTimeout(() => floatText(`🎁+${found}`, "var(--green)"), (gained.length + 1) * 140);
 
   if (it.cd) S.cooldown[it.id] = it.cd;
 
@@ -1753,6 +2035,7 @@ function doCare(it) {
   addLog(wasUrgent
     ? `제때 ${it.label} — 딱 필요했던 거라 ${reward}코인을 받았다 (${net >= 0 ? "+" : ""}${net})`
     : `${it.label} — ${reward}코인을 받았다 (${net >= 0 ? "+" : ""}${net})`);
+  if (found > 0) addLog(`${it.label} 하다가 뭔가를 주워 왔다 — +${found}코인`);
   if (it.buff) addLog(`${it.label} 덕분에 기분이 오래갔다 — ${CH_LABEL[it.ch]} 수익 ×${it.buff.mult}`);
 
   checkWish(it);
@@ -1780,6 +2063,20 @@ function reactionTo(it) {
     case "pet":       return S.type === "cat" ? "…한 번만 더." : "기분 최고!";
     case "treat":     return "이거 좋아해!";
     case "play":      return "더! 더!";
+    case "p_grass":   return "풀 냄새 좋다~";
+    case "p_friend":  return "또 만나기로 했어!";
+    case "p_fount":   return "물방울이 반짝반짝!";
+    case "s_wave":    return "파도가 밀어줘!";
+    case "s_sand":    return "여기가 내 집이야!";
+    case "s_shell":   return "이거 봐, 예쁘지?";
+    case "c_cake":    return "달다… 한 입만 더!";
+    case "c_meet":    return "여기 친구 많다!";
+    case "c_photo":   return "찰칵! 잘 나왔어?";
+    case "h_climb":   return "꼭대기까지 갔다 왔어!";
+    case "h_acorn":   return "이만큼 주웠어!";
+    case "h_stream":  return "물이 시원해~";
+    case "g_race":    return "내가 1등이야!";
+    case "g_ramen":   return "여기 라면이 제일 맛있어…";
     default:          return "고마워!";
   }
 }
@@ -2013,6 +2310,122 @@ function oneThrow(stage, zoneL, zoneW, sweep) {
   });
 }
 
+/* 🖥️ 달리기 게임 — PC방 모니터 안에서 그 아이가 직접 뛴다.
+   화면 속 캐릭터는 지금 입고 있는 옷까지 그대로인 우리 아이다. 남의 캐릭터로
+   하는 게임이면 반려동물 게임 안에 있을 이유가 없다.
+
+   장애물은 CSS로 화면을 가로지르고, 판정은 "우리 아이 자리에 닿는 순간 떠 있었나"
+   하나뿐이다. 그리기와 판정을 분리해 두면 애니메이션을 끈 환경에서도 똑같이 굴러간다. */
+const RUN_OBS = ["🌵", "🪨", "📦", "🛢️", "🌵"];
+const RUN_HITS = 8;              // 넘어야 할 장애물 수
+const RUN_AT = 0.73;             // 장애물이 우리 아이 자리(16%)에 닿는 시점
+const RUN_JUMP = 620;            // 점프 한 번에 걸리는 시간(ms)
+const RUN_AIR = [0.10, 0.86];    // 그중 실제로 발이 떠 있는 구간
+const RUN_PAY = 5;               // 하나 넘을 때마다 받는 코인
+
+async function playRunGame(it) {
+  const lv = bondLevel();
+  const travel = Math.max(1050, 1900 - lv * 70);   // 친밀도가 오를수록 빨라진다
+  const a = S.pets[S.active];
+  let cleared = 0, jumpAt = -1e9;
+
+  const ov = document.createElement("div");
+  ov.className = "overlay";
+  ov.innerHTML = `
+    <div class="modal">
+      <h2>🕹️ 달리기 게임</h2>
+      <p id="rg-msg">${a.name}가 달려요! 장애물이 오면 눌러서 뛰어넘기</p>
+      <div id="rg-screen">
+        <div id="rg-score">0 / ${RUN_HITS}</div>
+        <div class="rg-ground"></div>
+        <div id="rg-pet">${petLook(a)}</div>
+      </div>
+      <div id="cg-dots"></div>
+      <button class="big" id="rg-go">점프!</button>
+      <div class="sub"><button id="rg-quit">그만하기</button></div>
+    </div>`;
+  document.body.appendChild(ov);
+
+  const screen = ov.querySelector("#rg-screen");
+  const petEl = ov.querySelector("#rg-pet");
+  const msg = ov.querySelector("#rg-msg");
+  const dots = ov.querySelector("#cg-dots");
+  const go = ov.querySelector("#rg-go");
+  const log = [];
+  const paint = (n) => {
+    dots.innerHTML = Array.from({ length: RUN_HITS }, (_, i) =>
+      `<span class="${i < n ? (log[i] ? "ok" : "no") : ""}"></span>`).join("");
+  };
+  paint(0);
+
+  const jump = () => {
+    if (performance.now() - jumpAt < RUN_JUMP) return;   // 공중에서 두 번 뛰지는 못한다
+    jumpAt = performance.now();
+    petEl.classList.remove("jump"); void petEl.offsetWidth; petEl.classList.add("jump");
+    Sound.sfx("care");
+  };
+  const key = (e) => { if (e.code === "Space" || e.key === " ") { e.preventDefault(); jump(); } };
+  go.onclick = jump;
+  screen.onclick = jump;
+  document.addEventListener("keydown", key);
+
+  let quit = false;
+  const done = () => { document.removeEventListener("keydown", key); };
+  ov.querySelector("#rg-quit").onclick = () => { quit = true; done(); ov.remove(); };
+
+  await wait(500);
+  for (let r = 0; r < RUN_HITS && !quit; r++) {
+    const ob = document.createElement("div");
+    ob.className = "rg-ob";
+    ob.textContent = RUN_OBS[Math.floor(Math.random() * RUN_OBS.length)];
+    ob.style.animationDuration = travel + "ms";
+    screen.appendChild(ob);
+
+    await wait(travel * RUN_AT);
+    if (quit) return;
+    const air = performance.now() - jumpAt;
+    const ok = air >= RUN_JUMP * RUN_AIR[0] && air <= RUN_JUMP * RUN_AIR[1];
+    log[r] = ok;
+    if (ok) { cleared++; Sound.sfx("wish"); }
+    else {
+      petEl.classList.remove("bump"); void petEl.offsetWidth; petEl.classList.add("bump");
+      ob.style.animationPlayState = "paused";
+    }
+    paint(r + 1);
+    ov.querySelector("#rg-score").textContent = `${cleared} / ${RUN_HITS}`;
+    msg.textContent = ok ? "훌쩍!" : "앗, 부딪혔다!";
+
+    await wait(travel * (1 - RUN_AT) + 260);
+    ob.remove();
+    petEl.classList.remove("bump");
+  }
+  if (quit) return;
+  done();
+
+  let coins = Math.round(cleared * RUN_PAY * coinMultiplier());
+  S.coins += coins;
+  a.aff = clamp(a.aff + 2.5 * cleared + (cleared === RUN_HITS ? 8 : 0), 0, 100);
+  a.bondExp += 2 * cleared + (cleared === RUN_HITS ? 8 : 0);
+  S.growth = (S.growth || 0) + 2 * cleared;
+
+  msg.innerHTML = cleared === RUN_HITS
+    ? `여덟 개 전부 넘었어요! <b style="color:var(--gold)">+${fmt(coins)}코인</b>`
+    : cleared > 0
+      ? `${cleared}개 넘었어요 <b style="color:var(--gold)">+${fmt(coins)}코인</b>`
+      : "한 개도 못 넘었네요… 다음엔 더 잘할 거예요";
+  addLog(`달리기 게임 — ${cleared}/${RUN_HITS} 성공 · +${fmt(coins)}코인`);
+  if (coins > 0) floatText(`🪙+${fmt(coins)}`, "var(--gold)");
+  showPose("play");
+
+  go.textContent = "닫기";
+  go.onclick = () => ov.remove();
+  screen.onclick = null;
+  ov.querySelector(".sub").hidden = true;
+  S.cooldown[it.id] = it.cd;
+  render();
+  save();
+}
+
 async function playCatchGame(it) {
   const lv = bondLevel();
   const sweep = Math.max(700, 1250 - lv * 55);   // 친밀도가 오를수록 빨라진다
@@ -2104,10 +2517,14 @@ function buy(item) {
     if (idx >= 0) S.pets[idx].wear[item.slot] = item.id;
   }
   if (item.kind === "wall") S.walls[S.room] = item.id;
-  addLog(`${item.name}을(를) 샀다 — ${item.cost}코인`);
+  // 새로 연 장소는 바로 데려간다 — 산 보람이 그 자리에서 보이도록
+  if (item.kind === "place") { S.room = item.id; S.asleep = false; tab = "care"; syncTabs(); }
+  addLog(item.kind === "place"
+    ? `${item.name}에 갈 수 있게 됐다 — ${item.cost}코인`
+    : `${item.name}을(를) 샀다 — ${item.cost}코인`);
   Sound.sfx("buy");
-  say(`${item.name}이다!`);
-  floatText("✨ 새 용품!", "var(--green)");
+  say(item.kind === "place" ? `여기가 ${item.name}이구나!` : `${item.name}이다!`);
+  floatText(item.kind === "place" ? "🚗 새로운 곳!" : "✨ 새 용품!", "var(--green)");
   render();
   save();
 }
@@ -2160,17 +2577,31 @@ function addLog(text) {
 /* --- 방 --- */
 const roomEls = new Map();
 
+// 집 안과 바깥을 두 줄로 나눈다 — 집에만 있으면 갈 곳이 있는 줄도 모르므로
+// 아직 못 여는 곳도 값과 함께 보여준다.
 function buildRooms() {
   const box = $("rooms");
   box.innerHTML = "";
   roomEls.clear();
-  for (const r of ROOMS) {
-    const b = document.createElement("button");
-    b.innerHTML = `<span class="ri">${r.icon}</span><span class="rn">${r.name}</span><span class="dot" hidden></span>`;
-    b.title = r.name;
-    b.onclick = () => goRoom(r.id);
-    box.appendChild(b);
-    roomEls.set(r.id, { btn: b, dot: b.querySelector(".dot") });
+  for (const row of [{ label: "🏠 집 안", list: HOME_ROOMS },
+                     { label: "🚗 나들이", list: OUT_ROOMS }]) {
+    const lb = document.createElement("div");
+    lb.className = "rlabel";
+    lb.textContent = row.label;
+    box.appendChild(lb);
+
+    const rr = document.createElement("div");
+    rr.className = "rrow";
+    for (const r of row.list) {
+      const b = document.createElement("button");
+      b.innerHTML = `<span class="ri">${r.icon}</span><span class="rn"></span>`
+        + `<span class="dot" hidden></span>`
+        + (r.fee ? `<span class="fee">🪙${r.fee}</span>` : "");
+      b.onclick = () => goRoom(r.id);
+      rr.appendChild(b);
+      roomEls.set(r.id, { btn: b, dot: b.querySelector(".dot"), nm: b.querySelector(".rn") });
+    }
+    box.appendChild(rr);
   }
   updateRooms();
 }
@@ -2181,13 +2612,18 @@ function updateRooms() {
   for (const r of ROOMS) {
     const el = roomEls.get(r.id);
     if (!el) continue;
+    const open = roomOpen(r);
     el.btn.classList.toggle("on", S.room === r.id);
+    el.btn.classList.toggle("locked", !open);
+    el.nm.textContent = open ? r.name : "🪙" + fmt(r.cost);
+    el.btn.title = open ? r.name : `${r.name} — 상점에서 열 수 있어요`;
+
     let want = u && r.care === u;
     if (S.wish) {                       // 부탁이 있는 방에도 점을 찍는다
       const g = CARE.find((c) => c.items.some((x) => x.id === S.wish.item));
       if (g && g.room === r.id) want = true;
     }
-    el.dot.hidden = !want;
+    el.dot.hidden = !want || !open;
   }
 }
 
@@ -2207,6 +2643,23 @@ function renderRoom() {
   bg.style.setProperty("--w2", wp.w2 || r.w2);
   bg.style.setProperty("--f1", r.f1);
   bg.style.setProperty("--f2", r.f2);
+  $("room").querySelector(".rug").hidden = !!r.outdoor;   // 밖에는 러그가 없다
+
+  // 나들이 장소의 풍경 — 가구와 같은 방식으로, 그 장소에 있을 때만
+  for (const s of SCENERY) {
+    const el = $("scen-" + s.id);
+    if (s.room !== S.room) { if (el) el.remove(); continue; }
+    if (el) continue;
+    const d = document.createElement("div");
+    d.className = "furn scen";
+    d.id = "scen-" + s.id;
+    d.textContent = s.e;
+    d.style.left = s.x + "%";
+    d.style.top = s.y + "%";
+    d.style.fontSize = Math.round(26 * (s.s || 1)) + "px";
+    $("room").insertBefore(d, $("bubble"));
+  }
+
   for (const f of FURNITURE) {
     const exists = $("furn-" + f.id);
     if (!shown(f.id) || f.room !== S.room) { if (exists) exists.remove(); continue; }
@@ -2224,6 +2677,16 @@ function renderRoom() {
   renderPets();
 }
 
+// 지금 이 아이의 겉모습 SVG — 방에서도, 미니게임 화면에서도 같은 모습이어야 한다
+function petLook(a) {
+  const layer = (id, fit) => {
+    if (!id || !ACC_ART[id]) return "";
+    const [dx, dy] = fit[a.type] || [0, 0];
+    return art(`<g transform="translate(${dx} ${dy})">${ACC_ART[id]}</g>`);
+  };
+  return PET_ART[a.type] + layer(a.wear.body, BODY_FIT) + layer(a.wear.head, ACC_FIT);
+}
+
 // 여러 마리면 나란히 세운다. 누르면 그 아이가 활성이 되고, 활성인 아이만 앞에 선다.
 function renderPets() {
   const box = $("pets");
@@ -2238,21 +2701,17 @@ function renderPets() {
     }
     const look = `${a.type}/${a.wear.body || ""}/${a.wear.head || ""}/${a.asleep ? "z" : ""}`;
     if (el.dataset.look !== look) {     // SVG 다시 파싱하지 않도록 겉모습이 바뀔 때만
-      const layer = (id, fit) => {
-        if (!id || !ACC_ART[id]) return "";
-        const [dx, dy] = fit[a.type] || [0, 0];
-        return art(`<g transform="translate(${dx} ${dy})">${ACC_ART[id]}</g>`);
-      };
       const props = [...el.querySelectorAll(".prop")];   // 하던 동작은 지우지 않는다
-      el.innerHTML = PET_ART[a.type] + layer(a.wear.body, BODY_FIT) + layer(a.wear.head, ACC_FIT)
-        + (a.asleep ? art(closedEyes(a.type) + PROPS.zzz) : "");
+      el.innerHTML = petLook(a) + (a.asleep ? art(closedEyes(a.type) + PROPS.zzz) : "");
       props.forEach((x) => el.appendChild(x));
       el.dataset.look = look;
     }
     el.classList.toggle("sleeping", a.asleep);
     el.style.left = (a.wander || spots[i]) + "%";
     el.classList.toggle("on", i === S.active);
-    el.title = a.name;
+    const sg = stageOf(a);
+    el.style.setProperty("--gs", sg.scale);   // 자란 만큼 커진다
+    el.title = `${a.name} · ${sg.ico} ${sg.name}`;
   });
   while (box.children.length > S.pets.length) box.lastChild.remove();
 }
@@ -2315,10 +2774,16 @@ function renderTop() {
   $("rate").textContent = perMin > 0 ? `분당 +${perMin.toFixed(1)}` : "기분이 나빠서 수익 없음";
   $("rate").style.color = perMin > 0 ? "var(--ink-soft)" : "var(--pink)";
   $("paws").textContent = ALBUM.paws ? `🐾 ${ALBUM.paws}` : "";
+  const sg = stage(), a = S.pets[S.active];
   $("bondtext").textContent = S.pets.length > 1
-    ? `♡ ${S.name} Lv.${bondLevel()}`
-    : `♡ 친밀도 Lv.${bondLevel()}`;
+    ? `${sg.ico} ${S.name} · ♡ Lv.${bondLevel()}`
+    : `${sg.ico} ${sg.name} · ♡ Lv.${bondLevel()}`;
+  $("bondtext").title = STAGES[STAGES.length - 1] === sg
+    ? `${sg.name} — 다 컸어요 (수익 ×${sg.coin})`
+    : `${sg.name} — 다음 단계까지 ${Math.round(growProgress(a) * 100)}% (수익 ×${sg.coin})`;
   $("bondbar").firstElementChild.style.width = (bondProgress() * 100) + "%";
+  // 친밀도 막대 아래에 성장 막대를 겹쳐 둔다 — 오늘 얼마나 컸는지 보이도록
+  $("growbar").firstElementChild.style.width = (growProgress(a) * 100) + "%";
 }
 
 /* --- 수입 내역 --- */
@@ -2369,6 +2834,14 @@ function updateIncome() {
 /* --- 돌보기 --- */
 const careEls = new Map();
 
+// 왜 못 하는지 — 설비가 없어서인지, 아직 못 여는 곳이라서인지
+function lockNote(it) {
+  const p = PLACES.find((x) => x.id === it.needs);
+  if (p) return `${p.icon} ${p.name} 필요`;
+  const f = FURNITURE.find((x) => x.id === it.needs);
+  return f ? `${f.name} 필요` : "아직 못 해요";
+}
+
 function buildCare() {
   const box = $("care");
   box.innerHTML = "";
@@ -2418,7 +2891,7 @@ function updateCare() {
   for (const it of ALL_ITEMS) {
     const el = careEls.get(it.id);
     if (!el) continue;
-    if (it.special === "minigame" || it.special === "minigame2") {
+    if (isMinigame(it)) {
       const cd = S.cooldown[it.id];
       el.n.textContent = it.label;
       el.c.textContent = cd > 0 ? Math.ceil(cd) + "초" : "무료";
@@ -2462,7 +2935,7 @@ function updateCare() {
     el.p.classList.toggle("zero", reward <= 0);
 
     el.bf.textContent = locked
-      ? "장난감 필요"
+      ? lockNote(it)
       : it.buff ? `${CH_LABEL[it.ch]}수익 ×${it.buff.mult} ${Math.round(it.buff.secs / 60)}분`
                 : (it.note || "");
 
@@ -2484,8 +2957,35 @@ function buildShop() {
       <div class="g-d"></div>
       <button id="gradbtn">앨범에 남기고 새로 시작</button>
     </div>
-    <div class="sect">설비 — 한 번 사면 계속 남고, 그 방에 놓입니다</div>`;
+    <div class="sect">나들이 — 열어두면 언제든 갈 수 있고, 거기서만 할 일이 셋씩 생겨요</div>`;
   shopEls.clear();
+
+  {
+    const head = document.createElement("div");
+    head.className = "shophead";
+    head.innerHTML = `<span>🚗 갈 수 있는 곳</span><b></b>`;
+    box.appendChild(head);
+
+    const grid = document.createElement("div");
+    grid.className = "shopgrid";
+    for (const p of PLACES) {
+      const b = document.createElement("button");
+      b.innerHTML = `
+        <span class="e">${p.icon}</span>
+        <span class="n">${p.name}</span>
+        <span class="d">${p.desc}</span>
+        <span class="c"></span>`;
+      b.title = `${p.name} — ${p.desc}`;
+      b.onclick = () => buy({ ...p, kind: "place" });
+      grid.appendChild(b);
+      shopEls.set(p.id, { btn: b, c: b.querySelector(".c") });
+    }
+    box.appendChild(grid);
+    shopEls.set("head:places", { count: head.querySelector("b"), total: PLACES.length });
+  }
+
+  box.insertAdjacentHTML("beforeend",
+    `<div class="sect">설비 — 한 번 사면 계속 남고, 그 방에 놓입니다</div>`);
 
   // 어느 방에 놓일 물건인지가 곧 무엇에 쓰는 물건인지다. 방별로 묶고, 그 안에서 싼 것부터.
   for (const r of ROOMS) {
@@ -2597,6 +3097,19 @@ function updateShop() {
     const got = FURNITURE.filter((f) => f.room === r.id && has(f.id)).length;
     h.count.textContent = `${got} / ${h.total}`;
   }
+
+  for (const p of PLACES) {
+    const el = shopEls.get(p.id);
+    if (!el) continue;
+    const owned = has(p.id), afford = S.coins >= p.cost;
+    if (!owned && afford) anyBuyable = true;
+    el.c.textContent = owned ? "✓ 갈 수 있어요" : "🪙 " + fmt(p.cost);
+    el.btn.classList.toggle("done", owned);
+    el.btn.classList.toggle("buyable", !owned && afford);
+    el.btn.disabled = owned || !afford;
+  }
+  const ph = shopEls.get("head:places");
+  if (ph) ph.count.textContent = `${PLACES.filter((p) => has(p.id)).length} / ${ph.total}`;
 
   for (const o of OUTFITS) {
     const el = shopEls.get(o.id);
@@ -3080,6 +3593,7 @@ function showReport(seconds, earned) {
         🪙 그동안 모은 코인 <b>+${fmt(earned)}</b><br>
         😊 지금 기분 <b>${Math.round(happiness())}</b> · ${mood().text}
         ${u ? `<br>❗ 지금 제일 필요한 건 <b>${CH_LABEL[u]} ${CHANNELS.find((c) => c.k === u).need}</b>` : ""}
+        ${grownWhileAway.length ? `<br>🌱 그 사이에 자랐어요 — <b>${grownWhileAway.join(", ")}</b>` : ""}
       </div>
       <div class="report" style="font-size:12px;color:var(--ink-soft);line-height:1.8">
         ${did.map((d) => "· " + d).join("<br>")}
@@ -3087,6 +3601,7 @@ function showReport(seconds, earned) {
       <button class="big" id="ok">다녀왔어!</button>
     </div>`;
   document.body.appendChild(ov);
+  grownWhileAway = [];
   $("ok").onclick = () => ov.remove();
 }
 
@@ -3481,27 +3996,34 @@ async function drawPhoto() {
   ctx.fillStyle = "rgba(122,96,68,.16)";
   ctx.fillRect(pad, floorY - 7, cw, 7);
 
-  // 러그
-  ctx.fillStyle = "rgba(236,216,188,.85)";
-  ctx.beginPath();
-  ctx.ellipse(W / 2, pad + ch * 0.9, cw * (S.pets.length > 1 ? 0.4 : 0.3), ch * 0.11, 0, 0, Math.PI * 2);
-  ctx.fill();
+  // 러그 — 밖에서는 그리지 않는다
+  if (!room.outdoor) {
+    ctx.fillStyle = "rgba(236,216,188,.85)";
+    ctx.beginPath();
+    ctx.ellipse(W / 2, pad + ch * 0.9, cw * (S.pets.length > 1 ? 0.4 : 0.3), ch * 0.11, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
 
-  // 가구
+  // 가구와 풍경 — 화면에 보이는 것이 사진에도 그대로 나와야 한다
   ctx.textAlign = "center"; ctx.textBaseline = "middle";
-  for (const f of FURNITURE) {
-    if (!shown(f.id) || f.room !== S.room) continue;
-    const sz = Math.round(46 * (f.s || 1));
+  const decor = [
+    ...SCENERY.filter((s) => s.room === S.room).map((s) => ({ e: s.e, x: s.x, y: s.y, s: s.s })),
+    ...FURNITURE.filter((f) => shown(f.id) && f.room === S.room)
+                .map((f) => ({ e: f.emoji, x: f.x, y: f.y, s: f.s })),
+  ];
+  for (const d of decor) {
+    const sz = Math.round(46 * (d.s || 1));
     ctx.font = `${sz}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
-    ctx.fillText(f.emoji, pad + (cw * f.x) / 100, pad + (ch * f.y) / 100);
+    ctx.fillText(d.e, pad + (cw * d.x) / 100, pad + (ch * d.y) / 100);
   }
 
   // 반려동물 — 여러 마리면 나란히, 옷까지 그대로
   const many = S.pets.length > 1;
-  const petSize = Math.round(cw * (many ? 0.38 : 0.42));
+  const baseSize = cw * (many ? 0.38 : 0.42);
   const spots = many ? [0.36, 0.64] : [0.5];
   for (let i = 0; i < S.pets.length; i++) {
     const a = S.pets[i];
+    const petSize = Math.round(baseSize * stageOf(a).scale);   // 자란 만큼 사진에도 크게
     const px = pad + cw * spots[i] - petSize / 2;
     const py = pad + ch * 0.66 - petSize / 2;
     const layers = [PET_ART[a.type]];
@@ -3526,7 +4048,8 @@ async function drawPhoto() {
   ctx.fillStyle = "#907a63";
   ctx.font = '700 20px "Apple SD Gothic Neo","Malgun Gothic",sans-serif';
   const lv = S.pets.map((a, i) => { const q = S.active; S.active = i; const v = bondLevel(); S.active = q; return v; });
-  ctx.fillText(`${room.icon} ${room.name} · 함께한 지 ${days}일 · 친밀도 Lv.${lv.join("/")}`, pad + 6, H - 10);
+  const sgs = S.pets.map((a) => `${stageOf(a).ico}${stageOf(a).name}`).join("/");
+  ctx.fillText(`${room.icon} ${room.name} · 함께한 지 ${days}일 · ${sgs} · 친밀도 Lv.${lv.join("/")}`, pad + 6, H - 10);
   ctx.textAlign = "right";
   ctx.fillStyle = "#d9a441";
   ctx.font = '800 22px "Apple SD Gothic Neo","Malgun Gothic",sans-serif';
@@ -3583,6 +4106,12 @@ function adoptSave(obj) {
     if (a.wear.body === undefined) a.wear.body = null;
     a.buffs = a.buffs || {};
     a.cooldown = a.cooldown || {};
+    // 성장이 없던 시절의 기록 — 함께한 날수만큼은 이미 자란 것으로 쳐준다
+    if (a.growth === undefined) {
+      const days = Math.max(0, (Date.now() - (S.born || Date.now())) / 86400000);
+      a.growth = Math.min(STAGES[STAGES.length - 1].at, days * 260);
+    }
+    a.stage = stageIdx(a.growth);
   }
   bindActive(S);
   S.log = S.log || [];
@@ -3590,6 +4119,11 @@ function adoptSave(obj) {
   S.walls = S.walls || {};
   S.stored = S.stored || {};
   S.owned = S.owned || {};
+  // 아직 못 여는 곳에 저장돼 있으면 거실로 돌린다 (기록을 지운 뒤 이어 열 때)
+  {
+    const r = ROOMS.find((x) => x.id === S.room);
+    if (!r || !roomOpen(r)) S.room = "living";
+  }
   delete S.outfit;
   if (S.wish === undefined) S.wish = null;
   if (S.wishIn === undefined) S.wishIn = 40;
