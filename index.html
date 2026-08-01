@@ -559,49 +559,135 @@ const BODY_FIT = {
 };
 
 const ACC_ART = {
-  b_tee:
-    `<path d="M33 107 q0 -25 27 -25 q27 0 27 25 z" fill="#eaf3f8"/>` +
-    `<path d="M35 92 q25 7 50 0" stroke="#6aa8d8" stroke-width="5.5"/>` +
-    `<path d="M34 101 q26 7 52 0" stroke="#6aa8d8" stroke-width="5.5"/>` +
-    `<path d="M47 84 q13 8 26 0" stroke-width="4"/>`,
-  b_rain:
-    `<path d="M32 107 q0 -26 28 -26 q28 0 28 26 z" fill="#f8d456"/>` +
-    `<path d="M60 81 v26" stroke-width="4"/>` +
-    `<path d="M44 83 q16 9 32 0" stroke-width="4"/>` +
-    `<circle cx="53" cy="93" r="2.6" fill="${OUT}" stroke="none"/>` +
-    `<circle cx="53" cy="101" r="2.6" fill="${OUT}" stroke="none"/>`,
-  b_knit:
-    `<path d="M33 107 q0 -25 27 -25 q27 0 27 25 z" fill="#d98f7e"/>` +
-    `<path d="M45 82 q15 9 30 0 q-2 8 -15 8 q-13 0 -15 -8 z" fill="#c47a69"/>` +
-    `<path d="M40 95 q7 -5 14 0 q7 5 14 0 q7 -5 13 0" stroke="#b86f5e" stroke-width="3.2"/>` +
-    `<path d="M40 103 q7 -5 14 0 q7 5 14 0 q7 -5 13 0" stroke="#b86f5e" stroke-width="3.2"/>`,
-  b_cape:
-    `<path d="M40 80 q-24 15 -20 36 q11 5 20 0 z" fill="#e2607a"/>` +
-    `<path d="M80 80 q24 15 20 36 q-11 5 -20 0 z" fill="#e2607a"/>` +
-    `<path d="M43 79 q17 -7 34 0" stroke-width="5"/>` +
-    `<circle cx="60" cy="79" r="4.6" fill="#f7cf58"/>`,
-
+  /* ---------- 🎀 머리 ---------- */
   o_ribbon:
-    `<path d="M84 22 q-13 -9 -14 2 q1 11 14 2 z" fill="#f79bb2"/>` +
-    `<path d="M84 22 q13 -9 14 2 q-1 11 -14 2 z" fill="#f79bb2"/>` +
-    `<circle cx="84" cy="24" r="4.6" fill="#ea7a97"/>`,
+    `<path d="M83 27 q-5 11 -2 16" stroke="#ef8aa4" stroke-width="6"/>` +
+    `<path d="M87 27 q5 11 3 16" stroke="#ef8aa4" stroke-width="6"/>` +
+    `<path d="M85 22 q-15 -11 -16 2 q1 13 16 3 z" fill="#f79bb2"/>` +
+    `<path d="M85 22 q15 -11 16 2 q-1 13 -16 3 z" fill="#f79bb2"/>` +
+    `<circle cx="85" cy="24" r="4.8" fill="#ea7a97"/>` +
+    `<ellipse cx="76" cy="18" rx="4.5" ry="2.4" fill="#fff" opacity=".5" stroke="none" transform="rotate(-22 76 18)"/>`,
+
   o_flower:
-    `<g fill="#fbf6fc">` +
-    `<circle cx="88" cy="6" r="6.2"/><circle cx="98" cy="13" r="6.2"/>` +
-    `<circle cx="94" cy="24" r="6.2"/><circle cx="82" cy="24" r="6.2"/>` +
-    `<circle cx="78" cy="13" r="6.2"/></g>` +
-    `<circle cx="88" cy="15" r="5" fill="#f7cf58"/>`,
+    `<path d="M74 30 q-9 3 -12 11 q9 1 13 -7 z" fill="#8dc98a"/>` +
+    `<g fill="#fdf8fd">` +
+    `<circle cx="88" cy="5" r="6.6"/><circle cx="99" cy="13" r="6.6"/>` +
+    `<circle cx="95" cy="25" r="6.6"/><circle cx="81" cy="25" r="6.6"/>` +
+    `<circle cx="77" cy="13" r="6.6"/></g>` +
+    `<circle cx="88" cy="15" r="5.2" fill="#f7cf58"/>` +
+    `<circle cx="86" cy="13" r="1.8" fill="#fff" opacity=".7" stroke="none"/>`,
+
   o_cap:
-    `<path d="M34 19 q26 -24 52 0 z" fill="#6bb6de"/>` +
-    `<path d="M86 19 q17 1 16 8 q-17 1 -16 -8 z" fill="#559dc4"/>` +
-    `<path d="M32 19 h55" stroke-width="5"/>`,
+    `<path d="M34 20 q26 -27 52 0 z" fill="#6bb6de"/>` +
+    `<path d="M86 20 q18 1 17 8 q-18 2 -17 -8 z" fill="#4f95bd"/>` +
+    `<path d="M32 20 h56" stroke-width="5"/>` +
+    `<circle cx="60" cy="4" r="3.6" fill="#4f95bd"/>` +
+    `<path d="M44 14 q8 -9 18 -10" stroke="#fff" stroke-opacity=".45" stroke-width="4"/>`,
+
+  o_straw:
+    `<ellipse cx="60" cy="21" rx="43" ry="9.5" fill="#f2dca6"/>` +
+    `<path d="M40 21 q3 -24 20 -24 q17 0 20 24 z" fill="#f8e8c2"/>` +
+    `<path d="M40 17 q20 8 40 0" stroke="#dd9c62" stroke-width="6"/>` +
+    `<path d="M23 21 q37 7 74 0" stroke="#e2c489" stroke-width="2.6"/>`,
+
   o_glass:
-    `<circle cx="46" cy="44" r="13" fill="#d4ecf7" fill-opacity=".5"/>` +
-    `<circle cx="74" cy="44" r="13" fill="#d4ecf7" fill-opacity=".5"/>` +
-    `<path d="M60 43 h0.5 M32 40 l-9 -3 M88 40 l9 -3" stroke-width="4"/>`,
+    `<circle cx="46" cy="44" r="13.5" fill="#d9eef8" fill-opacity=".55"/>` +
+    `<circle cx="74" cy="44" r="13.5" fill="#d9eef8" fill-opacity=".55"/>` +
+    `<path d="M60 43 h0.5 M31 40 l-9 -4 M89 40 l9 -4" stroke-width="4"/>` +
+    `<path d="M40 39 q5 -5 11 -5 M68 39 q5 -5 11 -5" stroke="#fff" stroke-opacity=".75" stroke-width="3.4"/>`,
+
+  o_sun:
+    `<path d="M29 37 q16 -5 27 0 v9 q0 9 -13.5 9 q-13.5 0 -13.5 -9 z" fill="#4a4058"/>` +
+    `<path d="M64 37 q16 -5 27 0 v9 q0 9 -13.5 9 q-13.5 0 -13.5 -9 z" fill="#4a4058"/>` +
+    `<path d="M56 40 q4 -3 8 0" stroke-width="4"/>` +
+    `<path d="M27 36 l-6 -3 M93 36 l6 -3" stroke-width="4"/>` +
+    `<path d="M34 41 q5 -4 10 -4 M69 41 q5 -4 10 -4" stroke="#fff" stroke-opacity=".5" stroke-width="3.4"/>`,
+
+  o_beret:
+    `<path d="M31 21 q5 -23 30 -23 q26 0 25 23 q-27 8 -55 0 z" fill="#d9697d"/>` +
+    `<path d="M31 21 q27 8 55 0" stroke-width="4.4"/>` +
+    `<circle cx="79" cy="0" r="4.6" fill="#c2566a"/>` +
+    `<path d="M42 10 q8 -9 18 -10" stroke="#fff" stroke-opacity=".35" stroke-width="4"/>`,
+
+  o_santa:
+    `<path d="M32 22 q4 -27 28 -27 q14 7 32 19 z" fill="#e0554f"/>` +
+    `<ellipse cx="60" cy="22" rx="32" ry="8" fill="#fdf6ec"/>` +
+    `<circle cx="90" cy="13" r="7.5" fill="#fdf6ec"/>` +
+    `<path d="M42 8 q7 -8 16 -9" stroke="#fff" stroke-opacity=".3" stroke-width="4"/>`,
+
   o_crown:
-    `<path d="M39 23 L45 3 L52 14 L60 0 L68 14 L75 3 L81 23 z" fill="#f7cf58"/>` +
-    `<circle cx="60" cy="10" r="3.2" fill="#ef7b93" stroke="none"/>`,
+    `<path d="M39 24 L45 3 L52 15 L60 0 L68 15 L75 3 L81 24 z" fill="#f7cf58"/>` +
+    `<path d="M39 24 q21 5 42 0" stroke-width="4.4"/>` +
+    `<circle cx="60" cy="10" r="3.4" fill="#ef7b93" stroke="none"/>` +
+    `<circle cx="46" cy="13" r="2.4" fill="#7fc2e0" stroke="none"/>` +
+    `<circle cx="74" cy="13" r="2.4" fill="#7fc2e0" stroke="none"/>`,
+
+  /* ---------- 👕 몸 ----------
+     옷단은 y≈99에서 끊는다. 더 내리면 앞발을 덮어버려 통짜 덩어리로 보인다. */
+  b_tee:
+    `<path d="M34 99 q0 -21 26 -21 q26 0 26 21 q-26 5 -52 0 z" fill="#eef5fa"/>` +
+    `<path d="M35 88 q25 6 50 0" stroke="#6aa8d8" stroke-width="5"/>` +
+    `<path d="M35 96 q25 6 50 0" stroke="#6aa8d8" stroke-width="5"/>` +
+    `<path d="M48 80 q12 8 24 0" stroke-width="4"/>`,
+
+  b_pajama:
+    `<path d="M34 99 q0 -21 26 -21 q26 0 26 21 q-26 5 -52 0 z" fill="#c8dff0"/>` +
+    `<path d="M48 79 q12 8 24 0 l-3 -5 q-9 4 -18 0 z" fill="#a6c8e2"/>` +
+    `<path d="M60 81 v20" stroke-width="3.4"/>` +
+    `<g fill="#8fb6d6" stroke="none">` +
+    `<circle cx="45" cy="88" r="2.5"/><circle cx="75" cy="88" r="2.5"/>` +
+    `<circle cx="40" cy="96" r="2.5"/><circle cx="80" cy="96" r="2.5"/>` +
+    `<circle cx="51" cy="95" r="2.5"/><circle cx="69" cy="95" r="2.5"/></g>`,
+
+  b_rain:
+    `<path d="M33 100 q0 -22 27 -22 q27 0 27 22 q-27 5 -54 0 z" fill="#f8d456"/>` +
+    `<path d="M45 79 q15 9 30 0 l-3 -5 q-12 5 -24 0 z" fill="#e8bf3e"/>` +
+    `<path d="M60 80 v21" stroke-width="3.4"/>` +
+    `<circle cx="52" cy="88" r="2.8" fill="${OUT}" stroke="none"/>` +
+    `<circle cx="52" cy="96" r="2.8" fill="${OUT}" stroke="none"/>` +
+    `<path d="M37 93 q6 -4 11 0" stroke="#e8bf3e" stroke-width="3.4"/>`,
+
+  b_overall:
+    `<path d="M35 99 q0 -19 25 -19 q25 0 25 19 q-25 5 -50 0 z" fill="#7fa8d4"/>` +
+    `<path d="M48 83 v-6 M72 83 v-6" stroke="#7fa8d4" stroke-width="7"/>` +
+    `<path d="M48 83 v-6 M72 83 v-6" stroke-width="4"/>` +
+    `<path d="M51 87 h18 v10 h-18 z" fill="#6a92bd"/>` +
+    `<circle cx="48" cy="84" r="2.6" fill="#f7cf58" stroke="none"/>` +
+    `<circle cx="72" cy="84" r="2.6" fill="#f7cf58" stroke="none"/>`,
+
+  b_knit:
+    `<path d="M34 99 q0 -21 26 -21 q26 0 26 21 q-26 5 -52 0 z" fill="#dd9484"/>` +
+    `<path d="M46 78 q14 9 28 0 q-2 9 -14 9 q-12 0 -14 -9 z" fill="#c47a69"/>` +
+    `<path d="M39 90 q7 -5 14 0 q7 5 14 0 q7 -5 14 0" stroke="#b86f5e" stroke-width="3.4"/>` +
+    `<path d="M39 97 q7 -5 14 0 q7 5 14 0 q7 -5 14 0" stroke="#b86f5e" stroke-width="3.4"/>`,
+
+  b_hoodie:
+    `<path d="M34 99 q0 -21 26 -21 q26 0 26 21 q-26 5 -52 0 z" fill="#a294da"/>` +
+    `<path d="M42 80 q18 14 36 0 q-5 -9 -18 -9 q-13 0 -18 9 z" fill="#8778c6"/>` +
+    `<path d="M53 86 v9 M67 86 v9" stroke="#f4efff" stroke-width="3.2"/>` +
+    `<circle cx="53" cy="96" r="2.5" fill="#f4efff" stroke="none"/>` +
+    `<circle cx="67" cy="96" r="2.5" fill="#f4efff" stroke="none"/>` +
+    `<path d="M44 92 h32 v7 h-32 z" fill="#8778c6"/>`,
+
+  b_tux:
+    `<path d="M34 99 q0 -21 26 -21 q26 0 26 21 q-26 5 -52 0 z" fill="#433d52"/>` +
+    `<path d="M60 78 l-11 6 l11 19 l11 -19 z" fill="#fdf8f0"/>` +
+    `<path d="M60 85 l-9 -6 v11 z" fill="#c9424f"/>` +
+    `<path d="M60 85 l9 -6 v11 z" fill="#c9424f"/>` +
+    `<circle cx="60" cy="85" r="2.6" fill="#a83744" stroke="none"/>` +
+    `<circle cx="60" cy="96" r="2.2" fill="${OUT}" stroke="none"/>`,
+
+  b_dress:
+    `<path d="M31 100 q3 -22 29 -22 q26 0 29 22 q-29 6 -58 0 z" fill="#f2a3c0"/>` +
+    `<path d="M47 79 q13 9 26 0 q-3 -7 -13 -7 q-10 0 -13 7 z" fill="#f8c3d8"/>` +
+    `<path d="M34 93 q26 7 52 0" stroke="#e07fa6" stroke-width="4"/>` +
+    `<path d="M60 82 q-6 -4 -8 0 q2 4 8 2 q6 2 8 -2 q-2 -4 -8 0 z" fill="#fdeef5"/>`,
+
+  b_cape:
+    `<path d="M40 79 q-24 15 -20 30 q11 5 20 0 z" fill="#e2607a"/>` +
+    `<path d="M80 79 q24 15 20 30 q-11 5 -20 0 z" fill="#e2607a"/>` +
+    `<path d="M43 78 q17 -8 34 0" stroke-width="5"/>` +
+    `<circle cx="60" cy="78" r="4.8" fill="#f7cf58"/>`,
 };
 
 const PET_ART = {
@@ -824,18 +910,30 @@ const WALLPAPERS = [
 
 // 옷 — 캐릭터 위에 실제로 그려진다. 한 번에 하나만 입는다.
 const OUTFITS = [
-  // 머리 — 얼굴 위에 얹는다
+  // 🎀 머리 — 얼굴 위에 얹는다
   { id: "o_ribbon", name: "리본",     slot: "head", cost:  300, desc: "💗수익 ×1.15",   ch: { aff: 1.15 } },
   { id: "o_flower", name: "꽃",       slot: "head", cost:  600, desc: "🫧수익 ×1.2",    ch: { cln: 1.2  } },
-  { id: "o_cap",    name: "모자",     slot: "head", cost:  900, desc: "🍚수익 ×1.2",    ch: { sat: 1.2  } },
-  { id: "o_glass",  name: "안경",     slot: "head", cost: 2000, desc: "모든 수익 ×1.15", all: 1.15 },
+  { id: "o_cap",    name: "야구모자", slot: "head", cost:  900, desc: "🍚수익 ×1.2",    ch: { sat: 1.2  } },
+  { id: "o_straw",  name: "밀짚모자", slot: "head", cost: 1400, desc: "🫧수익 ×1.3",    ch: { cln: 1.3  } },
+  { id: "o_glass",  name: "동그란 안경", slot: "head", cost: 2000, desc: "모든 수익 ×1.15", all: 1.15 },
+  { id: "o_sun",    name: "선글라스", slot: "head", cost: 2600, desc: "모든 수익 ×1.2",  all: 1.2 },
+  { id: "o_beret",  name: "베레모",   slot: "head", cost: 3200, desc: "💗수익 ×1.4",    ch: { aff: 1.4 } },
+  { id: "o_santa",  name: "산타모자", slot: "head", cost: 3800, desc: "🍚수익 ×1.45",   ch: { sat: 1.45 } },
   { id: "o_crown",  name: "왕관",     slot: "head", cost: 5500, desc: "모든 수익 ×1.4",  all: 1.4  },
-  // 몸 — 실제로 입힌다
-  { id: "b_tee",    name: "줄무늬 티", slot: "body", cost:  700, desc: "💗수익 ×1.15",   ch: { aff: 1.15 } },
-  { id: "b_rain",   name: "노란 우비", slot: "body", cost: 1300, desc: "🫧수익 ×1.3",    ch: { cln: 1.3  } },
-  { id: "b_knit",   name: "니트 스웨터", slot: "body", cost: 2200, desc: "모든 감소 −12%", decay: 0.88 },
-  { id: "b_cape",   name: "망토",     slot: "body", cost: 4500, desc: "모든 수익 ×1.3",  all: 1.3 },
+  // 👕 몸 — 실제로 입힌다
+  { id: "b_tee",     name: "줄무늬 티", slot: "body", cost:  700, desc: "💗수익 ×1.15",  ch: { aff: 1.15 } },
+  { id: "b_pajama",  name: "잠옷",     slot: "body", cost: 1000, desc: "자는 동안 수익 +0.2", sleepBonus: 0.2 },
+  { id: "b_rain",    name: "노란 우비", slot: "body", cost: 1300, desc: "🫧수익 ×1.3",   ch: { cln: 1.3  } },
+  { id: "b_overall", name: "멜빵바지", slot: "body", cost: 1800, desc: "🍚수익 ×1.3",   ch: { sat: 1.3  } },
+  { id: "b_knit",    name: "니트 스웨터", slot: "body", cost: 2200, desc: "모든 감소 −12%", decay: 0.88 },
+  { id: "b_hoodie",  name: "후드티",   slot: "body", cost: 2900, desc: "💗수익 ×1.35",  ch: { aff: 1.35 } },
+  { id: "b_tux",     name: "턱시도",   slot: "body", cost: 3600, desc: "모든 수익 ×1.25", all: 1.25 },
+  { id: "b_dress",   name: "드레스",   slot: "body", cost: 4200, desc: "💗수익 ×1.5",   ch: { aff: 1.5 } },
+  { id: "b_cape",    name: "망토",     slot: "body", cost: 4500, desc: "모든 수익 ×1.3", all: 1.3 },
 ];
+
+// 상점·서랍 썸네일에서 옷만 잘라 보여줄 때 쓰는 확대/이동값
+const SLOT_VIEW = { head: "translate(-14 26)", body: "translate(-30 -62) scale(1.35)" };
 const roomOf = (ch) => ROOMS.find((r) => r.care === ch);
 
 // 설비 — 1회 구매, 영구. 각자 어울리는 방의 구석에 놓인다.
@@ -971,7 +1069,11 @@ function coinMultiplier() {
   m *= 1 + (bondLevel() - 1) * 0.1;
   for (const o of worn()) if (o.all) m *= o.all;
   if (happiness() >= 90) m *= 1.25;      // 최상 기분 보너스
-  if (S.asleep) m *= has("lamp") ? 0.8 : SLEEP_INCOME;   // 무드등이 있으면 덜 손해
+  if (S.asleep) {                                       // 무드등·잠옷이 있으면 덜 손해
+    let si = has("lamp") ? 0.8 : SLEEP_INCOME;
+    for (const o of worn()) if (o.sleepBonus) si = Math.min(1, si + o.sleepBonus);
+    m *= si;
+  }
   return m;
 }
 
@@ -1642,8 +1744,8 @@ function buildShop() {
 
   // 👕 옷 — 사면 캐릭터 위에 바로 그려진다. 머리와 몸은 따로 입는다.
   const SLOTS = [
-    { slot: "head", title: "🎀 머리 장식", view: "translate(-24 30) scale(1.1)" },
-    { slot: "body", title: "👕 몸에 입는 옷", view: "translate(-30 -62) scale(1.35)" },
+    { slot: "head", title: "🎀 머리 장식", view: SLOT_VIEW.head },
+    { slot: "body", title: "👕 몸에 입는 옷", view: SLOT_VIEW.body },
   ];
   for (const sl of SLOTS) {
     const list = OUTFITS.filter((o) => o.slot === sl.slot);
@@ -1796,7 +1898,7 @@ function buildDrawer() {
     for (const o of OUTFITS.filter((x) => x.slot === sl.k)) {
       const b = document.createElement("button");
       b.innerHTML = `
-        <span class="e">${art(`<g transform="${sl.k === "head" ? "translate(-24 30) scale(1.1)" : "translate(-30 -62) scale(1.35)"}">${ACC_ART[o.id]}</g>`)}</span>
+        <span class="e">${art(`<g transform="${SLOT_VIEW[sl.k]}">${ACC_ART[o.id]}</g>`)}</span>
         <span class="n">${o.name}</span>
         <span class="d">${o.desc}</span>
         <span class="c"></span>`;
