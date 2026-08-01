@@ -4158,9 +4158,11 @@ function resumeFrom(obj, settle) {
   }
 }
 
-/* 오프라인에서도 놀 수 있게 — 배포된 주소에서만 등록한다.
-   파일을 직접 열었을 때(file://)는 서비스 워커를 쓸 수 없으므로 조용히 넘어간다. */
-if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+/* 오프라인에서도 놀 수 있게 — 제대로 배포된 페이지에서만 등록한다.
+   file:// 로 열었거나, 게임만 떼어다 다른 곳에 붙였을 때는 sw.js 가 없으므로
+   매니페스트가 걸려 있는지로 판별해 조용히 넘어간다. */
+const deployed = () => !!document.querySelector('link[rel="manifest"]');
+if ("serviceWorker" in navigator && location.protocol.startsWith("http") && deployed()) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("./sw.js").catch(() => { /* 없어도 게임은 돈다 */ });
   });
