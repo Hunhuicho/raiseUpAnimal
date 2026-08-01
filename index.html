@@ -370,6 +370,8 @@
     border-radius: 50%; width: 15px; height: 15px; line-height: 15px;
   }
   .picks .pick:empty { display: none; }
+  .pickcount { font-size: 12px; font-weight: 800; color: var(--green); margin-bottom: 8px; }
+  .pickcount.empty { color: var(--ink-soft); }
   .nameRow { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
   .nameRow .ne { width: 34px; height: 34px; flex-shrink: 0; }
   .nameRow .ne svg { width: 100%; height: 100%; display: block; }
@@ -408,7 +410,7 @@
   #shot { width: 100%; border-radius: 12px; display: block; margin-bottom: 12px; border: 2px solid var(--line); }
   .modal .sub { display: flex; gap: 8px; margin-top: 8px; }
   .modal .sub button { flex: 1; padding: 10px; font-size: 13px; }
-  .big.danger { background: var(--pink); border-color: #d4788c; }
+  .modal .sub button.danger { color: var(--pink); border-color: #eec6cd; }
 
   /* 잠깐 뜨는 알림 */
   #toast {
@@ -2326,13 +2328,14 @@ function petSummary(p) {
 }
 
 function showPicker() {
-  let picked = ["dog"];                 // 최대 두 마리
+  let picked = [];                      // 아무것도 미리 고르지 않는다 (최대 두 마리)
   const ov = document.createElement("div");
   ov.className = "overlay";
   ov.innerHTML = `
     <div class="modal">
       <h2>누구와 함께 살까요?</h2>
       <p>한 마리, 또는 두 마리까지 고를 수 있어요.<br>둘이면 둘 다 벌지만 둘 다 돌봐야 합니다.</p>
+      <div class="pickcount" id="pickcount"></div>
       <div class="picks">
         ${Object.entries(PETS).map(([k, x]) => `
           <button data-k="${k}">
@@ -2361,27 +2364,40 @@ function showPicker() {
       b.querySelector(".pick").textContent = at >= 0 && picked.length > 1 ? at + 1 : "";
     });
     // 고른 수만큼 이름 칸을 낸다
+    const cnt = ov.querySelector("#pickcount");
+    cnt.textContent = picked.length ? `${picked.length}마리 골랐어요 (최대 2마리)` : "아래에서 골라주세요";
+    cnt.classList.toggle("empty", !picked.length);
+    const btn = ov.querySelector("#start");
+    btn.disabled = !picked.length;
+    btn.textContent = picked.length ? "함께 살기 시작" : "동물을 골라주세요";
+
     ov.querySelector("#names").innerHTML = picked.map((k, i) => `
       <div class="nameRow">
         <span class="ne">${PET_ART[k]}</span>
         <input type="text" data-i="${i}" maxlength="8" placeholder="이름"
                value="${(ov.querySelector(`#names input[data-i="${i}"]`) || {}).value || DEFAULT_NAMES[i]}">
       </div>`).join("");
-    info(picked[picked.length - 1]);
+    if (picked.length) info(picked[picked.length - 1]);
+    else {
+      ov.querySelector(".pickinfo .tg").textContent = "";
+      ov.querySelector(".pickinfo .ds").textContent = "동물을 누르면 성격과 수익 특성을 보여줘요.";
+      ov.querySelector(".pickinfo .st").innerHTML = "";
+    }
   };
 
   ov.querySelectorAll(".picks button").forEach((b) => {
     b.onclick = () => {
       const k = b.dataset.k, at = picked.indexOf(k);
-      if (at >= 0) { if (picked.length > 1) picked.splice(at, 1); }   // 최소 한 마리
+      if (at >= 0) picked.splice(at, 1);                 // 다시 누르면 해제
       else if (picked.length < 2) picked.push(k);
-      else picked = [picked[1], k];                                   // 셋째를 고르면 가장 오래된 걸 뺀다
+      else picked = [picked[1], k];                      // 셋째를 고르면 가장 오래된 걸 뺀다
       draw();
     };
   });
   draw();
 
   $("start").onclick = () => {
+    if (!picked.length) return;
     const names = [...ov.querySelectorAll("#names input")].map((x, i) => (x.value || "").trim() || DEFAULT_NAMES[i]);
     ov.remove();
     S = freshState(picked.map((k, i) => ({ type: k, name: names[i] })));
@@ -2674,8 +2690,8 @@ function askConfirm(title, body, okLabel) {
       <div class="modal">
         <h2>${title}</h2>
         <p>${body}</p>
-        <button class="big danger" id="yes">${okLabel}</button>
-        <div class="sub"><button id="no">취소</button></div>
+        <button class="big" id="no">아니요, 그대로 둘래요</button>
+        <div class="sub"><button class="danger" id="yes">${okLabel}</button></div>
       </div>`;
     document.body.appendChild(ov);
     const done = (v) => { ov.remove(); res(v); };
@@ -2688,8 +2704,9 @@ function askConfirm(title, body, okLabel) {
 $("btn-reset").onclick = async () => {
   const ok = await askConfirm(
     "처음부터 시작할까요?",
-    `지금까지 모은 코인과 물건, ${S.pets.map((a) => a.name).join("와(과) ")}의 기록이 모두 사라집니다.`,
-    "네, 처음부터");
+    `${S.pets.map((a) => a.name).join("와(과) ")}와(과) 지금까지 모은 코인·물건이 모두 사라지고,`
+    + " 새 동물을 다시 고르게 됩니다. 저장 기록도 지워져서 되돌릴 수 없어요.",
+    "기록을 지우고 새로 시작");
   if (!ok) return;
   try { localStorage.removeItem(SAVE_KEY); } catch (e) { /* 저장 불가 환경 */ }
   // 새로고침이 막히는 환경도 있으므로 그 자리에서 초기화한다
