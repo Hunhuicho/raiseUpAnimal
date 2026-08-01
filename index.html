@@ -387,6 +387,188 @@
     45%      { transform: translate(-50%, -50%) rotate(0); }
   }
 
+  /* ---------- 직접 해주는 장면 ----------
+     .ac  는 자리만 잡고(반려동물과 같은 칸), .acm 이 움직인다.
+     transform 은 한 속성이라 자리잡기와 움직임을 한 요소에 같이 못 준다. */
+  #act { position: absolute; inset: 0; pointer-events: none; z-index: 3; }
+  #act .ac {
+    position: absolute; left: var(--px, 50%); top: 66%;
+    width: var(--pw, 124px); height: var(--pw, 124px);
+    transform: translate(-50%, -50%);
+  }
+  #act .acm { position: absolute; inset: 0; }
+  #act svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+
+  /* 손이 들어왔다 나간다 */
+  @keyframes ac-in-out {
+    0%       { transform: translateX(78%); opacity: 0; }
+    22%, 60% { transform: translateX(0);   opacity: 1; }
+    100%     { transform: translateX(78%); opacity: 0; }
+  }
+  /* 그릇을 툭 내려놓는다 */
+  @keyframes ac-drop {
+    0%   { transform: translate(60%, -34%); opacity: 0; }
+    22%  { transform: translate(0, -6%);    opacity: 1; }
+    32%  { transform: translate(0, 0);      opacity: 1; }
+    100% { transform: translate(0, 0);      opacity: 1; }
+  }
+  /* 봉지를 기울여 붓는다 */
+  @keyframes ac-pour {
+    0%        { transform: translate(46%, -10%) rotate(0);      opacity: 0; }
+    18%       { transform: translate(0, 0) rotate(0);           opacity: 1; }
+    34%, 62%  { transform: translate(-4%, 4%) rotate(-52deg);   opacity: 1; }
+    80%       { transform: translate(0, 0) rotate(0);           opacity: 1; }
+    100%      { transform: translate(46%, -10%) rotate(0);      opacity: 0; }
+  }
+  /* 알갱이가 쏟아진다 */
+  @keyframes ac-fall {
+    0%   { transform: translate(0, -18%); opacity: 0; }
+    20%  { opacity: 1; }
+    100% { transform: translate(-8%, 30%); opacity: 0; }
+  }
+  /* 접시를 들고 와서 내려놓는다 */
+  @keyframes ac-carry {
+    0%       { transform: translate(72%, -22%); opacity: 0; }
+    28%      { transform: translate(0, 0);      opacity: 1; }
+    100%     { transform: translate(0, 0);      opacity: 1; }
+  }
+  @keyframes ac-carry-hand {
+    0%       { transform: translate(72%, -22%); opacity: 0; }
+    28%, 46% { transform: translate(0, 0);      opacity: 1; }
+    70%      { transform: translate(72%, -22%); opacity: 0; }
+    100%     { transform: translate(72%, -22%); opacity: 0; }
+  }
+  /* 뚜껑을 열어 치운다 */
+  @keyframes ac-lid {
+    0%       { transform: translate(72%, -22%); opacity: 0; }
+    28%, 48% { transform: translate(0, 0);      opacity: 1; }
+    64%      { transform: translate(14%, -46%); opacity: 0; }
+    100%     { transform: translate(14%, -46%); opacity: 0; }
+  }
+  /* 김이 피어오른다 */
+  @keyframes ac-steam {
+    0%   { transform: translateY(6%);   opacity: 0; }
+    30%  { opacity: .85; }
+    100% { transform: translateY(-22%); opacity: 0; }
+  }
+  /* 간식을 내민다 */
+  @keyframes ac-offer {
+    0%       { transform: translate(70%, 0);  opacity: 0; }
+    26%      { transform: translate(0, 0);    opacity: 1; }
+    46%      { transform: translate(-7%, 2%); opacity: 1; }
+    62%      { transform: translate(0, 0);    opacity: 1; }
+    100%     { transform: translate(70%, 0);  opacity: 0; }
+  }
+  /* 물수건으로 얼굴을 닦는다 */
+  @keyframes ac-wipe {
+    0%   { transform: translate(66%, 0);      opacity: 0; }
+    18%  { transform: translate(10%, 0);      opacity: 1; }
+    36%  { transform: translate(-14%, 3%);    opacity: 1; }
+    54%  { transform: translate(12%, -2%);    opacity: 1; }
+    72%  { transform: translate(-10%, 3%);    opacity: 1; }
+    88%  { transform: translate(8%, 0);       opacity: 1; }
+    100% { transform: translate(66%, 0);      opacity: 0; }
+  }
+  /* 스펀지로 문지른다 — 작은 원을 그린다 */
+  @keyframes ac-scrub {
+    0%   { transform: translate(62%, 0)      rotate(0);     opacity: 0; }
+    16%  { transform: translate(4%, 0)       rotate(0);     opacity: 1; }
+    34%  { transform: translate(-6%, -5%)    rotate(-8deg); opacity: 1; }
+    50%  { transform: translate(6%, 4%)      rotate(8deg);  opacity: 1; }
+    66%  { transform: translate(-5%, -4%)    rotate(-8deg); opacity: 1; }
+    82%  { transform: translate(4%, 3%)      rotate(6deg);  opacity: 1; }
+    100% { transform: translate(62%, 0)      rotate(0);     opacity: 0; }
+  }
+  /* 거품이 떠오른다 */
+  @keyframes ac-rise {
+    0%   { transform: translateY(14%) scale(.7); opacity: 0; }
+    35%  { opacity: 1; }
+    100% { transform: translateY(-16%) scale(1); opacity: 0; }
+  }
+  /* 수건·오이를 얹어 준다 */
+  @keyframes ac-put {
+    0%   { transform: translateY(-38%); opacity: 0; }
+    26%  { transform: translateY(0);    opacity: 1; }
+    100% { transform: translateY(0);    opacity: 1; }
+  }
+  /* 부채질 */
+  @keyframes ac-fan {
+    0%       { transform: translate(76%, 8%) rotate(0);      opacity: 0; }
+    18%      { transform: translate(14%, 8%) rotate(-12deg); opacity: 1; }
+    38%      { transform: translate(18%, 8%) rotate(14deg);  opacity: 1; }
+    58%      { transform: translate(14%, 8%) rotate(-12deg); opacity: 1; }
+    78%      { transform: translate(18%, 8%) rotate(14deg);  opacity: 1; }
+    100%     { transform: translate(76%, 8%) rotate(0);      opacity: 0; }
+  }
+  /* 머리를 토닥인다 */
+  @keyframes ac-pat {
+    0%   { transform: translate(64%, -30%) rotate(24deg); opacity: 0; }
+    24%  { transform: translate(6%, -26%)  rotate(24deg); opacity: 1; }
+    42%  { transform: translate(6%, -18%)  rotate(24deg); opacity: 1; }
+    58%  { transform: translate(6%, -26%)  rotate(24deg); opacity: 1; }
+    74%  { transform: translate(6%, -19%)  rotate(24deg); opacity: 1; }
+    100% { transform: translate(64%, -30%) rotate(24deg); opacity: 0; }
+  }
+  /* 장난감을 흔든다 */
+  @keyframes ac-dangle {
+    0%   { transform: translate(58%, -14%) rotate(0);      opacity: 0; }
+    20%  { transform: translate(0, -6%)    rotate(-10deg); opacity: 1; }
+    40%  { transform: translate(0, -6%)    rotate(12deg);  opacity: 1; }
+    60%  { transform: translate(0, -6%)    rotate(-10deg); opacity: 1; }
+    80%  { transform: translate(0, -6%)    rotate(10deg);  opacity: 1; }
+    100% { transform: translate(58%, -14%) rotate(0);      opacity: 0; }
+  }
+  /* 목줄을 잡고 걷는다 */
+  @keyframes ac-tug {
+    0%   { transform: translate(56%, -10%); opacity: 0; }
+    22%  { transform: translate(0, 0);      opacity: 1; }
+    46%  { transform: translate(-4%, -2%);  opacity: 1; }
+    70%  { transform: translate(0, 0);      opacity: 1; }
+    100% { transform: translate(56%, -10%); opacity: 0; }
+  }
+  /* 쳇바퀴가 돈다 */
+  @keyframes ac-spin {
+    0%       { transform: translate(58%, 0) rotate(0);      opacity: 0; }
+    16%      { transform: translate(0, 0)   rotate(0);      opacity: 1; }
+    84%      { transform: translate(0, 0)   rotate(760deg); opacity: 1; }
+    100%     { transform: translate(58%, 0) rotate(760deg); opacity: 0; }
+  }
+  /* 말풍선이 통통 뜬다 */
+  @keyframes ac-say {
+    0%       { transform: translate(0, 10%) scale(.6); opacity: 0; }
+    18%      { transform: translate(0, 0)   scale(1);  opacity: 1; }
+    46%      { transform: translate(0, -6%) scale(1);  opacity: 1; }
+    70%      { transform: translate(0, 0)   scale(1);  opacity: 1; }
+    100%     { transform: translate(0, -14%) scale(1); opacity: 0; }
+  }
+  @keyframes ac-appear {
+    0%   { opacity: 0; }
+    30%  { opacity: 1; }
+    100% { opacity: 1; }
+  }
+
+  #act .ac-in-out     { animation: ac-in-out     var(--d) ease-in-out both; }
+  #act .ac-drop       { animation: ac-drop       var(--d) cubic-bezier(.3,1.5,.5,1) both; }
+  #act .ac-pour       { animation: ac-pour var(--d) ease-in-out both; transform-origin: 60% 72%; }
+  #act .ac-fall       { animation: ac-fall       .55s linear infinite; }
+  #act .ac-carry      { animation: ac-carry      var(--d) ease-out both; }
+  #act .ac-carry-hand { animation: ac-carry-hand var(--d) ease-in-out both; }
+  #act .ac-lid        { animation: ac-lid        var(--d) ease-in-out both; }
+  #act .ac-steam      { animation: ac-steam      1.5s ease-out infinite; }
+  #act .ac-offer      { animation: ac-offer      var(--d) ease-in-out both; }
+  #act .ac-wipe       { animation: ac-wipe       var(--d) ease-in-out both; }
+  #act .ac-scrub      { animation: ac-scrub      var(--d) ease-in-out both; }
+  #act .ac-rise       { animation: ac-rise       1.3s ease-out infinite; }
+  #act .ac-put        { animation: ac-put        var(--d) cubic-bezier(.3,1.4,.5,1) both; }
+  #act .ac-fan        { animation: ac-fan        var(--d) ease-in-out both; }
+  #act .ac-pat        { animation: ac-pat        var(--d) ease-in-out both; }
+  #act .ac-dangle     { animation: ac-dangle     var(--d) ease-in-out both; }
+  #act .ac-tug        { animation: ac-tug        var(--d) ease-in-out both; }
+  #act .ac-appear     { animation: ac-appear     var(--d) ease-out both; }
+  #act .ac-spin       { animation: ac-spin       var(--d) ease-in-out both; transform-origin: 80% 58%; }
+  #act .ac-say        { animation: ac-say        var(--d) ease-in-out both; transform-origin: 60% 40%; }
+  #act .ac-still      { opacity: 1; }
+
   /* 활동하는 모습 — idle보다 뒤에 두어 이긴다 */
   .pet.pose-eat  { animation: p-eat .55s ease-in-out infinite; }
   .pet.pose-wash { animation: p-wash .3s ease-in-out infinite; }
@@ -852,6 +1034,8 @@
       </div>
       <div id="bubble"></div>
       <div id="pets"></div>
+      <!-- 해주는 장면이 그려지는 층. 반려동물과 같은 자리에 겹치되 몸짓은 따라가지 않는다 -->
+      <div id="act" aria-hidden="true"></div>
     </div>
 
     <div class="panel" id="stats">
@@ -1320,10 +1504,216 @@ const POSES = {
   c_cake: "eat", c_meet: "play", c_photo: "love",
   h_climb: "walk", h_acorn: "walk", h_stream: "wash",
   g_race: "play", g_ramen: "eat",
+  own_dog: "wash", own_cat: "love", own_rabbit: "eat", own_hamster: "play",
+  own_parrot: "love", own_turtle: "wash", own_hedgehog: "eat", own_fish: "wash",
 };
 const POSE_SECS = { eat: 2.6, wash: 2.4, play: 2.2, love: 2.0, walk: 3.0, sun: 3.0 };
 // 눈을 감는 활동
 const POSE_EYES = { love: true, sun: true, eat: false, wash: false, play: false, walk: false };
+
+/* ===== 직접 해주는 장면 =====
+   소품만 띄우는 것과 직접 해주는 것은 다르다. 특식은 접시를 들고 와서
+   내려놓고 뚜껑을 열어야 특식이고, 물수건은 손이 얼굴을 닦아야 물수건이다.
+   그래서 활동마다 "내 손"이 들어와 그 일을 한다.
+
+   좌표는 반려동물 그림과 같은 0~120 칸을 쓴다. 머리는 (60,45), 몸은 (60,90),
+   바닥은 y≈112. 손은 오른쪽 화면 밖(x>120)에서 들어온다. */
+
+const HAND_ART = `<path d="M106 33 h30 v34 h-30 z" fill="#9dc0dd"/>`
+  + `<path d="M110 35 q-29 2 -34 11 q-3 6.5 4.5 9 q-6.5 3 -3 8.5 q3.5 5 12.5 4 l20 -2 z" fill="#f6dcc0"/>`
+  + `<path d="M83 51 h15 M85 61.5 h13" stroke-width="2.6"/>`;
+// 기본 손은 오른쪽에서 얼굴 높이로 들어온다. 장면마다 옮기고 기울여 쓴다.
+const hand = (dx = 0, dy = 0, rot = 0) =>
+  `<g transform="translate(${dx} ${dy}) rotate(${rot} 100 50)">${HAND_ART}</g>`;
+
+const BOWL = (rim, inner) =>
+  `<path d="M34 97 h52 l-7 15 q-1 5 -8 5 h-22 q-7 0 -8 -5 z" fill="${rim}"/>`
+  + `<ellipse cx="60" cy="97" rx="26" ry="7.5" fill="${inner}"/>`;
+const CHOW = (c) => `<ellipse cx="60" cy="95" rx="18" ry="5.5" fill="${c}" stroke="none"/>`;
+
+// 사료 봉지 — 기울이면 알갱이가 쏟아진다
+const BAG = `<g transform="rotate(-38 104 88)">`
+  + `<path d="M92 48 h30 v40 h-30 z" fill="#e3b878"/>`
+  + `<path d="M92 48 q15 -7 30 0" fill="#cfa263"/>`
+  + `<circle cx="107" cy="68" r="7" fill="#fff3df" stroke="none"/>`
+  + `<path d="M104 68 h6 M107 65 v6" stroke-width="2.4"/></g>`;
+const KIBBLE = `<g fill="#c98d4e" stroke="none">`
+  + `<circle cx="76" cy="74" r="4"/><circle cx="70" cy="84" r="3.4"/><circle cx="79" cy="90" r="3"/></g>`;
+
+// 특식 — 뚜껑을 열면 김이 오른다
+const PLATE = `<ellipse cx="60" cy="99" rx="31" ry="9" fill="#f3ebdf"/>`
+  + `<ellipse cx="60" cy="97" rx="22" ry="6" fill="#e6d8c2" stroke="none"/>`
+  + `<path d="M46 92 q6 -9 15 -8 q11 1 13 9 z" fill="#c9784f"/>`
+  + `<circle cx="70" cy="88" r="3.4" fill="#f2c14e"/>`;
+const DOME = `<path d="M33 97 q0 -23 27 -23 q27 0 27 23 z" fill="#dde3ea"/>`
+  + `<circle cx="60" cy="70" r="4.2" fill="#dde3ea"/>`
+  + `<path d="M42 90 q5 -12 15 -13" stroke-width="2.8" opacity=".5"/>`;
+const STEAM = `<g stroke-width="3.4" opacity=".72">`
+  + `<path d="M46 74 q7 -8 0 -16 q-7 -8 0 -16"/>`
+  + `<path d="M60 70 q7 -8 0 -16 q-7 -8 0 -16"/>`
+  + `<path d="M74 74 q7 -8 0 -16 q-7 -8 0 -16"/></g>`;
+
+const COOKIE = `<circle cx="88" cy="56" r="11" fill="#e0ac6c"/>`
+  + `<g fill="#8a5a34" stroke="none"><circle cx="85" cy="52" r="2.2"/>`
+  + `<circle cx="92" cy="58" r="2"/><circle cx="84" cy="61" r="1.8"/></g>`;
+
+// 물수건 — 손에 들려 얼굴을 닦는다
+const CLOTH = `<path d="M38 30 h44 q5 0 5 5 v20 q0 5 -5 5 h-44 q-5 0 -5 -5 v-20 q0 -5 5 -5 z" fill="#c6e6f0"/>`
+  + `<path d="M38 42 h44 M38 52 h44" stroke-width="2.4" opacity=".55"/>`
+  + `<g fill="#8fc9dd" stroke="none"><circle cx="30" cy="64" r="3"/><circle cx="92" cy="66" r="2.4"/></g>`;
+
+const SPONGE = `<path d="M42 62 h32 q6 0 6 6 v14 q0 6 -6 6 h-32 q-6 0 -6 -6 v-14 q0 -6 6 -6 z" fill="#f4d96a"/>`
+  + `<path d="M42 62 h32 q6 0 6 6 v3 h-44 v-3 q0 -6 6 -6 z" fill="#f7ecb0"/>`;
+const SUDS = `<g fill="#eef8fc" stroke="#cfe6ef" stroke-width="2.6">`
+  + `<circle cx="24" cy="46" r="9"/><circle cx="98" cy="38" r="7.5"/><circle cx="36" cy="16" r="6.5"/>`
+  + `<circle cx="86" cy="12" r="8.5"/><circle cx="60" cy="4" r="6"/></g>`;
+
+// 스파 — 머리에 수건, 눈에 오이, 김이 오르고 손이 부채질
+const SPA_TOWEL = `<path d="M28 34 q32 -17 64 0 l-5 13 q-27 -12 -54 0 z" fill="#e2f1f7"/>`
+  + `<path d="M86 30 q10 -3 9 6 q-1 7 -9 5" fill="#e2f1f7"/>`;
+const CUKE = (x, y) => `<circle cx="${x}" cy="${y}" r="8" fill="#cfe8a8"/>`
+  + `<circle cx="${x}" cy="${y}" r="3.6" fill="#eaf6d6" stroke="none"/>`;
+
+const WAND = `<path d="M128 8 L72 40" stroke-width="3.6"/>`
+  + `<path d="M72 40 q-9 4 -12 12 q7 -1 12 -5 q3 -4 0 -7 z" fill="#f28aa4"/>`
+  + `<path d="M64 50 q-8 5 -9 12" stroke-width="2.8"/>`;
+
+const LEASH = `<path d="M126 12 q-22 8 -32 26" stroke-width="3.4"/>`
+  + `<path d="M43 58 q17 9 34 0" stroke-width="5.4" stroke="#e0798f"/>`
+  + `<circle cx="60" cy="64" r="4" fill="#f5c246"/>`;
+
+/* 종마다 하나씩 있는 전용 활동의 소품 */
+const BRUSH = `<path d="M92 46 q13 -2 13 8 q0 10 -13 8 z" fill="#b98d5e"/>`
+  + `<path d="M48 44 h46 q4 0 4 5 v12 q0 5 -4 5 h-46 q-4 0 -4 -5 v-12 q0 -5 4 -5 z" fill="#e0b073"/>`
+  + `<g stroke-width="2.8" stroke-linecap="round">`
+  + `<path d="M53 66 v9 M62 66 v9 M71 66 v9 M80 66 v9 M89 66 v9"/></g>`;
+
+const CATNIP = `<path d="M88 44 q-16 -14 -30 -2 q14 12 30 2 z" fill="#a9d38a"/>`
+  + `<path d="M92 56 q-18 -10 -30 4 q17 8 30 -4 z" fill="#93c775"/>`
+  + `<path d="M58 42 q10 8 12 18" stroke-width="2.8"/>`;
+
+const CHEW = `<path d="M62 46 h34 q7 0 7 7 t-7 7 h-34 q-7 0 -7 -7 t7 -7 z" fill="#cfa76f"/>`
+  + `<path d="M62 46 q-6 7 0 14 M96 46 q6 7 0 14" stroke-width="2.6"/>`
+  + `<path d="M74 50 v6 M84 50 v6" stroke-width="2.2" opacity=".6"/>`;
+
+const WHEEL = `<circle cx="96" cy="70" r="26" fill="#f6e2c0"/>`
+  + `<circle cx="96" cy="70" r="17" fill="#fffaf3" stroke="none"/>`
+  + `<g stroke-width="2.8"><path d="M96 44 v52 M70 70 h52 M78 52 l36 36 M114 52 l-36 36"/></g>`
+  + `<path d="M78 96 h36" stroke-width="4"/>`;
+
+const TALK = `<path d="M74 12 h44 q6 0 6 6 v20 q0 6 -6 6 h-30 l-10 9 v-9 h-4 q-6 0 -6 -6 v-20 q0 -6 6 -6 z" fill="#fff"/>`
+  + `<g fill="#3a2c44" stroke="none"><circle cx="88" cy="28" r="3"/>`
+  + `<circle cx="98" cy="28" r="3"/><circle cx="108" cy="28" r="3"/></g>`;
+
+const POLISH = `<path d="M46 60 h34 q6 0 6 6 v14 q0 6 -6 6 h-34 q-6 0 -6 -6 v-14 q0 -6 6 -6 z" fill="#f6e6c8"/>`
+  + `<g stroke="#f5c246" stroke-width="3.4" stroke-linecap="round">`
+  + `<path d="M28 46 v-9 M23.5 41.5 h9 M96 34 v-7 M92.5 30.5 h7"/></g>`;
+
+const WORM = `<path d="M52 56 q10 -12 20 -2 q9 9 -1 16 q-9 6 -14 -2" stroke-width="9" stroke="#e8c07a" fill="none"/>`
+  + `<circle cx="54" cy="54" r="2.4" fill="#3a2c44" stroke="none"/>`;
+
+const JUG = `<g transform="rotate(-34 100 74)">`
+  + `<path d="M84 44 h30 q5 0 5 5 v24 q0 5 -5 5 h-30 q-5 0 -5 -5 v-24 q0 -5 5 -5 z" fill="#a9d0e6"/>`
+  + `<path d="M114 52 q12 3 12 12" stroke-width="4"/></g>`;
+const POUR_WATER = `<g stroke="#8fc9dd" stroke-width="4.2" stroke-linecap="round" opacity=".85">`
+  + `<path d="M74 66 q-4 10 -2 20 M82 62 q-3 11 0 20"/></g>`;
+
+/* 장면 표.
+   secs   — 장면 길이(초)
+   pose   — 그 동안 반려동물의 몸짓 (기존 POSES 와 같은 값)
+   eyes   — 눈을 감을지
+   parts  — [{ art, cls, delay }] 소품과 그 움직임. cls 가 CSS 애니메이션을 고른다. */
+const ACTS = {
+  /* 🍚 밥 — 등급마다 차려주는 방식이 다르다.
+     남은 밥은 툭 내려놓고, 사료는 봉지를 기울여 붓고, 특식은 뚜껑을 덮어 와서 연다. */
+  feed_low: { secs: 3.0, pose: "eat", parts: [
+    { art: BOWL("#c3ae8c", "#e0d0b2") + CHOW("#b99a6d"), cls: "ac-drop" },
+    { art: hand(-6, 44), cls: "ac-in-out" },
+  ]},
+  feed_mid: { secs: 3.4, pose: "eat", parts: [
+    { art: BOWL("#c9b79a", "#e8d9bd"), cls: "ac-still" },
+    { art: BAG, cls: "ac-in-out", delay: 250 },
+    { art: hand(6, 30, -30), cls: "ac-in-out", delay: 250 },
+    { art: KIBBLE, cls: "ac-fall", delay: 900 },
+    { art: CHOW("#c98d4e"), cls: "ac-appear", delay: 1700 },
+  ]},
+  feed_high: { secs: 3.9, pose: "eat", parts: [
+    { art: PLATE, cls: "ac-carry" },
+    { art: DOME, cls: "ac-lid" },
+    { art: hand(-4, 44), cls: "ac-carry-hand" },
+    { art: STEAM, cls: "ac-steam", delay: 1900 },
+  ]},
+  treat: { secs: 3.0, pose: "eat", parts: [
+    { art: COOKIE, cls: "ac-offer" },
+    { art: hand(0, 6), cls: "ac-offer" },
+  ]},
+
+  /* 🫧 씻기기 — 대충 닦아주기, 문질러 씻기기, 스파를 차려주기 */
+  wash_low: { secs: 3.0, pose: "wash", parts: [
+    { art: CLOTH, cls: "ac-wipe" },
+    { art: hand(0, 0), cls: "ac-wipe" },
+  ]},
+  wash_mid: { secs: 3.4, pose: "wash", parts: [
+    { art: SPONGE, cls: "ac-scrub" },
+    { art: hand(-4, 28), cls: "ac-scrub" },
+    { art: SUDS, cls: "ac-rise", delay: 700 },
+  ]},
+  wash_high: { secs: 4.2, pose: "sun", eyes: true, parts: [
+    { art: SPA_TOWEL, cls: "ac-put", delay: 200 },
+    { art: CUKE(46, 44) + CUKE(74, 44), cls: "ac-put", delay: 900 },
+    { art: STEAM, cls: "ac-steam", delay: 1400 },
+    { art: hand(8, 10, -14), cls: "ac-fan", delay: 1700 },
+  ]},
+
+  /* 💗 함께 놀기 */
+  pet: { secs: 2.2, pose: "love", eyes: true, parts: [
+    { art: hand(-12, -24), cls: "ac-pat" },
+  ]},
+  play: { secs: 2.6, pose: "play", parts: [
+    { art: WAND, cls: "ac-dangle" },
+    { art: hand(10, -34), cls: "ac-dangle" },
+  ]},
+  walk: { secs: 3.2, pose: "walk", parts: [
+    { art: LEASH, cls: "ac-tug" },
+    { art: hand(12, -30), cls: "ac-tug" },
+  ]},
+
+  /* 🐾 그 아이만의 것 */
+  own_dog: { secs: 3.2, pose: "wash", parts: [
+    { art: BRUSH, cls: "ac-wipe" },
+    { art: hand(0, 14), cls: "ac-wipe" },
+  ]},
+  own_cat: { secs: 3.0, pose: "love", eyes: true, parts: [
+    { art: CATNIP, cls: "ac-offer" },
+    { art: hand(4, 8), cls: "ac-offer" },
+  ]},
+  own_rabbit: { secs: 3.0, pose: "eat", parts: [
+    { art: CHEW, cls: "ac-offer" },
+    { art: hand(6, 4), cls: "ac-offer" },
+  ]},
+  own_hamster: { secs: 3.2, pose: "play", parts: [
+    { art: WHEEL, cls: "ac-spin" },
+    { art: hand(14, 18), cls: "ac-in-out", delay: 300 },
+  ]},
+  own_parrot: { secs: 3.2, pose: "love", parts: [
+    { art: TALK, cls: "ac-say" },
+    { art: hand(10, -16), cls: "ac-in-out" },
+  ]},
+  own_turtle: { secs: 3.4, pose: "wash", parts: [
+    { art: POLISH, cls: "ac-scrub" },
+    { art: hand(-2, 24), cls: "ac-scrub" },
+  ]},
+  own_hedgehog: { secs: 3.0, pose: "eat", parts: [
+    { art: WORM, cls: "ac-offer" },
+    { art: hand(2, 6), cls: "ac-offer" },
+  ]},
+  own_fish: { secs: 3.4, pose: "wash", parts: [
+    { art: JUG, cls: "ac-in-out" },
+    { art: hand(16, 6, -30), cls: "ac-in-out" },
+    { art: POUR_WATER, cls: "ac-fall", delay: 700 },
+    { art: SUDS, cls: "ac-rise", delay: 1200 },
+  ]},
+};
 
 const PET_ART = {
   dog: art(GROUND +
@@ -1551,6 +1941,38 @@ const CARE = [
         note: "하나 넘을 때마다 5코인" },
     ],
   },
+  /* 종마다 하나씩, 그 아이한테만 해줄 수 있는 것.
+     고양이한테 쳇바퀴를 굴려줄 수는 없다. 여덟 종을 고르는 의미가
+     "그림이 다르다"에서 "해줄 일이 다르다"로 넘어가는 자리. */
+  {
+    k: "own", ico: "🐾", title: "이 아이만의 것", room: "living",
+    items: [
+      { id: "own_dog", label: "털 빗기기", only: "dog", cost: 0, cd: 55,
+        eff: { cln: 24, aff: 10 }, ch: "cln", pay: 15, bond: 5, scale: "pet",
+        buff: { mult: 1.35, secs: 420 }, note: "빗질을 제일 좋아해요" },
+      { id: "own_cat", label: "캣닢 주기", only: "cat", cost: 0, cd: 70,
+        eff: { aff: 26 }, ch: "aff", pay: 17, bond: 6,
+        buff: { mult: 1.45, secs: 420 }, note: "잠깐 딴 세상에 가요" },
+      { id: "own_rabbit", label: "나무토막 주기", only: "rabbit", cost: 0, cd: 60,
+        eff: { sat: 20, aff: 10 }, ch: "sat", pay: 15, bond: 4,
+        buff: { mult: 1.35, secs: 420 }, note: "이빨이 자라서 갉아야 해요" },
+      { id: "own_hamster", label: "쳇바퀴 굴려주기", only: "hamster", cost: 0, cd: 50,
+        eff: { aff: 22, sat: -6 }, ch: "aff", pay: 16, bond: 5, scale: "play",
+        buff: { mult: 1.4, secs: 360 }, note: "멈출 줄을 몰라요" },
+      { id: "own_parrot", label: "말 가르치기", only: "parrot", cost: 0, cd: 80,
+        eff: { aff: 28 }, ch: "aff", pay: 19, bond: 8,
+        buff: { mult: 1.5, secs: 480 }, note: "따라 하다가 이상해져요" },
+      { id: "own_turtle", label: "등딱지 광내기", only: "turtle", cost: 0, cd: 90,
+        eff: { cln: 30, aff: 8 }, ch: "cln", pay: 18, bond: 5,
+        buff: { mult: 1.5, secs: 480 }, note: "반질반질해져요" },
+      { id: "own_hedgehog", label: "벌레 간식 주기", only: "hedgehog", cost: 0, cd: 65,
+        eff: { sat: 22, aff: 12 }, ch: "sat", pay: 16, bond: 5,
+        buff: { mult: 1.4, secs: 420 }, note: "제일 좋아하는 거예요" },
+      { id: "own_fish", label: "물 갈아주기", only: "fish", cost: 0, cd: 75,
+        eff: { cln: 34, aff: 8 }, ch: "cln", pay: 18, bond: 4,
+        buff: { mult: 1.5, secs: 480 }, note: "물이 맑아야 살아요" },
+    ],
+  },
   {
     k: "rest", ico: "😴", title: "재우기", room: "bedroom",
     items: [
@@ -1588,6 +2010,15 @@ const WISHES = [
   { item: "h_stream",  text: "계곡에서 물놀이하고 싶어요!" },
   { item: "g_race",    text: "PC방에서 레이싱 하고 싶어요!" },
   { item: "g_ramen",   text: "컵라면 냄새가… 먹고 싶어요" },
+  // 그 아이만의 것 — pickWish 가 종을 보고 걸러낸다
+  { item: "own_dog",      text: "빗질해 주세요!" },
+  { item: "own_cat",      text: "그거… 그 풀 주세요…" },
+  { item: "own_rabbit",   text: "이빨이 근질근질해요!" },
+  { item: "own_hamster",  text: "쳇바퀴 굴리고 싶어요!" },
+  { item: "own_parrot",   text: "새로운 말 배우고 싶어요!" },
+  { item: "own_turtle",   text: "등딱지 좀 닦아주세요…" },
+  { item: "own_hedgehog", text: "벌레 간식 먹고 싶어요!" },
+  { item: "own_fish",     text: "물이 답답해요…" },
 ];
 const WISH_GAP = [80, 150];    // 다음 부탁까지 (초)
 const WISH_TIME = 210;         // 들어줄 수 있는 시간 (초)
@@ -2091,6 +2522,7 @@ function pickWish() {
   const pool = WISHES.filter((w) => {
     const it = itemById(w.item);
     if (!it) return false;
+    if (it.only && it.only !== S.type) return false;
     if (it.needs && !has(it.needs)) return false;
     if (it.cost && itemCost(it) > S.coins * 0.8) return false;
     const g = CARE.find((c) => c.items.includes(it));
@@ -2195,6 +2627,7 @@ function itemCost(it) {
 }
 
 function canDo(it) {
+  if (it.only && it.only !== S.type) return false;   // 그 아이만의 것
   if (it.needs && !has(it.needs)) return false;
   if (S.cooldown[it.id] > 0) return false;
   if (itemCost(it) > S.coins) return false;
@@ -2337,7 +2770,8 @@ function doCare(it) {
 
   Sound.sfx("care");
   const pose = POSES[it.id];
-  if (pose) showPose(pose);
+  if (ACTS[it.id]) showAct(it);
+  else if (pose) showPose(pose);
   else {
     const el = $("pets").children[S.active];
     if (el) { el.classList.remove("happy"); void el.offsetWidth; el.classList.add("happy"); }
@@ -2372,6 +2806,14 @@ function reactionTo(it) {
     case "h_stream":  return "물이 시원해~";
     case "g_race":    return "내가 1등이야!";
     case "g_ramen":   return "여기 라면이 제일 맛있어…";
+    case "own_dog":      return "거기, 거기 더!";
+    case "own_cat":      return "…행복해……";
+    case "own_rabbit":   return "오독오독 소리 좋다!";
+    case "own_hamster":  return "한 바퀴만 더!";
+    case "own_parrot":   return "안녕! 안녕! 안녕!";
+    case "own_turtle":   return "반질반질… 마음에 들어";
+    case "own_hedgehog": return "이게 제일 맛있어!";
+    case "own_fish":     return "물이 깨끗해졌다!";
     default:          return "고마워!";
   }
 }
@@ -3025,7 +3467,45 @@ function renderPets() {
 
 /* 활동하는 모습 — 잠깐 자세를 바꾸고 소품을 곁들인다. */
 let poseTimer = 0;
-function showPose(kind) {
+/* 장면을 한 판 돌린다. 반려동물의 몸짓(showPose)과 내 손이 하는 일(#act)을
+   같이 띄운다. 장면이 없는 활동은 예전처럼 몸짓만 나온다. */
+let actTimer = 0;
+function showAct(it) {
+  const a = ACTS[it && it.id];
+  if (!a) { showPose(POSES[it && it.id]); return; }
+
+  showPose(a.pose, a.secs, a.eyes);
+
+  const box = $("act");
+  clearTimeout(actTimer);
+  box.innerHTML = "";
+
+  // 소품은 그 아이가 서 있는 자리, 그 아이 크기에 맞춘다
+  const pet = $("pets").children[S.active];
+  if (pet) {
+    box.style.setProperty("--px", pet.style.left || "50%");
+    box.style.setProperty("--pw", (pet.offsetWidth || 124) + "px");
+  }
+
+  for (const part of a.parts) {
+    const ac = document.createElement("div");
+    ac.className = "ac";
+    const mv = document.createElement("div");
+    mv.className = "acm " + (part.cls || "ac-still");
+    mv.style.setProperty("--d", a.secs + "s");
+    if (part.delay) {
+      mv.style.animationDelay = part.delay + "ms";
+      mv.style.opacity = "0";                       // 시작 전에는 안 보이게
+      setTimeout(() => { mv.style.opacity = ""; }, part.delay);
+    }
+    mv.innerHTML = art(part.art);
+    ac.appendChild(mv);
+    box.appendChild(ac);
+  }
+  actTimer = setTimeout(() => { box.innerHTML = ""; }, a.secs * 1000);
+}
+
+function showPose(kind, secs, eyes) {
   if (!kind) return;
   const el = $("pets").children[S.active];
   if (!el) return;
@@ -3034,16 +3514,19 @@ function showPose(kind) {
   el.className = el.className.replace(/\bpose-\w+/g, "").trim();
   el.querySelectorAll(".prop").forEach((x) => x.remove());
 
+  // 장면이 따로 있으면 소품은 그쪽이 그린다 — 여기서는 표정만 얹는다
+  const shut = eyes === undefined ? POSE_EYES[kind] : eyes;
+  const extra = secs === undefined ? (PROPS[kind] || "") : "";
   const prop = document.createElement("div");
   prop.className = "prop";
-  prop.innerHTML = art((POSE_EYES[kind] ? closedEyes(S.type) : "") + (PROPS[kind] || ""));
+  prop.innerHTML = art((shut ? closedEyes(S.type) : "") + extra);
   el.appendChild(prop);
   el.classList.add("pose-" + kind);
 
   poseTimer = setTimeout(() => {
     el.classList.remove("pose-" + kind);
     prop.remove();
-  }, (POSE_SECS[kind] || 2.4) * 1000);
+  }, (secs || POSE_SECS[kind] || 2.4) * 1000);
 }
 
 function selectPet(i) {
@@ -3195,9 +3678,22 @@ function updateCare() {
     ge.tag.hidden = urgent !== g.k;
   }
 
+  {
+    const ge = careEls.get("group:own");
+    const mine = CARE.find((c) => c.k === "own").items.find((x) => x.only === S.type);
+    if (ge && mine) {
+      const p = PETS[S.type];
+      ge.wrap.querySelector(".ghead").firstChild.textContent = `${p.emoji} ${p.name}만 할 수 있는 것`;
+    }
+  }
+
   for (const it of ALL_ITEMS) {
     const el = careEls.get(it.id);
     if (!el) continue;
+    if (it.only) {                       // 종이 다르면 아예 안 보인다
+      el.btn.hidden = it.only !== S.type;
+      if (el.btn.hidden) continue;
+    }
     if (isMinigame(it)) {
       const cd = S.cooldown[it.id];
       el.n.textContent = it.label;
