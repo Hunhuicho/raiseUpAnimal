@@ -382,6 +382,15 @@
   .slot-n { font-size: 13px; font-weight: 800; }
   .slot-d { font-size: 10.5px; color: var(--ink-soft); font-weight: 700; margin-top: 2px; }
   .slot button { padding: 8px 10px; font-size: 11.5px; white-space: nowrap; }
+  #paws { font-size: 11px; font-weight: 800; color: #b98b3e; }
+  .gradcard {
+    background: linear-gradient(#fdf3d9, #f7e6bd);
+    border: 2px solid #e3c98d; border-radius: 13px;
+    padding: 12px 13px; margin-bottom: 12px; text-align: center;
+  }
+  .gradcard .g-t { font-size: 15px; font-weight: 800; margin-bottom: 4px; }
+  .gradcard .g-d { font-size: 11.5px; color: var(--ink-soft); font-weight: 700; line-height: 1.6; margin-bottom: 10px; }
+  .gradcard button { width: 100%; padding: 11px; background: var(--gold); border-color: #bd8a2e; color: #fff; }
   .pickcount { font-size: 12px; font-weight: 800; color: var(--green); margin-bottom: 8px; }
   .pickcount.empty { color: var(--ink-soft); }
   .nameRow { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
@@ -419,6 +428,18 @@
   #footer { text-align: center; font-size: 11px; color: var(--ink-soft); padding: 8px 0 14px; }
 
   /* 찍은 사진 */
+  /* 미니게임 */
+  #mg-stage { position: relative; height: 150px; margin-bottom: 14px; }
+  #mg-stage .cup, #mg-stage .treat {
+    position: absolute; width: 20%; aspect-ratio: 1; bottom: 6px;
+    transition: left var(--mg-speed, 300ms) ease-in-out, bottom .3s ease-out;
+  }
+  #mg-stage .cup { z-index: 2; }
+  #mg-stage .cup.up { bottom: 58px; }
+  #mg-stage .treat { z-index: 1; transition: left var(--mg-speed, 300ms) ease-in-out; }
+  #mg-stage .cup svg, #mg-stage .treat svg { width: 100%; height: 100%; display: block; }
+  #mg-msg b { font-weight: 800; }
+
   #shot { width: 100%; border-radius: 12px; display: block; margin-bottom: 12px; border: 2px solid var(--line); }
   .modal .sub { display: flex; gap: 8px; margin-top: 8px; }
   .modal .sub button { flex: 1; padding: 10px; font-size: 13px; }
@@ -451,6 +472,7 @@
       <div id="rate">분당 0</div>
     </div>
     <div id="bond">
+      <div id="paws"></div>
       <div id="bondtext">♡ Lv.1</div>
       <div id="bondbar"><i></i></div>
     </div>
@@ -497,6 +519,7 @@
   </section>
 
   <section id="page-log" hidden>
+    <div class="panel" id="albumpanel" hidden><div class="tabbody" id="albumbox"></div></div>
     <div class="panel"><div class="tabbody" id="logbody"></div></div>
   </section>
 
@@ -953,6 +976,7 @@ const CARE = [
       { id: "pet",   label: "쓰다듬기", cost:  0, cd:  4, eff: { aff: 5 },           ch: "aff", pay:  6, bond: 1, scale: "pet", note: "언제나 무료" },
       { id: "treat", label: "간식",     cost: 62, cd:  0, eff: { aff: 16, sat: 12 }, ch: "aff", pay: 14, bond: 2, buff: { mult: 1.4, secs: 480 } },
       { id: "play",  label: "놀아주기", cost:  0, cd: 25, eff: { aff: 20 },          ch: "aff", pay: 16, bond: 6, scale: "play", buff: { mult: 1.3, secs: 300 }, needs: "toy" },
+      { id: "hide",  label: "어느 컵?", cost: 0, cd: 45, special: "minigame", note: "맞히면 코인과 애정을 크게" },
     ],
   },
   {
@@ -1104,6 +1128,33 @@ const FURNITURE = [
 ];
 
 
+/* 다 갖추고 나면 살 것이 없어진다. 그때 지금 가족을 앨범에 남기고 새로 시작할 수
+   있다. 남는 것은 발도장 🐾 — 영구히 모든 수익을 올려 준다. 다음 판은 더 빨리
+   굴러가므로 같은 상점이 다시 새롭게 느껴진다. */
+const ALBUM_KEY = "raiseUpAnimal.album";   // 발도장과 앨범은 새로 시작해도 남는다
+const PAW_BONUS = 0.15;                    // 발도장 하나당 모든 수익 +15%
+let ALBUM = { paws: 0, families: [] };
+
+function albumData() {
+  try { return JSON.parse(localStorage.getItem(ALBUM_KEY)) || { paws: 0, families: [] }; }
+  catch (e) { return { paws: 0, families: [] }; }
+}
+function albumSave(d) {
+  try { localStorage.setItem(ALBUM_KEY, JSON.stringify(d)); } catch (e) { /* 저장 불가 */ }
+}
+
+// 이번 가족이 남길 발도장 — 모은 물건과 쌓은 정에 비례한다
+function pawsEarned() {
+  const items = Object.keys(S.owned || {}).length;
+  const bond = S.pets.reduce((n, a, i) => {
+    const q = S.active; S.active = i; const v = bondLevel(); S.active = q; return n + v;
+  }, 0);
+  return Math.max(1, Math.floor(items / 12) + Math.floor(bond / 3));
+}
+
+// 설비를 다 모으면 졸업할 수 있다
+const canGraduate = () => FURNITURE.every((f) => has(f.id));
+
 const BOND_STEPS = [50, 130, 260, 460, 760, 1200, 1800, 2600];
 const DECAY = { sat: 1.2 / 60, cln: 0.6 / 60, aff: 0.9 / 60 };   // 초당 감소
 const WEIGHT = { sat: 0.40, cln: 0.25, aff: 0.35 };              // 행복도 가중치
@@ -1189,6 +1240,12 @@ function freshState(picks) {
 const $ = (id) => document.getElementById(id);
 const pet = () => PETS[S.type];
 const has = (id) => !!S.owned[id];
+// 옷은 여러 벌 가질 수 있다(아이마다 한 벌씩). 설비·벽지는 늘 0 아니면 1.
+const ownedCount = (id) => { const v = S.owned[id]; return typeof v === "number" ? v : (v ? 1 : 0); };
+const wearingCount = (id, exceptIdx) =>
+  S.pets.filter((a, i) => i !== exceptIdx && (a.wear.head === id || a.wear.body === id)).length;
+// 지금 보고 있는 아이에게 입힐 여분이 있는가
+const canWear = (id) => wearingCount(id, S.active) < ownedCount(id);
 // 치우기는 눈에 보이는 것만 바꾼다. 효과까지 사라지면 아무도 안 치울 테니까.
 const shown = (id) => has(id) && !(S.stored && S.stored[id]);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -1241,6 +1298,7 @@ function coinMultiplier() {
   if (has("photo"))  m *= 1.1;
   if (has("garden")) m *= 1.5;
   m *= 1 + (bondLevel() - 1) * 0.1;
+  m *= 1 + ALBUM.paws * PAW_BONUS;       // 지난 가족이 남긴 발도장
   for (const o of worn()) if (o.all) m *= o.all;
   if (happiness() >= 90) m *= 1.25;      // 최상 기분 보너스
   if (S.asleep) {                                       // 무드등·잠옷이 있으면 덜 손해
@@ -1494,6 +1552,14 @@ function checkWish(it) {
 }
 
 function doCare(it) {
+  if (it.special === "minigame") {
+    if (S.cooldown[it.id] > 0) return;
+    S.asleep = false;
+    Sound.setTrack("day");
+    checkWish(it);
+    playHideGame(it);
+    return;
+  }
   // 재우기는 다른 돌보기와 흐름이 달라 먼저 빠져나간다 — 부탁 확인은 여기서 따로 해줘야 한다
   if (it.special === "sleep") {
     toggleSleep();
@@ -1583,6 +1649,10 @@ function reactionTo(it) {
 function wearOutfit(o) {
   if (!has(o.id)) return;
   const on = S.wear[o.slot] !== o.id;
+  if (on && !canWear(o.id)) {          // 남은 벌이 없으면 다른 아이가 입고 있는 것
+    toast(`${o.name}은(는) 다른 아이가 입고 있어요`);
+    return;
+  }
   S.wear[o.slot] = on ? o.id : null;
   say(on ? "어때, 잘 어울려?" : "편하다~");
   addLog(on ? `${o.name}을(를) 입었다` : `${o.name}을(를) 벗었다`);
@@ -1609,11 +1679,152 @@ function storeItem(f) {
   save();
 }
 
+/* ===================== 미니게임 — 어느 컵에 있을까 =====================
+   간식을 컵 하나에 숨기고 섞는다. 맞히면 코인과 애정을 크게 준다.
+   친밀도가 오를수록 더 많이 섞어서 조금씩 어려워진다. */
+
+const CUP_ART = art(
+  `<path d="M22 26 h76 l-9 68 q-2 10 -12 10 h-32 q-10 0 -12 -10 z" fill="#e8a05e"/>` +
+  `<ellipse cx="60" cy="26" rx="38" ry="10" fill="#f2b878"/>` +
+  `<path d="M34 46 q26 8 52 0" stroke="#c9814a" stroke-width="4"/>`);
+const TREAT_ART = art(
+  `<circle cx="60" cy="70" r="26" fill="#f7cf58"/>` +
+  `<circle cx="52" cy="64" r="4" fill="#a8763a" stroke="none"/>` +
+  `<circle cx="68" cy="72" r="4" fill="#a8763a" stroke="none"/>` +
+  `<circle cx="58" cy="80" r="3.4" fill="#a8763a" stroke="none"/>`);
+
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function playHideGame(it) {
+  const spots = [12, 40, 68];            // 컵 세 개의 가로 위치(%)
+  let where = Math.floor(Math.random() * 3);   // 간식이 있는 컵의 자리
+  let order = [0, 1, 2];                 // 자리 i에 있는 컵의 번호
+
+  const ov = document.createElement("div");
+  ov.className = "overlay";
+  ov.innerHTML = `
+    <div class="modal">
+      <h2>🍪 어느 컵에 있을까?</h2>
+      <p id="mg-msg">간식을 숨기는 중…</p>
+      <div id="mg-stage">
+        <div class="treat">${TREAT_ART}</div>
+        ${[0, 1, 2].map((i) => `<div class="cup" data-c="${i}">${CUP_ART}</div>`).join("")}
+      </div>
+      <button class="big" id="mg-quit" disabled>섞는 중…</button>
+    </div>`;
+  document.body.appendChild(ov);
+
+  const cups = [...ov.querySelectorAll(".cup")];
+  const treat = ov.querySelector(".treat");
+  const msg = ov.querySelector("#mg-msg");
+  const quit = ov.querySelector("#mg-quit");
+  const place = () => order.forEach((c, at) => { cups[c].style.left = spots[at] + "%"; });
+  const treatAt = () => { treat.style.left = spots[order.indexOf(where)] + "%"; };
+
+  place(); treatAt();
+  cups.forEach((c) => c.classList.add("up"));    // 컵을 들어 올린 채로 시작
+  await wait(900);
+
+  msg.textContent = "잘 봐요!";
+  cups.forEach((c) => c.classList.remove("up"));
+  await wait(500);
+
+  // 섞기 — 친밀도가 높을수록 더 많이, 더 빠르게
+  const rounds = 4 + Math.min(6, bondLevel());
+  const speed = Math.max(170, 330 - bondLevel() * 16);
+  ov.style.setProperty("--mg-speed", speed + "ms");
+  for (let n = 0; n < rounds; n++) {
+    let i = Math.floor(Math.random() * 3), j = Math.floor(Math.random() * 3);
+    while (j === i) j = Math.floor(Math.random() * 3);
+    [order[i], order[j]] = [order[j], order[i]];
+    place(); treatAt();
+    Sound.sfx("swap");
+    await wait(speed + 40);
+  }
+
+  msg.textContent = "간식이 든 컵을 골라주세요";
+  quit.disabled = false;
+  quit.textContent = "그만하기";
+
+  const picked = await new Promise((res) => {
+    let done = false;
+    const choose = (v) => { if (!done) { done = true; res(v); } };
+    cups.forEach((c) => { c.onclick = () => choose(+c.dataset.c); });
+    quit.onclick = () => choose(null);
+  });
+
+  cups.forEach((c) => { c.onclick = null; c.classList.add("up"); });
+  await wait(450);
+
+  if (picked === null) { ov.remove(); return; }
+
+  const win = picked === where;
+  const a = S.pets[S.active];
+  if (win) {
+    const coins = Math.round(40 * coinMultiplier());
+    S.coins += coins;
+    a.aff = clamp(a.aff + 16, 0, 100);
+    a.bondExp += 8;
+    msg.innerHTML = `맞혔어요! <b style="color:var(--gold)">+${fmt(coins)}코인</b> · 💗+16`;
+    addLog(`어느 컵? — 맞혔다! +${fmt(coins)}코인`);
+    Sound.sfx("wish");
+    floatText(`🪙+${fmt(coins)}`, "var(--gold)");
+  } else {
+    a.aff = clamp(a.aff + 5, 0, 100);
+    a.bondExp += 2;
+    msg.innerHTML = "아깝다! 그래도 재밌었어요 · 💗+5";
+    addLog("어느 컵? — 아깝게 틀렸다");
+    Sound.sfx("care");
+  }
+  quit.textContent = "닫기";
+  quit.onclick = () => ov.remove();
+  S.cooldown[it.id] = it.cd;
+  render();
+  save();
+}
+
+async function graduate() {
+  const paws = pawsEarned();
+  const days = Math.max(1, Math.floor((Date.now() - (S.born || Date.now())) / 86400000) + 1);
+  const names = S.pets.map((a) => a.name).join(" · ");
+  const ok = await askConfirm(
+    "앨범에 남기고 새로 시작할까요?",
+    `${names}와(과) 보낸 ${days}일이 앨범에 남고, <b>발도장 🐾 ${paws}개</b>를 받습니다.`
+    + `<br>발도장은 영원히 남아 앞으로의 모든 수익을 <b>+${Math.round(paws * PAW_BONUS * 100)}%</b> 올려줘요.`
+    + "<br>대신 코인과 물건은 두고 가고, 새 동물을 고르게 됩니다.",
+    "앨범에 남기고 새로 시작");
+  if (!ok) return;
+
+  ALBUM.paws += paws;
+  ALBUM.families.unshift({
+    at: Date.now(), days, paws,
+    pets: S.pets.map((a) => ({ type: a.type, name: a.name })),
+    items: Object.keys(S.owned).length,
+  });
+  if (ALBUM.families.length > 30) ALBUM.families.length = 30;
+  albumSave(ALBUM);
+
+  save(); snapshot();
+  try { localStorage.removeItem(SAVE_KEY); } catch (e) { /* 저장 불가 */ }
+  S = null;
+  document.querySelectorAll(".overlay").forEach((x) => x.remove());
+  $("pets").innerHTML = "";
+  $("room").querySelectorAll(".furn").forEach((x) => x.remove());
+  tab = "care";
+  toast(`🐾 발도장 ${paws}개를 받았어요`);
+  showPicker();
+}
+
 function buy(item) {
-  if (has(item.id) || S.coins < item.cost) return;
+  const cap = item.kind === "outfit" ? S.pets.length : 1;   // 옷은 아이 수만큼 살 수 있다
+  if (ownedCount(item.id) >= cap || S.coins < item.cost) return;
   S.coins -= item.cost;
-  S.owned[item.id] = true;
-  if (item.kind === "outfit") S.wear[item.slot] = item.id;
+  S.owned[item.id] = item.kind === "outfit" ? ownedCount(item.id) + 1 : true;
+  if (item.kind === "outfit") {
+    // 아직 그 옷을 안 입은 아이에게 입힌다 — 두 번째 벌은 다른 아이에게
+    const idx = S.pets.findIndex((a) => a.wear[item.slot] !== item.id);
+    if (idx >= 0) S.pets[idx].wear[item.slot] = item.id;
+  }
   if (item.kind === "wall") S.walls[S.room] = item.id;
   addLog(`${item.name}을(를) 샀다 — ${item.cost}코인`);
   Sound.sfx("buy");
@@ -1798,6 +2009,7 @@ function renderTop() {
   const perMin = coinRate() * 60;
   $("rate").textContent = perMin > 0 ? `분당 +${perMin.toFixed(1)}` : "기분이 나빠서 수익 없음";
   $("rate").style.color = perMin > 0 ? "var(--ink-soft)" : "var(--pink)";
+  $("paws").textContent = ALBUM.paws ? `🐾 ${ALBUM.paws}` : "";
   $("bondtext").textContent = S.pets.length > 1
     ? `♡ ${S.name} Lv.${bondLevel()}`
     : `♡ 친밀도 Lv.${bondLevel()}`;
@@ -1901,6 +2113,18 @@ function updateCare() {
   for (const it of ALL_ITEMS) {
     const el = careEls.get(it.id);
     if (!el) continue;
+    if (it.special === "minigame") {
+      const cd = S.cooldown[it.id];
+      el.n.textContent = it.label;
+      el.c.textContent = cd > 0 ? Math.ceil(cd) + "초" : "무료";
+      el.c.classList.toggle("free", !(cd > 0));
+      el.p.textContent = cd > 0 ? "" : "미니게임";
+      el.p.classList.remove("zero");
+      el.bf.textContent = it.note;
+      el.btn.disabled = cd > 0;
+      continue;
+    }
+
     if (it.special === "sleep") {
       el.n.textContent = S.asleep ? "깨우기" : "재우기";
       el.c.textContent = "무료";
@@ -1949,7 +2173,13 @@ const shopEls = new Map();
 
 function buildShop() {
   const box = $("shopbody");
-  box.innerHTML = `<div class="sect">설비 — 한 번 사면 계속 남고, 그 방에 놓입니다</div>`;
+  box.innerHTML = `
+    <div class="gradcard" id="gradcard" hidden>
+      <div class="g-t">🏆 다 갖췄어요!</div>
+      <div class="g-d"></div>
+      <button id="gradbtn">앨범에 남기고 새로 시작</button>
+    </div>
+    <div class="sect">설비 — 한 번 사면 계속 남고, 그 방에 놓입니다</div>`;
   shopEls.clear();
 
   // 어느 방에 놓일 물건인지가 곧 무엇에 쓰는 물건인지다. 방별로 묶고, 그 안에서 싼 것부터.
@@ -2000,7 +2230,8 @@ function buildShop() {
         <span class="n">${o.name}</span>
         <span class="d">${o.desc}</span>
         <span class="c"></span>`;
-      b.onclick = () => { if (!has(o.id)) buy({ ...o, kind: "outfit" }); };
+      // 살 수 있는지는 buy()가 판단한다 — 아이가 둘이면 두 벌까지
+      b.onclick = () => buy({ ...o, kind: "outfit" });
       ogrid.appendChild(b);
       shopEls.set(o.id, { btn: b, c: b.querySelector(".c"), outfit: o });
     }
@@ -2065,16 +2296,22 @@ function updateShop() {
   for (const o of OUTFITS) {
     const el = shopEls.get(o.id);
     if (!el) continue;
-    const owned = has(o.id), on = S.wear[o.slot] === o.id;
-    el.c.textContent = owned ? (on ? "✓ 입는 중" : "🗄️ 서랍에") : "🪙 " + fmt(o.cost);
-    el.btn.classList.toggle("done", owned);
-    el.btn.classList.toggle("buyable", !owned && S.coins >= o.cost);
-    el.btn.disabled = owned || S.coins < o.cost;
+    // 아이가 둘이면 같은 옷을 두 벌까지 — 한 아이당 한 벌씩
+    const cap = S.pets.length, n = ownedCount(o.id), full = n >= cap;
+    el.c.textContent = full
+      ? (cap > 1 ? `✓ ${n}벌 보유` : "🗄️ 서랍에")
+      : (n > 0 ? `한 벌 더 🪙 ${fmt(o.cost)}` : "🪙 " + fmt(o.cost));
+    el.btn.classList.toggle("done", full);
+    el.btn.classList.toggle("buyable", !full && S.coins >= o.cost);
+    el.btn.disabled = full || S.coins < o.cost;
   }
   for (const sl of ["head", "body"]) {
     const oh = shopEls.get("head:" + sl);
-    if (oh) oh.count.textContent =
-      `${OUTFITS.filter((o) => o.slot === sl && has(o.id)).length} / ${oh.total}`;
+    if (oh) {
+      const cap = S.pets.length;
+      const got = OUTFITS.filter((o) => o.slot === sl).reduce((n, o) => n + ownedCount(o.id), 0);
+      oh.count.textContent = cap > 1 ? `${got} / ${oh.total * cap}벌` : `${got} / ${oh.total}`;
+    }
   }
 
   const here = ROOMS.find((x) => x.id === S.room);
@@ -2095,6 +2332,18 @@ function updateShop() {
   }
   // 살 수 있는 게 생기면 🛒 아이콘에 점을 찍는다
   $("nav").querySelector('[data-tab="shop"] .dot').hidden = !anyBuyable;
+
+  const gc = $("gradcard");
+  if (gc) {
+    const ready = canGraduate();
+    gc.hidden = !ready;
+    if (ready) {
+      gc.querySelector(".g-d").innerHTML =
+        `설비 ${FURNITURE.length}가지를 모두 모았습니다. 지금 가족을 앨범에 남기면`
+        + ` <b>발도장 🐾 ${pawsEarned()}개</b>를 받아요.`;
+      gc.querySelector("#gradbtn").onclick = graduate;
+    }
+  }
 }
 
 /* --- 서랍 --- */
@@ -2196,8 +2445,11 @@ function updateDrawer() {
       n.btn.classList.toggle("done", off);
     }
     const c = drawerEls.get("cnt:" + sl);
-    if (c) c.count.textContent =
-      `${OUTFITS.filter((o) => o.slot === sl && has(o.id)).length} / ${OUTFITS.filter((o) => o.slot === sl).length}`;
+    if (c) {
+      const list = OUTFITS.filter((o) => o.slot === sl);
+      const got = list.reduce((n, o) => n + ownedCount(o.id), 0);
+      c.count.textContent = `${got} / ${list.length * S.pets.length}벌`;
+    }
   }
 
   for (const o of OUTFITS) {
@@ -2205,8 +2457,10 @@ function updateDrawer() {
     if (!el) continue;
     const owned = has(o.id), on = S.wear[o.slot] === o.id;
     el.btn.hidden = !owned;                        // 없는 건 서랍에 안 보인다
-    el.c.textContent = on ? "✓ 입는 중" : "입히기";
+    const free = canWear(o.id);
+    el.c.textContent = on ? "✓ 입는 중" : free ? "입히기" : "다른 아이가 입는 중";
     el.btn.classList.toggle("done", on);
+    el.btn.disabled = !on && !free;
   }
 
   const here = ROOMS.find((x) => x.id === S.room);
@@ -2255,6 +2509,22 @@ function updateDrawer() {
 
 /* --- 일지 --- */
 function renderLog() {
+  const al = $("albumbox"), ap = $("albumpanel");
+  if (al && ap) {
+    const show = ALBUM.families.length > 0 || ALBUM.paws > 0;
+    ap.hidden = !show;
+    if (show) {
+      al.innerHTML = `<div class="shophead"><span>🐾 앨범</span><b>발도장 ${ALBUM.paws}개 · 모든 수익 +${Math.round(ALBUM.paws * PAW_BONUS * 100)}%</b></div>`
+        + ALBUM.families.map((f) => `
+          <div class="slot">
+            <div class="slot-pets">${f.pets.map((a) => `<span>${PET_ART[a.type] || ""}</span>`).join("")}</div>
+            <div class="slot-t">
+              <div class="slot-n">${f.pets.map((a) => a.name).join(" · ")}</div>
+              <div class="slot-d">${f.days}일 함께 · 물건 ${f.items}개 · 🐾 ${f.paws}</div>
+            </div>
+          </div>`).join("");
+    }
+  }
   const box = $("logbody");
   if (!S.log.length) { box.innerHTML = `<div class="empty">아직 기록이 없어요.</div>`; return; }
   box.innerHTML = S.log.map((l) => {
@@ -2704,6 +2974,7 @@ const Sound = {
     if (kind === "buy")   [67, 72, 76].forEach((n, i) => this.tone(hz(n), t + i * 0.06, 0.2, "triangle", 0.13));
     if (kind === "wish")  [76, 79, 84].forEach((n, i) => this.tone(hz(n), t + i * 0.08, 0.34, "sine", 0.15));
     if (kind === "sleep") this.tone(hz(55), t, 0.7, "sine", 0.12, null, hz(48));
+    if (kind === "swap")  this.tone(hz(64), t, 0.09, "triangle", 0.07);
     if (kind === "photo") { this.tone(1800, t, 0.05, "square", 0.07); this.tone(1200, t + 0.06, 0.07, "square", 0.05); }
   },
 };
@@ -3023,6 +3294,7 @@ function resumeFrom(obj, settle) {
 }
 
 (function init() {
+  ALBUM = albumData();
   const saved = load();
   if (!saved) { showPicker(); return; }
   resumeFrom(saved, true);

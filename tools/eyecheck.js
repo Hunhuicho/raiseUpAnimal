@@ -15,6 +15,7 @@ const LIMIT = 0.06;                  // 눈 넓이의 6%까지는 눈감아 준�
   p.on('pageerror', e => errs.push(e.message));
   await p.goto(PAGE);
   await p.waitForTimeout(300);
+  await p.click('.picks button[data-k="cat"]');   // 아무것도 미리 골라져 있지 않다
   await p.click('#start');
   await p.waitForTimeout(400);
 
