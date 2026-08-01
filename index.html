@@ -380,11 +380,34 @@
   .report { text-align: left; font-size: 13px; line-height: 1.9; margin-bottom: 14px; }
   .report b { color: var(--gold); }
 
-  #footer { text-align: center; font-size: 11px; color: var(--ink-soft); padding: 4px 0 14px; }
-  #footer button { padding: 4px 10px; font-size: 11px; box-shadow: none; }
+  #tools { display: flex; gap: 8px; margin-top: 2px; }
+  #tools button {
+    flex: 1; padding: 8px 4px;
+    display: flex; flex-direction: column; align-items: center; gap: 1px;
+  }
+  #tools .ti { font-size: 18px; line-height: 1.2; }
+  #tools .tl { font-size: 10.5px; font-weight: 800; }
+  #tools #btn-reset { color: var(--pink); border-color: #eec6cd; }
+  #footer { text-align: center; font-size: 11px; color: var(--ink-soft); padding: 8px 0 14px; }
+
+  /* 찍은 사진 */
+  #shot { width: 100%; border-radius: 12px; display: block; margin-bottom: 12px; border: 2px solid var(--line); }
+  .modal .sub { display: flex; gap: 8px; margin-top: 8px; }
+  .modal .sub button { flex: 1; padding: 10px; font-size: 13px; }
+
+  /* 잠깐 뜨는 알림 */
+  #toast {
+    position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%);
+    background: var(--ink); color: #fff8ee; font-size: 13px; font-weight: 800;
+    padding: 10px 18px; border-radius: 999px; z-index: 40;
+    opacity: 0; transition: opacity .25s, transform .25s; pointer-events: none;
+  }
+  #toast.on { opacity: 1; transform: translateX(-50%) translateY(-6px); }
 </style>
 </head>
 <body>
+<div id="toast"></div>
+
 <div id="roombg" aria-hidden="true">
   <div class="wall"></div>
   <div class="baseboard"></div>
@@ -448,7 +471,12 @@
     <div class="panel"><div class="tabbody" id="logbody"></div></div>
   </section>
 
-  <div id="footer"><span id="savenote">자동 저장됩니다</span> · <button id="reset">처음부터</button></div>
+  <div id="tools">
+    <button id="btn-save"><span class="ti">💾</span><span class="tl">저장하기</span></button>
+    <button id="btn-photo"><span class="ti">📷</span><span class="tl">사진 찍기</span></button>
+    <button id="btn-reset"><span class="ti">🔄</span><span class="tl">새로 시작</span></button>
+  </div>
+  <div id="footer"><span id="savenote">자동 저장됩니다</span></div>
 </div>
 
 <script>
@@ -2254,10 +2282,179 @@ $("pet").onclick = () => {
   if (canDo(it)) doCare(it); else say("…");
 };
 
-$("reset").onclick = () => {
+/* ===================== 저장 · 사진 · 새로 시작 ===================== */
+
+let toastTimer = 0;
+function toast(text) {
+  const t = $("toast");
+  t.textContent = text;
+  t.classList.add("on");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("on"), 1800);
+}
+
+$("btn-save").onclick = () => {
+  if (!storageOK) { toast("이 환경에서는 저장이 안 돼요"); return; }
+  save();
+  const d = new Date();
+  $("savenote").textContent =
+    `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}에 저장됨 · 자동으로도 저장됩니다`;
+  toast("저장했어요");
+};
+
+$("btn-reset").onclick = () => {
   if (!confirm("모든 기록이 사라집니다. 정말 처음부터 시작할까요?")) return;
-  localStorage.removeItem(SAVE_KEY);
+  try { localStorage.removeItem(SAVE_KEY); } catch (e) { /* 저장 불가 환경 */ }
   location.reload();
+};
+
+/* --- 사진 찍기 ---
+   화면을 캡처하는 게 아니라 캔버스에 방을 다시 그린다. 외부 라이브러리 없이
+   되고, 화면에 없는 액자와 이름표까지 얹을 수 있다. */
+
+const W = 720, H = 720;
+
+function svgToImage(svg, size) {
+  const sized = svg.replace("<svg", `<svg width="${size}" height="${size}"`);
+  return new Promise((res, rej) => {
+    const img = new Image();
+    img.onload = () => res(img);
+    img.onerror = rej;
+    img.src = "data:image/svg+xml," + encodeURIComponent(sized);
+  });
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+async function drawPhoto() {
+  const cv = document.createElement("canvas");
+  cv.width = W; cv.height = H;
+  const ctx = cv.getContext("2d");
+
+  const room = ROOMS.find((r) => r.id === S.room);
+  const wp = wallpaperOf(S.room);
+  const pad = 26, cw = W - pad * 2, ch = H - pad * 2 - 74;
+  const floorY = pad + ch * 0.62;
+
+  ctx.fillStyle = "#f4ece1"; ctx.fillRect(0, 0, W, H);
+  ctx.save();
+  roundRect(ctx, pad, pad, cw, ch, 22); ctx.clip();
+
+  let g = ctx.createLinearGradient(0, pad, 0, floorY);
+  g.addColorStop(0, wp.w1 || room.w1); g.addColorStop(1, wp.w2 || room.w2);
+  ctx.fillStyle = g; ctx.fillRect(pad, pad, cw, floorY - pad);
+
+  g = ctx.createLinearGradient(0, floorY, 0, pad + ch);
+  g.addColorStop(0, room.f1); g.addColorStop(1, room.f2);
+  ctx.fillStyle = g; ctx.fillRect(pad, floorY, cw, pad + ch - floorY);
+
+  // 벽지 무늬 — 산 벽지가 사진에 안 나오면 산 보람이 없다
+  if (wp.pattern) {
+    ctx.save();
+    ctx.beginPath(); ctx.rect(pad, pad, cw, floorY - pad); ctx.clip();
+    const dot = (gap, r, color, off) => {
+      ctx.fillStyle = color;
+      for (let y = pad + off; y < floorY; y += gap)
+        for (let x = pad + off; x < pad + cw; x += gap) {
+          ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+        }
+    };
+    if (wp.pattern === "dot") dot(42, 3.4, "rgba(150,110,140,.18)", 0);
+    if (wp.pattern === "star") { dot(56, 2.8, "rgba(110,120,180,.22)", 0); dot(56, 2, "rgba(110,120,180,.14)", 28); }
+    if (wp.pattern === "check") {
+      ctx.strokeStyle = "rgba(150,120,86,.15)"; ctx.lineWidth = 14;
+      for (let x = pad; x < pad + cw; x += 42) { ctx.beginPath(); ctx.moveTo(x, pad); ctx.lineTo(x, floorY); ctx.stroke(); }
+      for (let y = pad; y < floorY; y += 42) { ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(pad + cw, y); ctx.stroke(); }
+    }
+    ctx.restore();
+  }
+
+  ctx.fillStyle = "rgba(122,96,68,.16)";
+  ctx.fillRect(pad, floorY - 7, cw, 7);
+
+  // 러그
+  ctx.fillStyle = "rgba(236,216,188,.85)";
+  ctx.beginPath();
+  ctx.ellipse(W / 2, pad + ch * 0.9, cw * 0.3, ch * 0.11, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 가구
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  for (const f of FURNITURE) {
+    if (!shown(f.id) || f.room !== S.room) continue;
+    const sz = Math.round(46 * (f.s || 1));
+    ctx.font = `${sz}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
+    ctx.fillText(f.emoji, pad + (cw * f.x) / 100, pad + (ch * f.y) / 100);
+  }
+
+  // 반려동물 (옷까지 그대로)
+  const petSize = Math.round(cw * 0.42);
+  const px = W / 2 - petSize / 2, py = pad + ch * 0.66 - petSize / 2;
+  const layers = [PET_ART[S.type]];
+  for (const [slot, fit] of [["body", BODY_FIT], ["head", ACC_FIT]]) {
+    const id = S.wear[slot];
+    if (!id || !ACC_ART[id]) continue;
+    const [dx, dy] = fit[S.type] || [0, 0];
+    layers.push(art(`<g transform="translate(${dx} ${dy})">${ACC_ART[id]}</g>`));
+  }
+  for (const svg of layers) {
+    const img = await svgToImage(svg, petSize);
+    ctx.drawImage(img, px, py, petSize, petSize);
+  }
+  ctx.restore();
+
+  // 액자 테두리와 이름표
+  ctx.strokeStyle = "#e2d3bf"; ctx.lineWidth = 5;
+  roundRect(ctx, pad, pad, cw, ch, 22); ctx.stroke();
+
+  const days = Math.max(1, Math.floor((Date.now() - (S.born || Date.now())) / 86400000) + 1);
+  ctx.fillStyle = "#4a3b2e"; ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+  ctx.font = '800 34px "Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+  ctx.fillText(S.name, pad + 6, H - 34);
+  ctx.fillStyle = "#907a63";
+  ctx.font = '700 20px "Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+  ctx.fillText(`${room.icon} ${room.name} · 함께한 지 ${days}일 · 친밀도 Lv.${bondLevel()}`, pad + 6, H - 10);
+  ctx.textAlign = "right";
+  ctx.fillStyle = "#d9a441";
+  ctx.font = '800 22px "Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+  ctx.fillText(mood().text, W - pad - 6, H - 34);
+
+  return new Promise((res) => cv.toBlob((blob) => res(URL.createObjectURL(blob)), "image/png"));
+}
+
+$("btn-photo").onclick = async () => {
+  let url;
+  try { url = await drawPhoto(); }
+  catch (e) { toast("사진을 못 찍었어요"); return; }
+
+  // 브라우저가 한글 파일명을 버리고 "download"로 떨어뜨린다. 이름은 사진 안에 찍히므로
+  // 파일명은 ASCII로 안전하게 만든다.
+  const st = new Date();
+  const pad2 = (n) => String(n).padStart(2, "0");
+  const base = /^[\w.-]+$/.test(S.name) ? S.name : "mypet";
+  const name = `${base}_${st.getFullYear()}${pad2(st.getMonth() + 1)}${pad2(st.getDate())}_${pad2(st.getHours())}${pad2(st.getMinutes())}.png`;
+
+  const ov = document.createElement("div");
+  ov.className = "overlay";
+  ov.innerHTML = `
+    <div class="modal">
+      <h2>📷 사진을 찍었어요</h2>
+      <p>길게 눌러도 저장할 수 있어요.</p>
+      <img id="shot" src="${url}" alt="${S.name} 사진">
+      <a class="big" id="dl" href="${url}" download="${name}" style="display:block;text-decoration:none">사진 내려받기</a>
+      <div class="sub"><button id="close">닫기</button></div>
+    </div>`;
+  document.body.appendChild(ov);
+  ov.querySelector("#close").onclick = () => { URL.revokeObjectURL(url); ov.remove(); };
+  ov.querySelector("#dl").onclick = () => { addLog("사진을 찍었다 📷"); toast("사진을 저장했어요"); };
 };
 
 (function init() {
