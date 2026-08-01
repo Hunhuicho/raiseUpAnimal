@@ -3030,7 +3030,7 @@ $("btn-undo").onclick = async () => {
   try {
     save();
     const cur = localStorage.getItem(SAVE_KEY);
-    localStorage.setItem(PREV_KEY, cur);
+    if (cur) localStorage.setItem(PREV_KEY, cur);   // 지금 게임이 없으면 백업을 덮지 않는다
     localStorage.setItem(SAVE_KEY, JSON.stringify(prev));
   } catch (e) { /* 저장 불가 환경 */ }
   resumeFrom(prev, false);
