@@ -22,6 +22,8 @@
   :root { color-scheme: light; }
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  /* display:flex 같은 선언이 기본 [hidden] 규칙을 이겨서 숨김이 무시된다 */
+  [hidden] { display: none !important; }
   button:focus-visible { outline: 3px solid var(--pink); outline-offset: 2px; }
 
   @media (prefers-reduced-motion: reduce) {
@@ -121,6 +123,20 @@
       repeating-linear-gradient(0deg,  rgba(108,78,46,.09) 0 1px, transparent 1px 30px);
   }
 
+  /* ---------- 부탁 ---------- */
+  #wishbar {
+    display: flex; align-items: center; gap: 9px; cursor: pointer;
+    padding: 10px 13px; font-size: 13px; font-weight: 800;
+    border-color: var(--green); background: #f4faef;
+  }
+  #wishbar .wi { font-size: 18px; line-height: 1; flex-shrink: 0; }
+  #wishbar .wt { flex: 1; min-width: 0; }
+  #wishbar .wc {
+    flex-shrink: 0; font-size: 11px; color: var(--ink-soft);
+    font-variant-numeric: tabular-nums; text-align: right; line-height: 1.35;
+  }
+  #wishbar .wc b { display: block; color: var(--green); font-size: 12px; }
+
   /* ---------- 방 고르기 ---------- */
   #rooms { display: flex; gap: 7px; margin-bottom: 8px; }
   #rooms button {
@@ -216,20 +232,10 @@
   }
 
   /* ---------- 게이지 ---------- */
-  #stats { padding: 12px 14px 6px; }
-  .stat { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; font-size: 13px; font-weight: 700; }
-  .stat > .lb { width: 62px; }
-  .bar { flex: 1; height: 11px; background: #ebe0cf; border-radius: 6px; overflow: hidden; }
-  .bar > i { display: block; height: 100%; border-radius: 6px; transition: width .3s; }
-  .val { width: 30px; text-align: right; color: var(--ink-soft); font-size: 12px; }
-  .stat.need .lb::after {
-    content: "지금!"; font-size: 9px; color: #fff; background: var(--pink);
-    border-radius: 5px; padding: 1px 4px; margin-left: 4px; vertical-align: 1px;
-  }
+  #stats { padding: 0; }
   #moodline {
     display: flex; align-items: center; justify-content: center; gap: 7px;
-    padding: 7px 0 12px; font-size: 15px; font-weight: 800;
-    border-top: 2px dashed var(--line); margin-top: 3px;
+    padding: 11px 0; font-size: 15px; font-weight: 800;
   }
 
   /* ---------- 수입 내역 ---------- */
@@ -308,6 +314,7 @@
   }
   .shopgrid .e { width: 34px; height: 34px; }
   .shopgrid .e svg { width: 100%; height: 100%; display: block; }
+  .shopgrid .e2 { font-size: 27px; line-height: 1.2; }
   .shopgrid .sw {
     width: 34px; height: 34px; border-radius: 9px;
     border: 2px solid rgba(122,96,68,.25);
@@ -388,6 +395,8 @@
 
   <div class="panel" id="needline"><span class="ni"></span><span class="nt"></span></div>
 
+  <div class="panel" id="wishbar" hidden><span class="wi">💭</span><span class="wt"></span><span class="wc"></span></div>
+
   <div id="rooms"></div>
 
   <div id="room">
@@ -397,15 +406,13 @@
   </div>
 
   <div class="panel" id="stats">
-    <div class="stat" id="s-sat"><span class="lb">🍚 포만감</span><div class="bar"><i id="b-sat"></i></div><span class="val" id="v-sat">0</span></div>
-    <div class="stat" id="s-cln"><span class="lb">🫧 청결</span><div class="bar"><i id="b-cln"></i></div><span class="val" id="v-cln">0</span></div>
-    <div class="stat" id="s-aff"><span class="lb">💗 애정</span><div class="bar"><i id="b-aff"></i></div><span class="val" id="v-aff">0</span></div>
     <div id="moodline"><span id="moodface">😊</span><span id="moodtext">기분 좋음</span><span id="moodnum" style="color:var(--ink-soft)">0</span></div>
   </div>
 
   <nav id="nav">
     <button data-tab="care" class="on"><span class="ni">🏠</span><span class="nl">돌보기</span></button>
     <button data-tab="shop"><span class="ni">🛒</span><span class="nl">상점</span><span class="dot" hidden></span></button>
+    <button data-tab="drawer"><span class="ni">🗄️</span><span class="nl">서랍</span></button>
     <button data-tab="log"><span class="ni">📔</span><span class="nl">일지</span></button>
   </nav>
 
@@ -420,6 +427,10 @@
 
   <section id="page-shop" hidden>
     <div class="panel"><div class="tabbody" id="shopbody"></div></div>
+  </section>
+
+  <section id="page-drawer" hidden>
+    <div class="panel"><div class="tabbody" id="drawerbody"></div></div>
   </section>
 
   <section id="page-log" hidden>
@@ -502,164 +513,201 @@ const PETS = {
 const OUT = "#3a2c44";          // 공통 외곽선
 const WHITE = "#fffaf2";
 
+// 눈은 크게, 하이라이트는 두 개 — 반짝이는 느낌이 귀여움의 8할이다
 const eye = (x, y, r) =>
-  `<ellipse cx="${x}" cy="${y}" rx="${r}" ry="${r * 1.14}" fill="${OUT}" stroke="none"/>` +
-  `<circle cx="${x + r * 0.36}" cy="${y - r * 0.44}" r="${r * 0.3}" fill="#fff" stroke="none"/>`;
+  `<ellipse cx="${x}" cy="${y}" rx="${r}" ry="${r * 1.1}" fill="${OUT}" stroke="none"/>` +
+  `<circle cx="${x + r * 0.33}" cy="${y - r * 0.44}" r="${r * 0.36}" fill="#fff" stroke="none"/>` +
+  `<circle cx="${x - r * 0.36}" cy="${y + r * 0.4}" r="${r * 0.2}" fill="#fff" opacity=".85" stroke="none"/>`;
 
 const cheek = (x, y, c) =>
-  `<ellipse cx="${x}" cy="${y}" rx="7.5" ry="4.8" fill="${c || "#f2a09b"}" stroke="none" opacity=".82"/>`;
+  `<ellipse cx="${x}" cy="${y}" rx="8.6" ry="5.6" fill="${c || "#f79ba0"}" stroke="none" opacity=".72"/>`;
+
+// 머리 위 광택 — 납작한 색면에 살짝 볼륨을 준다
+const gloss = (x, y, rx, ry, rot) =>
+  `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="#fff" opacity=".26" stroke="none"` +
+  ` transform="rotate(${rot} ${x} ${y})"/>`;
 
 const smile = (x, y) =>
-  `<path d="M${x - 7} ${y} q3.5 4.6 7 0 q3.5 4.6 7 0" stroke-width="3.4"/>`;
+  `<path d="M${x - 6.5} ${y} q3.25 4.4 6.5 0 q3.25 4.4 6.5 0" stroke-width="3.2"/>`;
 
 const snout = (x, y) =>
-  `<path d="M${x - 3.4} ${y} h6.8 l-3.4 4 z" fill="${OUT}" stroke="none"/>`;
+  `<path d="M${x - 3.6} ${y - 1.4} q3.6 -1.6 7.2 0 q-1.4 5.2 -3.6 5.4 q-2.2 -0.2 -3.6 -5.4 z" fill="${OUT}" stroke="none"/>`;
 
-const GROUND = `<ellipse cx="60" cy="114" rx="32" ry="5.4" fill="${OUT}" opacity=".13" stroke="none"/>`;
+const GROUND = `<ellipse cx="60" cy="115" rx="31" ry="5" fill="${OUT}" opacity=".13" stroke="none"/>`;
+
+// 몸통·배·앞발은 모두 같은 틀을 쓴다 — 종이 달라도 한 세트로 보이도록
+const BODY = (c, w) =>
+  `<path d="M28 108 q0 -32 32 -32 q32 0 32 32 z" fill="${c}"/>` +
+  `<ellipse cx="60" cy="98" rx="19" ry="12" fill="${w}" stroke="none"/>` +
+  `<ellipse cx="46" cy="105" rx="9.5" ry="6" fill="${w}"/>` +
+  `<ellipse cx="74" cy="105" rx="9.5" ry="6" fill="${w}"/>`;
 
 const art = (inner) =>
   `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="${OUT}"` +
   ` stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
 
-// 옷은 머리 위에 올라간다. 종마다 머리 위치가 달라 보정값을 따로 둔다.
+// 옷은 머리 위에 올라간다. 종마다 머리 높이가 달라 보정값을 따로 둔다.
 const ACC_FIT = {
-  dog: [0, 0], cat: [0, 0], rabbit: [0, 7], hamster: [0, 2], parrot: [0, 3],
-  turtle: [0, -7], hedgehog: [0, 40], fish: [-17, 12],
+  dog: [0, 0], cat: [0, 0], rabbit: [0, 5], hamster: [0, 1], parrot: [0, 2],
+  turtle: [0, -8], hedgehog: [0, 36], fish: [-18, 12],
+};
+
+// 몸통 위치는 네 발 동물끼리 같지만 거북이·고슴도치·금붕어는 다르다
+const BODY_FIT = {
+  dog: [0, 0], cat: [0, 0], rabbit: [0, 0], hamster: [0, 0], parrot: [0, 0],
+  turtle: [0, -14], hedgehog: [0, -6], fish: [-6, 2],
 };
 
 const ACC_ART = {
+  b_tee:
+    `<path d="M33 107 q0 -25 27 -25 q27 0 27 25 z" fill="#eaf3f8"/>` +
+    `<path d="M35 92 q25 7 50 0" stroke="#6aa8d8" stroke-width="5.5"/>` +
+    `<path d="M34 101 q26 7 52 0" stroke="#6aa8d8" stroke-width="5.5"/>` +
+    `<path d="M47 84 q13 8 26 0" stroke-width="4"/>`,
+  b_rain:
+    `<path d="M32 107 q0 -26 28 -26 q28 0 28 26 z" fill="#f8d456"/>` +
+    `<path d="M60 81 v26" stroke-width="4"/>` +
+    `<path d="M44 83 q16 9 32 0" stroke-width="4"/>` +
+    `<circle cx="53" cy="93" r="2.6" fill="${OUT}" stroke="none"/>` +
+    `<circle cx="53" cy="101" r="2.6" fill="${OUT}" stroke="none"/>`,
+  b_knit:
+    `<path d="M33 107 q0 -25 27 -25 q27 0 27 25 z" fill="#d98f7e"/>` +
+    `<path d="M45 82 q15 9 30 0 q-2 8 -15 8 q-13 0 -15 -8 z" fill="#c47a69"/>` +
+    `<path d="M40 95 q7 -5 14 0 q7 5 14 0 q7 -5 13 0" stroke="#b86f5e" stroke-width="3.2"/>` +
+    `<path d="M40 103 q7 -5 14 0 q7 5 14 0 q7 -5 13 0" stroke="#b86f5e" stroke-width="3.2"/>`,
+  b_cape:
+    `<path d="M40 80 q-24 15 -20 36 q11 5 20 0 z" fill="#e2607a"/>` +
+    `<path d="M80 80 q24 15 20 36 q-11 5 -20 0 z" fill="#e2607a"/>` +
+    `<path d="M43 79 q17 -7 34 0" stroke-width="5"/>` +
+    `<circle cx="60" cy="79" r="4.6" fill="#f7cf58"/>`,
+
   o_ribbon:
-    `<path d="M83 25 q-13 -9 -14 2 q1 11 14 2 z" fill="#f28aa6"/>` +
-    `<path d="M83 25 q13 -9 14 2 q-1 11 -14 2 z" fill="#f28aa6"/>` +
-    `<circle cx="83" cy="27" r="4.4" fill="#e56d8c"/>`,
+    `<path d="M84 22 q-13 -9 -14 2 q1 11 14 2 z" fill="#f79bb2"/>` +
+    `<path d="M84 22 q13 -9 14 2 q-1 11 -14 2 z" fill="#f79bb2"/>` +
+    `<circle cx="84" cy="24" r="4.6" fill="#ea7a97"/>`,
   o_flower:
-    `<g fill="#f6f0f8">` +
-    `<circle cx="87" cy="8" r="6"/><circle cx="97" cy="15" r="6"/>` +
-    `<circle cx="93" cy="26" r="6"/><circle cx="81" cy="26" r="6"/>` +
-    `<circle cx="77" cy="15" r="6"/></g>` +
-    `<circle cx="87" cy="17" r="5" fill="#f5c94c"/>`,
+    `<g fill="#fbf6fc">` +
+    `<circle cx="88" cy="6" r="6.2"/><circle cx="98" cy="13" r="6.2"/>` +
+    `<circle cx="94" cy="24" r="6.2"/><circle cx="82" cy="24" r="6.2"/>` +
+    `<circle cx="78" cy="13" r="6.2"/></g>` +
+    `<circle cx="88" cy="15" r="5" fill="#f7cf58"/>`,
   o_cap:
-    `<path d="M37 21 q23 -22 46 0 z" fill="#5aa9d6"/>` +
-    `<path d="M83 21 q16 1 15 8 q-16 1 -15 -8 z" fill="#4a93bd"/>` +
-    `<path d="M35 21 h49" stroke-width="5"/>`,
+    `<path d="M34 19 q26 -24 52 0 z" fill="#6bb6de"/>` +
+    `<path d="M86 19 q17 1 16 8 q-17 1 -16 -8 z" fill="#559dc4"/>` +
+    `<path d="M32 19 h55" stroke-width="5"/>`,
   o_glass:
-    `<circle cx="48" cy="45" r="12" fill="#cfe9f5" fill-opacity=".55"/>` +
-    `<circle cx="72" cy="45" r="12" fill="#cfe9f5" fill-opacity=".55"/>` +
-    `<path d="M60 44 h0.5 M36 42 l-9 -3 M84 42 l9 -3" stroke-width="4"/>`,
+    `<circle cx="46" cy="44" r="13" fill="#d4ecf7" fill-opacity=".5"/>` +
+    `<circle cx="74" cy="44" r="13" fill="#d4ecf7" fill-opacity=".5"/>` +
+    `<path d="M60 43 h0.5 M32 40 l-9 -3 M88 40 l9 -3" stroke-width="4"/>`,
   o_crown:
-    `<path d="M41 24 L46 6 L53 16 L60 3 L67 16 L74 6 L79 24 z" fill="#f5c94c"/>` +
-    `<circle cx="60" cy="12" r="3" fill="#e8607d" stroke="none"/>`,
+    `<path d="M39 23 L45 3 L52 14 L60 0 L68 14 L75 3 L81 23 z" fill="#f7cf58"/>` +
+    `<circle cx="60" cy="10" r="3.2" fill="#ef7b93" stroke="none"/>`,
 };
 
 const PET_ART = {
   dog: art(GROUND +
-    `<path d="M88 98 q20 0 19 -17" stroke-width="9" stroke="#e8bc84"/>` +
-    `<path d="M31 107 q-1 -34 29 -34 q30 0 29 34 z" fill="#f3d3a0"/>` +
-    `<ellipse cx="60" cy="96" rx="18" ry="14" fill="${WHITE}" stroke="none"/>` +
-    `<ellipse cx="47" cy="105" rx="9" ry="6.2" fill="${WHITE}"/>` +
-    `<ellipse cx="73" cy="105" rx="9" ry="6.2" fill="${WHITE}"/>` +
-    `<path d="M30 32 q-14 5 -13 25 q1 15 13 13" fill="#cf9a5e"/>` +
-    `<path d="M90 32 q14 5 13 25 q-1 15 -13 13" fill="#cf9a5e"/>` +
-    `<ellipse cx="60" cy="46" rx="33" ry="30" fill="#f3d3a0"/>` +
-    `<ellipse cx="60" cy="58" rx="17" ry="13" fill="${WHITE}" stroke="none"/>` +
-    eye(48, 44, 7) + eye(72, 44, 7) + cheek(34, 56) + cheek(86, 56) +
-    snout(60, 53) + smile(60, 59)),
+    `<path d="M90 96 q20 2 18 -17" stroke-width="10" stroke="#eec392"/>` +
+    BODY("#f7dcb2", "#fff8ec") +
+    `<path d="M28 31 q-17 7 -15 28 q2 17 16 13" fill="#d9a86c"/>` +
+    `<path d="M92 31 q17 7 15 28 q-2 17 -16 13" fill="#d9a86c"/>` +
+    `<ellipse cx="60" cy="44" rx="35" ry="32" fill="#f7dcb2"/>` +
+    `<path d="M60 12 q-19 3 -19 21 q0 5 2 8 q7 -5 17 -5 z" fill="#e9c48d" stroke="none"/>` +
+    gloss(43, 25, 13, 7, -22) +
+    `<ellipse cx="60" cy="58" rx="17" ry="12" fill="#fff8ec" stroke="none"/>` +
+    eye(46, 44, 8) + eye(74, 44, 8) + cheek(29, 57) + cheek(91, 57) +
+    snout(60, 53) + smile(60, 60)),
 
   cat: art(GROUND +
-    `<path d="M87 99 q22 -1 21 -21 q-1 -12 -11 -11" stroke-width="9" stroke="#f0a05e"/>` +
-    `<path d="M99 91 h9 M103 80 h6" stroke-width="3.2" stroke="#d9803c"/>` +
-    `<path d="M31 107 q-1 -34 29 -34 q30 0 29 34 z" fill="#f6b273"/>` +
-    `<ellipse cx="60" cy="96" rx="18" ry="14" fill="${WHITE}" stroke="none"/>` +
-    `<ellipse cx="47" cy="105" rx="9" ry="6.2" fill="${WHITE}"/>` +
-    `<ellipse cx="73" cy="105" rx="9" ry="6.2" fill="${WHITE}"/>` +
-    `<path d="M34 30 L28 6 L53 17 Z" fill="#f6b273"/>` +
-    `<path d="M86 30 L92 6 L67 17 Z" fill="#f6b273"/>` +
-    `<ellipse cx="60" cy="46" rx="34" ry="31" fill="#f6b273"/>` +
-    `<path d="M38 25 L35 13 L47 19 Z" fill="#f2a0a8" stroke="none"/>` +
-    `<path d="M82 25 L85 13 L73 19 Z" fill="#f2a0a8" stroke="none"/>` +
-    `<path d="M60 16 q-11 0 -11 17 q0 12 11 12 q11 0 11 -12 q0 -17 -11 -17" fill="${WHITE}" stroke="none"/>` +
-    `<ellipse cx="60" cy="58" rx="18" ry="13" fill="${WHITE}" stroke="none"/>` +
-    `<path d="M43 25 q6 -5 10 -2 M77 25 q-6 -5 -10 -2" stroke="#dd8b45" stroke-width="3.4"/>` +
-    eye(48, 45, 7) + eye(72, 45, 7) + cheek(34, 56) + cheek(86, 56) +
-    snout(60, 54) + smile(60, 60) +
-    `<path d="M27 52 l-13 -3 M27 60 l-14 3 M93 52 l13 -3 M93 60 l14 3" stroke-width="3"/>`),
+    `<path d="M89 98 q24 -2 23 -23 q-1 -13 -12 -12" stroke-width="10" stroke="#f4a967"/>` +
+    `<path d="M101 90 h10 M105 78 h7" stroke-width="3.2" stroke="#dd8340"/>` +
+    BODY("#f9bb7a", "#fffaf2") +
+    `<path d="M31 27 L25 2 L53 14 Z" fill="#f9bb7a"/>` +
+    `<path d="M89 27 L95 2 L67 14 Z" fill="#f9bb7a"/>` +
+    `<ellipse cx="60" cy="44" rx="35" ry="32" fill="#f9bb7a"/>` +
+    `<path d="M35 22 L32 9 L45 15 Z" fill="#f6a6ae" stroke="none"/>` +
+    `<path d="M85 22 L88 9 L75 15 Z" fill="#f6a6ae" stroke="none"/>` +
+    `<path d="M60 12 q-12 0 -12 18 q0 13 12 13 q12 0 12 -13 q0 -18 -12 -18" fill="#fffaf2" stroke="none"/>` +
+    `<ellipse cx="60" cy="58" rx="18" ry="12" fill="#fffaf2" stroke="none"/>` +
+    `<path d="M41 22 q6 -6 11 -2 M79 22 q-6 -6 -11 -2" stroke="#e08d47" stroke-width="3.4"/>` +
+    gloss(42, 25, 12, 6.5, -22) +
+    eye(46, 44, 8) + eye(74, 44, 8) + cheek(29, 57) + cheek(91, 57) +
+    snout(60, 54) + smile(60, 61) +
+    `<path d="M25 52 l-14 -4 M25 61 l-14 4 M95 52 l14 -4 M95 61 l14 4" stroke-width="3"/>`),
 
   rabbit: art(GROUND +
-    `<circle cx="91" cy="99" r="8" fill="${WHITE}"/>` +
-    `<path d="M33 107 q-1 -33 27 -33 q28 0 27 33 z" fill="#f1ece7"/>` +
-    `<ellipse cx="60" cy="97" rx="17" ry="13" fill="${WHITE}" stroke="none"/>` +
-    `<ellipse cx="48" cy="105" rx="8.5" ry="6" fill="${WHITE}"/>` +
-    `<ellipse cx="72" cy="105" rx="8.5" ry="6" fill="${WHITE}"/>` +
-    `<ellipse cx="46" cy="22" rx="9" ry="22" fill="#f1ece7" transform="rotate(-9 46 22)"/>` +
-    `<ellipse cx="74" cy="22" rx="9" ry="22" fill="#f1ece7" transform="rotate(9 74 22)"/>` +
-    `<ellipse cx="46" cy="23" rx="4" ry="14" fill="#f2a0a8" stroke="none" transform="rotate(-9 46 23)"/>` +
-    `<ellipse cx="74" cy="23" rx="4" ry="14" fill="#f2a0a8" stroke="none" transform="rotate(9 74 23)"/>` +
-    `<ellipse cx="60" cy="53" rx="31" ry="28" fill="#f1ece7"/>` +
-    eye(49, 50, 6.6) + eye(71, 50, 6.6) + cheek(36, 61) + cheek(84, 61) +
-    `<path d="M56.6 59 h6.8 l-3.4 3.6 z" fill="#e58f97" stroke="none"/>` +
-    `<path d="M60 63 v4 M53 70 q7 5 14 0" stroke-width="3.2"/>` +
-    `<path d="M56 74 v5 M64 74 v5" stroke-width="3"/>`),
+    `<circle cx="94" cy="98" r="8.5" fill="#fffaf2"/>` +
+    BODY("#f3efeb", "#fffaf2") +
+    `<ellipse cx="43" cy="19" rx="9.5" ry="23" fill="#f3efeb" transform="rotate(-10 43 19)"/>` +
+    `<ellipse cx="77" cy="19" rx="9.5" ry="23" fill="#f3efeb" transform="rotate(10 77 19)"/>` +
+    `<ellipse cx="43" cy="20" rx="4.4" ry="15" fill="#f6a6ae" stroke="none" transform="rotate(-10 43 20)"/>` +
+    `<ellipse cx="77" cy="20" rx="4.4" ry="15" fill="#f6a6ae" stroke="none" transform="rotate(10 77 20)"/>` +
+    `<ellipse cx="60" cy="49" rx="34" ry="30" fill="#f3efeb"/>` +
+    gloss(43, 32, 12, 6.5, -22) +
+    eye(47, 49, 7.8) + eye(73, 49, 7.8) + cheek(30, 61) + cheek(90, 61) +
+    `<path d="M56.4 58 q3.6 -1.6 7.2 0 q-1.4 5 -3.6 5.2 q-2.2 -0.2 -3.6 -5.2 z" fill="#ea8f99" stroke="none"/>` +
+    `<path d="M60 63 v4 M52 69 q8 6 16 0" stroke-width="3.2"/>` +
+    `<path d="M56 73 v6 M64 73 v6" stroke-width="3"/>`),
 
   hamster: art(GROUND +
-    `<path d="M34 106 q-1 -31 26 -31 q27 0 26 31 z" fill="#f5c98c"/>` +
-    `<ellipse cx="60" cy="97" rx="17" ry="13" fill="#fff3df" stroke="none"/>` +
-    `<ellipse cx="48" cy="104" rx="8" ry="5.6" fill="#fff3df"/>` +
-    `<ellipse cx="72" cy="104" rx="8" ry="5.6" fill="#fff3df"/>` +
-    `<circle cx="36" cy="26" r="11" fill="#f5c98c"/>` +
-    `<circle cx="84" cy="26" r="11" fill="#f5c98c"/>` +
-    `<circle cx="36" cy="26" r="5.5" fill="#f2a0a8" stroke="none"/>` +
-    `<circle cx="84" cy="26" r="5.5" fill="#f2a0a8" stroke="none"/>` +
-    `<ellipse cx="60" cy="48" rx="34" ry="29" fill="#f5c98c"/>` +
-    `<ellipse cx="60" cy="58" rx="19" ry="13" fill="#fff3df" stroke="none"/>` +
-    eye(48, 46, 6.8) + eye(72, 46, 6.8) + cheek(30, 57) + cheek(90, 57) +
-    snout(60, 54) + smile(60, 60) +
-    `<path d="M56 63 v5 M64 63 v5" stroke-width="3"/>`),
+    BODY("#f7cd92", "#fff5e3") +
+    `<circle cx="34" cy="23" r="11.5" fill="#f7cd92"/>` +
+    `<circle cx="86" cy="23" r="11.5" fill="#f7cd92"/>` +
+    `<circle cx="34" cy="23" r="6" fill="#f6a6ae" stroke="none"/>` +
+    `<circle cx="86" cy="23" r="6" fill="#f6a6ae" stroke="none"/>` +
+    `<ellipse cx="60" cy="46" rx="36" ry="31" fill="#f7cd92"/>` +
+    gloss(43, 28, 13, 7, -22) +
+    `<ellipse cx="60" cy="59" rx="19" ry="12" fill="#fff5e3" stroke="none"/>` +
+    eye(46, 45, 8) + eye(74, 45, 8) + cheek(27, 58) + cheek(93, 58) +
+    snout(60, 55) + smile(60, 62) +
+    `<path d="M56 65 v5 M64 65 v5" stroke-width="3"/>`),
 
   parrot: art(GROUND +
-    `<path d="M78 100 q20 8 26 21" stroke-width="9" stroke="#4fa8c9"/>` +
-    `<path d="M34 105 q-2 -32 26 -32 q28 0 26 32 z" fill="#7cc98f"/>` +
-    `<ellipse cx="49" cy="107" rx="7" ry="4.6" fill="#f5a63c"/>` +
-    `<ellipse cx="71" cy="107" rx="7" ry="4.6" fill="#f5a63c"/>` +
-    `<path d="M36 79 q-13 10 -7 24 q11 5 16 -7" fill="#4fa8c9"/>` +
-    `<path d="M48 20 q4 -14 12 -16 q8 2 12 16" fill="#f2d45c"/>` +
-    `<ellipse cx="60" cy="48" rx="31" ry="29" fill="#7cc98f"/>` +
-    `<path d="M60 19 q-14 2 -14 22 q0 16 14 16 q14 0 14 -16 q0 -20 -14 -22" fill="#f2d45c" stroke="none"/>` +
-    eye(49, 44, 6.6) + eye(71, 44, 6.6) + cheek(32, 55, "#f28a8a") + cheek(88, 55, "#f28a8a") +
-    `<path d="M52 56 q8 -3 16 0 q0 14 -8 17 q-8 -3 -8 -17 z" fill="#f5a63c"/>` +
-    `<path d="M52 63 q8 4 16 0" stroke-width="3"/>`),
+    `<path d="M80 100 q20 8 26 21" stroke-width="10" stroke="#5ab4d8"/>` +
+    BODY("#89d49a", "#c9ecd0") +
+    `<path d="M33 80 q-14 11 -7 26 q12 5 17 -8" fill="#5ab4d8"/>` +
+    `<path d="M47 18 q4 -16 13 -18 q9 2 13 18" fill="#f7dc6a"/>` +
+    `<ellipse cx="60" cy="46" rx="33" ry="30" fill="#89d49a"/>` +
+    `<path d="M60 16 q-15 3 -15 22 q0 17 15 17 q15 0 15 -17 q0 -19 -15 -22" fill="#f7dc6a" stroke="none"/>` +
+    gloss(42, 28, 12, 6.5, -22) +
+    eye(47, 42, 7.6) + eye(73, 42, 7.6) + cheek(29, 54, "#f79191") + cheek(91, 54, "#f79191") +
+    `<path d="M51 55 q9 -4 18 0 q0 15 -9 18 q-9 -3 -9 -18 z" fill="#f9ae45"/>` +
+    `<path d="M51 62 q9 4 18 0" stroke-width="3"/>`),
 
   turtle: art(GROUND +
-    `<ellipse cx="33" cy="102" rx="10" ry="6.5" fill="#9ccf87"/>` +
-    `<ellipse cx="87" cy="102" rx="10" ry="6.5" fill="#9ccf87"/>` +
-    `<path d="M22 100 q0 -40 38 -40 q38 0 38 40 z" fill="#c9a25e"/>` +
-    `<path d="M60 61 v39 M33 84 h54 M42 68 l-10 14 M78 68 l10 14" stroke="#a9813f" stroke-width="3.4"/>` +
-    `<ellipse cx="60" cy="38" rx="26" ry="23" fill="#9ccf87"/>` +
-    eye(51, 35, 6) + eye(69, 35, 6) + cheek(37, 45, "#e8a08f") + cheek(83, 45, "#e8a08f") +
-    smile(60, 46)),
+    `<ellipse cx="31" cy="103" rx="10.5" ry="7" fill="#a4d68f"/>` +
+    `<ellipse cx="89" cy="103" rx="10.5" ry="7" fill="#a4d68f"/>` +
+    `<path d="M20 101 q0 -42 40 -42 q40 0 40 42 z" fill="#d0a962"/>` +
+    `<path d="M60 60 v41 M31 84 h58 M42 67 l-11 15 M78 67 l11 15" stroke="#ad8442" stroke-width="3.4"/>` +
+    `<ellipse cx="60" cy="36" rx="27" ry="24" fill="#a4d68f"/>` +
+    gloss(46, 24, 10, 5.5, -22) +
+    eye(50, 33, 7) + eye(70, 33, 7) + cheek(34, 44, "#eea394") + cheek(86, 44, "#eea394") +
+    smile(60, 45)),
 
   hedgehog: art(GROUND +
-    `<path d="M18 100 q2 -46 42 -46 q40 0 42 46 z" fill="#9d8574"/>` +
-    `<path d="M29 73 l-9 -8 M39 61 l-6 -12 M52 55 l-2 -13 M68 55 l2 -13 M81 61 l6 -12 M91 73 l9 -8"
-       stroke="#8a7263" stroke-width="4"/>` +
-    `<ellipse cx="44" cy="104" rx="8" ry="5.4" fill="#f5ddbf"/>` +
-    `<ellipse cx="76" cy="104" rx="8" ry="5.4" fill="#f5ddbf"/>` +
-    `<path d="M60 58 q-26 0 -26 22 q0 22 26 22 q26 0 26 -22 q0 -22 -26 -22" fill="#f5ddbf"/>` +
-    eye(50, 76, 6) + eye(70, 76, 6) + cheek(38, 86, "#eda49c") + cheek(82, 86, "#eda49c") +
-    `<ellipse cx="60" cy="88" rx="5" ry="4" fill="${OUT}" stroke="none"/>` +
+    `<path d="M16 101 q2 -48 44 -48 q42 0 44 48 z" fill="#a68d7b"/>` +
+    `<path d="M27 74 l-10 -9 M38 60 l-7 -13 M51 53 l-2 -14 M69 53 l2 -14 M82 60 l7 -13 M93 74 l10 -9"
+       stroke="#907765" stroke-width="4"/>` +
+    `<ellipse cx="42" cy="105" rx="8.5" ry="5.8" fill="#f7e2c6"/>` +
+    `<ellipse cx="78" cy="105" rx="8.5" ry="5.8" fill="#f7e2c6"/>` +
+    `<path d="M60 56 q-28 0 -28 23 q0 23 28 23 q28 0 28 -23 q0 -23 -28 -23" fill="#f7e2c6"/>` +
+    gloss(45, 68, 11, 6, -22) +
+    eye(49, 76, 7) + eye(71, 76, 7) + cheek(35, 87, "#f2a79e") + cheek(85, 87, "#f2a79e") +
+    `<ellipse cx="60" cy="88" rx="5.2" ry="4.2" fill="${OUT}" stroke="none"/>` +
     `<path d="M60 92 v3" stroke-width="3"/>`),
 
   fish: art(
-    `<ellipse cx="60" cy="112" rx="30" ry="5" fill="${OUT}" opacity=".1" stroke="none"/>` +
-    `<path d="M92 60 q18 -15 20 0 q-2 15 -20 0 z" fill="#f6c48a"/>` +
-    `<path d="M50 27 q11 -14 25 -1" fill="#f6c48a"/>` +
-    `<ellipse cx="58" cy="62" rx="36" ry="33" fill="#f79a5c"/>` +
-    `<path d="M58 29 q-16 12 -16 33 q0 21 16 33" fill="${WHITE}" stroke="none"/>` +
-    `<path d="M58 29 q-16 12 -16 33 q0 21 16 33" stroke-width="3.4"/>` +
-    `<path d="M62 76 q14 6 12 18 q-12 2 -16 -10 z" fill="#f6c48a"/>` +
-    eye(41, 56, 7) + cheek(33, 71, "#ef8f8f") +
-    `<path d="M25 65 q5 5 10 0" stroke-width="3.4"/>` +
-    `<circle cx="21" cy="33" r="5" stroke-width="3.2" opacity=".5"/>` +
-    `<circle cx="32" cy="21" r="3.4" stroke-width="3" opacity=".4"/>`),
+    `<ellipse cx="60" cy="113" rx="29" ry="5" fill="${OUT}" opacity=".1" stroke="none"/>` +
+    `<path d="M93 58 q19 -16 21 0 q-2 16 -21 0 z" fill="#f9cf9a"/>` +
+    `<path d="M48 25 q12 -15 27 -1" fill="#f9cf9a"/>` +
+    `<ellipse cx="57" cy="62" rx="37" ry="34" fill="#f9a468"/>` +
+    `<path d="M57 28 q-17 13 -17 34 q0 22 17 34" fill="#fffaf2" stroke="none"/>` +
+    `<path d="M57 28 q-17 13 -17 34 q0 22 17 34" stroke-width="3.4"/>` +
+    `<path d="M62 76 q15 6 13 19 q-13 2 -17 -11 z" fill="#f9cf9a"/>` +
+    gloss(52, 36, 13, 7, -30) +
+    eye(40, 56, 8) + cheek(31, 72, "#f28d8d") +
+    `<path d="M23 66 q6 5 11 0" stroke-width="3.4"/>` +
+    `<circle cx="19" cy="32" r="5.2" stroke-width="3.2" opacity=".5"/>` +
+    `<circle cx="31" cy="19" r="3.6" stroke-width="3" opacity=".4"/>`),
 };
 
 // (1) 수입원 — 무엇 때문에 행복한지에 따라 단가가 다르다
@@ -704,6 +752,18 @@ const CARE = [
     ],
   },
   {
+    k: "yard", ico: "🌳", title: "바깥 활동", room: "yard",
+    items: [
+      // 산책은 애정을 크게 채우지만 지저분해진다 — 하고 나면 씻길 일이 생긴다
+      { id: "romp", label: "뛰어놀기", cost: 0, cd: 35, eff: { aff: 13, cln: -7 },
+        ch: "aff", pay: 10, bond: 3, scale: "play", note: "잠깐 뛰어놀기" },
+      { id: "walk", label: "산책", cost: 0, cd: 90, eff: { aff: 27, cln: -20, sat: -12 },
+        ch: "aff", pay: 22, bond: 9, scale: "play", buff: { mult: 1.5, secs: 480 } },
+      { id: "sun",  label: "일광욕", cost: 0, cd: 120, eff: { cln: 16, aff: 5 },
+        ch: "cln", pay: 12, bond: 2, buff: { mult: 1.25, secs: 360 } },
+    ],
+  },
+  {
     k: "rest", ico: "😴", title: "재우기", room: "bedroom",
     items: [
       { id: "sleep", label: "재우기", cost: 0, special: "sleep",
@@ -713,6 +773,26 @@ const CARE = [
 ];
 
 const ALL_ITEMS = CARE.flatMap((g) => g.items);
+const itemById = (id) => ALL_ITEMS.find((x) => x.id === id);
+
+/* 부탁 — 게이지가 다 차 있어도 할 일이 끊기지 않게 하는 장치.
+   게이지는 "안 하면 손해"지만 부탁은 "하면 이득"이라 성격이 다르다. */
+const WISHES = [
+  { item: "walk",      text: "산책 가고 싶어요!" },
+  { item: "romp",      text: "마당에서 뛰고 싶어요!" },
+  { item: "sun",       text: "햇볕 쬐고 싶어요…" },
+  { item: "play",      text: "놀아주세요!" },
+  { item: "pet",       text: "쓰다듬어 주세요…" },
+  { item: "treat",     text: "간식 먹고 싶어요!" },
+  { item: "feed_high", text: "오늘은 특식이 먹고 싶어요!" },
+  { item: "feed_mid",  text: "밥 주세요~" },
+  { item: "wash_mid",  text: "씻겨주세요!" },
+  { item: "wash_high", text: "스파 받고 싶어요…" },
+  { item: "sleep",     text: "졸려요… 재워주세요" },
+];
+const WISH_GAP = [80, 150];    // 다음 부탁까지 (초)
+const WISH_TIME = 210;         // 들어줄 수 있는 시간 (초)
+const WISH_PAY = 30;           // 기본 보상
 
 // 잠 — 오래 자리를 비울 때의 선택지. 덜 닳는 대신 덜 번다.
 const SLEEP_DECAY = 0.35;
@@ -727,6 +807,7 @@ const ROOMS = [
   { id: "kitchen", name: "주방", icon: "🍽️", care: "sat",  w1: "#eaf1e4", w2: "#dbe7d3", f1: "#e0d3bd", f2: "#cfbfa4" },
   { id: "bath",    name: "욕실", icon: "🛁", care: "cln",  w1: "#e4eff3", w2: "#d3e5ec", f1: "#e8eef0", f2: "#d6e0e4", tile: true },
   { id: "bedroom", name: "침실", icon: "🛏️", care: "rest", w1: "#efe6ee", w2: "#e2d6e2", f1: "#d9c9b6", f2: "#c8b6a0" },
+  { id: "yard",    name: "마당", icon: "🌳", care: "yard", w1: "#d3eaf9", w2: "#bcdcf2", f1: "#accf8e", f2: "#8fbc71", outdoor: true },
 ];
 
 // 벽지 — 방마다 따로 고를 수 있다
@@ -743,11 +824,17 @@ const WALLPAPERS = [
 
 // 옷 — 캐릭터 위에 실제로 그려진다. 한 번에 하나만 입는다.
 const OUTFITS = [
-  { id: "o_ribbon", name: "리본",   cost:  300, desc: "💗수익 ×1.15", ch: { aff: 1.15 } },
-  { id: "o_flower", name: "꽃",     cost:  600, desc: "🫧수익 ×1.2",  ch: { cln: 1.2  } },
-  { id: "o_cap",    name: "모자",   cost:  900, desc: "🍚수익 ×1.2",  ch: { sat: 1.2  } },
-  { id: "o_glass",  name: "안경",   cost: 2000, desc: "모든 수익 ×1.15", all: 1.15 },
-  { id: "o_crown",  name: "왕관",   cost: 5500, desc: "모든 수익 ×1.4",  all: 1.4  },
+  // 머리 — 얼굴 위에 얹는다
+  { id: "o_ribbon", name: "리본",     slot: "head", cost:  300, desc: "💗수익 ×1.15",   ch: { aff: 1.15 } },
+  { id: "o_flower", name: "꽃",       slot: "head", cost:  600, desc: "🫧수익 ×1.2",    ch: { cln: 1.2  } },
+  { id: "o_cap",    name: "모자",     slot: "head", cost:  900, desc: "🍚수익 ×1.2",    ch: { sat: 1.2  } },
+  { id: "o_glass",  name: "안경",     slot: "head", cost: 2000, desc: "모든 수익 ×1.15", all: 1.15 },
+  { id: "o_crown",  name: "왕관",     slot: "head", cost: 5500, desc: "모든 수익 ×1.4",  all: 1.4  },
+  // 몸 — 실제로 입힌다
+  { id: "b_tee",    name: "줄무늬 티", slot: "body", cost:  700, desc: "💗수익 ×1.15",   ch: { aff: 1.15 } },
+  { id: "b_rain",   name: "노란 우비", slot: "body", cost: 1300, desc: "🫧수익 ×1.3",    ch: { cln: 1.3  } },
+  { id: "b_knit",   name: "니트 스웨터", slot: "body", cost: 2200, desc: "모든 감소 −12%", decay: 0.88 },
+  { id: "b_cape",   name: "망토",     slot: "body", cost: 4500, desc: "모든 수익 ×1.3",  all: 1.3 },
 ];
 const roomOf = (ch) => ROOMS.find((r) => r.care === ch);
 
@@ -757,7 +844,9 @@ const FURNITURE = [
   { id: "collar",  name: "이름표 목걸이", emoji: "🎗️", cost: 4000, desc: "모든 수익 ×1.8",             room: "living",  x:  9, y: 11, s: 0.9  },
   { id: "tower",   name: "놀이 타워",     emoji: "🪜", cost: 2600, desc: "행복도 +6 · 💗수익 ×1.6",     room: "living",  x:  8, y: 64, s: 1.2  },
   { id: "toy",     name: "장난감 바구니", emoji: "🧺", cost:  250, desc: "놀아주기 해금",              room: "living",  x: 11, y: 90, s: 1.2  },
-  { id: "garden",  name: "작은 정원",     emoji: "🪴", cost: 7000, desc: "모든 감소 −20% · 수익 ×1.5",  room: "living",  x: 91, y: 74, s: 1.15 },
+  { id: "garden",  name: "작은 정원",     emoji: "🪴", cost: 7000, desc: "모든 감소 −20% · 수익 ×1.5",  room: "yard",    x: 90, y: 76, s: 1.2  },
+  { id: "tree",    name: "큰 나무",       emoji: "🌳", cost: 1500, desc: "산책·뛰어놀기 효과 +30%",      room: "yard",    x: 11, y: 62, s: 1.3  },
+  { id: "ball",    name: "공놀이 세트",   emoji: "⚽", cost:  700, desc: "💗수익 ×1.2",                room: "yard",    x: 15, y: 92, s: 1.05 },
   // 🍽️ 주방
   { id: "bowl",    name: "좋은 밥그릇",   emoji: "🥣", cost:  400, desc: "먹이 효과 +50% · 🍚수익 ×1.3", room: "kitchen", x: 14, y: 88, s: 1.15 },
   { id: "feeder",  name: "자동 급식기",   emoji: "⏲️", cost: 1200, desc: "포만감 감소 −35%",           room: "kitchen", x: 90, y: 84, s: 1.2  },
@@ -815,8 +904,10 @@ function freshState(type, name) {
     bondExp: 0,
     room: "living",
     asleep: false,
-    outfit: null,
+    wear: { head: null, body: null },
     walls: {},
+    wish: null,
+    wishIn: 40,
     owned: {},
     cooldown: {},
     buffs: {},          // { 채널키: { mult, left } }
@@ -832,6 +923,10 @@ const $ = (id) => document.getElementById(id);
 const pet = () => PETS[S.type];
 const has = (id) => !!S.owned[id];
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+// 지금 입고 있는 것들 (머리 + 몸)
+const worn = () => ["head", "body"]
+  .map((sl) => OUTFITS.find((o) => o.id === (S.wear && S.wear[sl])))
+  .filter(Boolean);
 const fmt = (n) => Math.floor(n).toLocaleString("ko-KR");
 
 function bondLevel() {
@@ -851,7 +946,9 @@ function bondProgress() {
 function decayRates() {
   const p = pet();
   const sleep = S.asleep ? SLEEP_DECAY * (has("blanket") ? 0.7 : 1) : 1;
-  const g = (has("garden") ? 0.8 : 1) * sleep;
+  let cloth = 1;
+  for (const o of worn()) if (o.decay) cloth *= o.decay;
+  const g = (has("garden") ? 0.8 : 1) * sleep * cloth;
   return {
     sat: DECAY.sat * p.sat * (has("feeder")  ? 0.65 : 1) * (has("water")  ? 0.85 : 1) * g,
     cln: DECAY.cln * p.cln * (has("brush")   ? 0.60 : 1) * (has("mirror") ? 0.75 : 1) * g,
@@ -872,8 +969,7 @@ function coinMultiplier() {
   if (has("collar")) m *= 1.8;
   if (has("garden")) m *= 1.5;
   m *= 1 + (bondLevel() - 1) * 0.1;
-  const outfit = OUTFITS.find((x) => x.id === S.outfit);
-  if (outfit && outfit.all) m *= outfit.all;
+  for (const o of worn()) if (o.all) m *= o.all;
   if (happiness() >= 90) m *= 1.25;      // 최상 기분 보너스
   if (S.asleep) m *= has("lamp") ? 0.8 : SLEEP_INCOME;   // 무드등이 있으면 덜 손해
   return m;
@@ -891,8 +987,8 @@ function channelMultiplier(k) {
   if (k === "cln" && has("mirror"))  m *= 1.2;
   if (k === "aff" && has("tower"))   m *= 1.6;
   if (k === "aff" && has("sofa"))    m *= 1.15;
-  const o = OUTFITS.find((x) => x.id === S.outfit);
-  if (o && o.ch && o.ch[k]) m *= o.ch[k];
+  if (k === "aff" && has("ball"))    m *= 1.2;
+  for (const o of worn()) if (o.ch && o.ch[k]) m *= o.ch[k];
   const b = S.buffs[k];
   if (b && b.left > 0) m *= b.mult;
   return m;
@@ -965,7 +1061,9 @@ function renderNeedLine() {
     ico.textContent = S.asleep ? "😴" : mood().face;
     txt.textContent = S.asleep
       ? `${S.name}는 자는 중이에요 — 천천히 닳고 천천히 벌어요`
-      : `${S.name}는 지금 다 괜찮아요 — 분당 ${(coinRate() * 60).toFixed(1)}코인 버는 중`;
+      : S.wish
+        ? `${S.name}는 컨디션 좋아요 — 아래 부탁을 들어주면 보너스!`
+        : `${S.name}는 지금 다 괜찮아요 — 분당 ${(coinRate() * 60).toFixed(1)}코인 버는 중`;
     return;
   }
 
@@ -992,6 +1090,22 @@ function needBubble() {
 
 /* ===================== 시뮬레이션 ===================== */
 
+function wishReward() { return Math.round(WISH_PAY * coinMultiplier()); }
+
+// 지금 실제로 들어줄 수 있는 부탁만 고른다 — 못 하는 걸 부탁하면 놀리는 셈이다
+function pickWish() {
+  const pool = WISHES.filter((w) => {
+    const it = itemById(w.item);
+    if (!it) return false;
+    if (it.needs && !has(it.needs)) return false;
+    if (it.cost && itemCost(it) > S.coins * 0.8) return false;
+    return true;
+  });
+  if (!pool.length) return null;
+  const w = pool[Math.floor(Math.random() * pool.length)];
+  return { item: w.item, text: w.text, left: WISH_TIME };
+}
+
 function step(dt, efficiency = 1) {
   const d = decayRates();
   S.sat = clamp(S.sat - d.sat * dt, 0, 100);
@@ -1010,6 +1124,23 @@ function step(dt, efficiency = 1) {
   for (const k in S.cooldown) {
     S.cooldown[k] -= dt;
     if (S.cooldown[k] <= 0) delete S.cooldown[k];
+  }
+
+  // 부탁: 자는 동안에는 새로 하지 않는다
+  if (S.wish) {
+    S.wish.left -= dt;
+    if (S.wish.left <= 0) {
+      addLog(`"${S.wish.text}" — 부탁을 못 들어줬다`);
+      S.wish = null;
+      S.wishIn = WISH_GAP[0];
+    }
+  } else if (!S.asleep) {
+    S.wishIn -= dt;
+    if (S.wishIn <= 0) {
+      S.wish = pickWish();
+      S.wishIn = WISH_GAP[0] + Math.random() * (WISH_GAP[1] - WISH_GAP[0]);
+      if (S.wish) addLog(`${S.name}: "${S.wish.text}"`);
+    }
   }
 }
 
@@ -1056,8 +1187,26 @@ function toggleSleep() {
   save();
 }
 
+// 부탁을 들어줬다면 그 자리에서 따로 보상한다
+function checkWish(it) {
+  if (!S.wish || S.wish.item !== it.id) return;
+  const bonus = wishReward();
+  S.coins += bonus;
+  S.bondExp += 10;
+  addLog(`부탁을 들어줬다 — "${S.wish.text}" · +${bonus}코인`);
+  setTimeout(() => floatText(`💭+${bonus}`, "var(--green)"), 420);
+  say("고마워! 최고야!");
+  S.wish = null;
+  S.wishIn = WISH_GAP[0] + Math.random() * (WISH_GAP[1] - WISH_GAP[0]);
+}
+
 function doCare(it) {
-  if (it.special === "sleep") { toggleSleep(); return; }
+  // 재우기는 다른 돌보기와 흐름이 달라 먼저 빠져나간다 — 부탁 확인은 여기서 따로 해줘야 한다
+  if (it.special === "sleep") {
+    toggleSleep();
+    if (S.asleep) { checkWish(it); render(); save(); }
+    return;
+  }
   if (!canDo(it)) return;
   S.asleep = false;                          // 돌봐주면 잠이 깬다
 
@@ -1069,6 +1218,7 @@ function doCare(it) {
 
   let scale = it.scale ? pet()[it.scale] : 1;
   if (it.id === "pet" && has("doll")) scale *= 1.5;
+  if ((it.id === "walk" || it.id === "romp") && has("tree")) scale *= 1.3;
   const foodBoost = has("bowl") ? 1.5 : 1;
   const washBoost = has("tub") ? 1.4 : 1;
   const gained = [];
@@ -1078,7 +1228,7 @@ function doCare(it) {
     const before = S[k];
     S[k] = clamp(S[k] + amount, 0, 100);
     const real = Math.round(S[k] - before);
-    if (real > 0) gained.push({ k, real });
+    if (real !== 0) gained.push({ k, real });
   }
   if (it.bond) S.bondExp += it.bond * scale;
 
@@ -1094,7 +1244,9 @@ function doCare(it) {
 
   gained.forEach((g, i) => {
     const icon = g.k === "sat" ? "🍚" : g.k === "cln" ? "🫧" : "💗";
-    setTimeout(() => floatText(`${icon}+${g.real}`, CH_COLOR[g.k]), i * 140);
+    const up = g.real > 0;   // 산책하면 청결이 깎인다 — 깎이는 것도 보여야 한다
+    setTimeout(() => floatText(`${icon}${up ? "+" : ""}${g.real}`,
+      up ? CH_COLOR[g.k] : "var(--ink-soft)"), i * 140);
   });
   if (reward > 0) setTimeout(() => floatText(`🪙+${reward}`, "var(--gold)"), gained.length * 140);
 
@@ -1105,6 +1257,8 @@ function doCare(it) {
     ? `제때 ${it.label} — 딱 필요했던 거라 ${reward}코인을 받았다 (${net >= 0 ? "+" : ""}${net})`
     : `${it.label} — ${reward}코인을 받았다 (${net >= 0 ? "+" : ""}${net})`);
   if (it.buff) addLog(`${it.label} 덕분에 기분이 오래갔다 — ${CH_LABEL[it.ch]} 수익 ×${it.buff.mult}`);
+
+  checkWish(it);
 
   const el = $("pet");
   el.classList.remove("happy"); void el.offsetWidth; el.classList.add("happy");
@@ -1130,9 +1284,10 @@ function reactionTo(it) {
 
 function wearOutfit(o) {
   if (!has(o.id)) return;
-  S.outfit = S.outfit === o.id ? null : o.id;
-  say(S.outfit ? "어때, 잘 어울려?" : "편하다~");
-  addLog(S.outfit ? `${o.name}을(를) 입었다` : `${o.name}을(를) 벗었다`);
+  const on = S.wear[o.slot] !== o.id;
+  S.wear[o.slot] = on ? o.id : null;
+  say(on ? "어때, 잘 어울려?" : "편하다~");
+  addLog(on ? `${o.name}을(를) 입었다` : `${o.name}을(를) 벗었다`);
   render();
   save();
 }
@@ -1150,7 +1305,7 @@ function buy(item) {
   if (has(item.id) || S.coins < item.cost) return;
   S.coins -= item.cost;
   S.owned[item.id] = true;
-  if (item.kind === "outfit") S.outfit = item.id;
+  if (item.kind === "outfit") S.wear[item.slot] = item.id;
   if (item.kind === "wall") S.walls[S.room] = item.id;
   addLog(`${item.name}을(를) 샀다 — ${item.cost}코인`);
   say(`${item.name}이다!`);
@@ -1162,6 +1317,21 @@ function buy(item) {
 /* ===================== 화면 ===================== */
 
 const CH_COLOR = { sat: "#d9a441", cln: "#7fb6cc", aff: "#e58fa0" };
+
+function renderWish() {
+  const box = $("wishbar");
+  if (!S.wish) { box.hidden = true; return; }
+  const it = itemById(S.wish.item);
+  const g = CARE.find((c) => c.items.includes(it));
+  const rm = ROOMS.find((r) => r.id === g.room);
+  const mm = Math.floor(S.wish.left / 60), ss = Math.floor(S.wish.left % 60);
+  box.hidden = false;
+  box.dataset.go = rm.id;
+  box.querySelector(".wt").textContent =
+    `"${S.wish.text}" — ${rm.icon} ${rm.name}에서 ${it.label}`;
+  box.querySelector(".wc").innerHTML =
+    `<b>+${wishReward()}코인</b>${mm}:${String(ss).padStart(2, "0")}`;
+}
 const CH_LABEL = { sat: "🍚", cln: "🫧", aff: "💗" };
 
 function say(text, ms = 2600) {
@@ -1214,7 +1384,12 @@ function updateRooms() {
     const el = roomEls.get(r.id);
     if (!el) continue;
     el.btn.classList.toggle("on", S.room === r.id);
-    el.dot.hidden = !(u && r.care === u);
+    let want = u && r.care === u;
+    if (S.wish) {                       // 부탁이 있는 방에도 점을 찍는다
+      const g = CARE.find((c) => c.items.some((x) => x.id === S.wish.item));
+      if (g && g.room === r.id) want = true;
+    }
+    el.dot.hidden = !want;
   }
 }
 
@@ -1249,13 +1424,16 @@ function renderRoom() {
     $("room").insertBefore(el, $("bubble"));
   }
   const p = $("pet");
-  const look = S.type + "/" + (S.outfit || "");
+  const look = `${S.type}/${S.wear.body || ""}/${S.wear.head || ""}`;
   if (p.dataset.look !== look) {        // SVG 다시 파싱하지 않도록 겉모습이 바뀔 때만
-    const [dx, dy] = ACC_FIT[S.type] || [0, 0];
-    const acc = S.outfit && ACC_ART[S.outfit]
-      ? art(`<g transform="translate(${dx} ${dy})">${ACC_ART[S.outfit]}</g>`)
-      : "";
-    p.innerHTML = PET_ART[S.type] + acc;
+    const layer = (id, fit) => {
+      if (!id || !ACC_ART[id]) return "";
+      const [dx, dy] = fit[S.type] || [0, 0];
+      return art(`<g transform="translate(${dx} ${dy})">${ACC_ART[id]}</g>`);
+    };
+    p.innerHTML = PET_ART[S.type]
+      + layer(S.wear.body, BODY_FIT)    // 몸옷이 먼저, 머리 장식이 그 위에
+      + layer(S.wear.head, ACC_FIT);
     p.dataset.look = look;
   }
 }
@@ -1268,14 +1446,8 @@ function syncFloorline() {
 }
 
 /* --- 게이지 --- */
+// 게이지 막대는 화면에서 뺐다. 상태는 맨 위 한 줄과 수입 내역으로 읽는다.
 function renderStats() {
-  const urgent = urgentKey();
-  for (const c of CHANNELS) {
-    $("b-" + c.k).style.width = S[c.k] + "%";
-    $("b-" + c.k).style.background = CH_COLOR[c.k];
-    $("v-" + c.k).textContent = Math.round(S[c.k]);
-    $("s-" + c.k).classList.toggle("need", urgent === c.k);
-  }
   const m = mood();
   $("moodface").textContent = m.face;
   $("moodtext").textContent = m.text;
@@ -1468,26 +1640,33 @@ function buildShop() {
     shopEls.set("head:" + r.id, { count: head.querySelector("b"), total: items.length });
   }
 
-  // 👕 옷 — 사면 캐릭터 위에 바로 그려진다
-  const oh = document.createElement("div");
-  oh.className = "shophead";
-  oh.innerHTML = `<span>👕 옷</span><b></b>`;
-  box.appendChild(oh);
-  const ogrid = document.createElement("div");
-  ogrid.className = "shopgrid";
-  for (const o of OUTFITS) {
-    const b = document.createElement("button");
-    b.innerHTML = `
-      <span class="e">${art(`<g transform="translate(-22 34) scale(1.15)">${ACC_ART[o.id]}</g>`)}</span>
-      <span class="n">${o.name}</span>
-      <span class="d">${o.desc}</span>
-      <span class="c"></span>`;
-    b.onclick = () => (has(o.id) ? wearOutfit(o) : buy({ ...o, kind: "outfit" }));
-    ogrid.appendChild(b);
-    shopEls.set(o.id, { btn: b, c: b.querySelector(".c"), outfit: o });
+  // 👕 옷 — 사면 캐릭터 위에 바로 그려진다. 머리와 몸은 따로 입는다.
+  const SLOTS = [
+    { slot: "head", title: "🎀 머리 장식", view: "translate(-24 30) scale(1.1)" },
+    { slot: "body", title: "👕 몸에 입는 옷", view: "translate(-30 -62) scale(1.35)" },
+  ];
+  for (const sl of SLOTS) {
+    const list = OUTFITS.filter((o) => o.slot === sl.slot);
+    const oh = document.createElement("div");
+    oh.className = "shophead";
+    oh.innerHTML = `<span>${sl.title}</span><b></b>`;
+    box.appendChild(oh);
+    const ogrid = document.createElement("div");
+    ogrid.className = "shopgrid";
+    for (const o of list) {
+      const b = document.createElement("button");
+      b.innerHTML = `
+        <span class="e">${art(`<g transform="${sl.view}">${ACC_ART[o.id]}</g>`)}</span>
+        <span class="n">${o.name}</span>
+        <span class="d">${o.desc}</span>
+        <span class="c"></span>`;
+      b.onclick = () => { if (!has(o.id)) buy({ ...o, kind: "outfit" }); };
+      ogrid.appendChild(b);
+      shopEls.set(o.id, { btn: b, c: b.querySelector(".c"), outfit: o });
+    }
+    box.appendChild(ogrid);
+    shopEls.set("head:" + sl.slot, { count: oh.querySelector("b"), total: list.length, slot: sl.slot });
   }
-  box.appendChild(ogrid);
-  shopEls.set("head:outfit", { count: oh.querySelector("b"), total: OUTFITS.length });
 
   // 🎨 벽지 — 지금 있는 방에 발린다
   const wh = document.createElement("div");
@@ -1506,7 +1685,7 @@ function buildShop() {
       <span class="sw" style="background:${w.sw}"></span>
       <span class="n">${w.name}</span>
       <span class="c"></span>`;
-    b.onclick = () => (w.cost && !has(w.id) ? buy({ ...w, kind: "wall", desc: "벽지" }) : applyWall(w));
+    b.onclick = () => { if (w.cost && !has(w.id)) buy({ ...w, kind: "wall", desc: "벽지" }); };
     wgrid.appendChild(b);
     shopEls.set(w.id, { btn: b, c: b.querySelector(".c"), wall: w });
   }
@@ -1546,14 +1725,17 @@ function updateShop() {
   for (const o of OUTFITS) {
     const el = shopEls.get(o.id);
     if (!el) continue;
-    const owned = has(o.id), worn = S.outfit === o.id;
-    el.c.textContent = worn ? "✓ 입는 중" : owned ? "입히기" : "🪙 " + fmt(o.cost);
-    el.btn.classList.toggle("done", worn);
+    const owned = has(o.id), on = S.wear[o.slot] === o.id;
+    el.c.textContent = owned ? (on ? "✓ 입는 중" : "🗄️ 서랍에") : "🪙 " + fmt(o.cost);
+    el.btn.classList.toggle("done", owned);
     el.btn.classList.toggle("buyable", !owned && S.coins >= o.cost);
-    el.btn.disabled = !owned && S.coins < o.cost;
+    el.btn.disabled = owned || S.coins < o.cost;
   }
-  const oh = shopEls.get("head:outfit");
-  if (oh) oh.count.textContent = `${OUTFITS.filter((o) => has(o.id)).length} / ${oh.total}`;
+  for (const sl of ["head", "body"]) {
+    const oh = shopEls.get("head:" + sl);
+    if (oh) oh.count.textContent =
+      `${OUTFITS.filter((o) => o.slot === sl && has(o.id)).length} / ${oh.total}`;
+  }
 
   const here = ROOMS.find((x) => x.id === S.room);
   const wh = shopEls.get("head:wall");
@@ -1566,13 +1748,161 @@ function updateShop() {
     if (!el) continue;
     const owned = !w.cost || has(w.id);
     const inUse = wallpaperOf(S.room).id === w.id;
-    el.c.textContent = inUse ? "✓ 사용 중" : owned ? "바르기" : "🪙 " + fmt(w.cost);
-    el.btn.classList.toggle("done", inUse);
+    el.c.textContent = owned ? (inUse ? "✓ 사용 중" : "🗄️ 서랍에") : "🪙 " + fmt(w.cost);
+    el.btn.classList.toggle("done", owned);
     el.btn.classList.toggle("buyable", !owned && S.coins >= w.cost);
-    el.btn.disabled = !owned && S.coins < w.cost;
+    el.btn.disabled = owned || S.coins < w.cost;
   }
   // 살 수 있는 게 생기면 🛒 아이콘에 점을 찍는다
   $("nav").querySelector('[data-tab="shop"] .dot').hidden = !anyBuyable;
+}
+
+/* --- 서랍 --- */
+// 상점은 "사는 곳", 서랍은 "꺼내 쓰는 곳". 역할을 나눠야 둘 다 안 헷갈린다.
+const drawerEls = new Map();
+
+function buildDrawer() {
+  const box = $("drawerbody");
+  box.innerHTML = "";
+  drawerEls.clear();
+
+  const section = (title, note) => {
+    const h = document.createElement("div");
+    h.className = "shophead";
+    h.innerHTML = `<span>${title}</span><b></b>`;
+    box.appendChild(h);
+    if (note) {
+      const n = document.createElement("div");
+      n.className = "sect";
+      n.style.padding = "0 2px 8px";
+      box.appendChild(n);
+      return [h.querySelector("b"), n];
+    }
+    return [h.querySelector("b"), null];
+  };
+
+  // 옷 — 칸마다 "안 입기"를 맨 앞에 둔다
+  for (const sl of [{ k: "head", t: "🎀 머리 장식" }, { k: "body", t: "👕 몸에 입는 옷" }]) {
+    const [count] = section(sl.t);
+    const grid = document.createElement("div");
+    grid.className = "shopgrid";
+
+    const none = document.createElement("button");
+    none.innerHTML = `<span class="e">🚫</span><span class="n">안 입기</span><span class="c"></span>`;
+    none.onclick = () => { S.wear[sl.k] = null; render(); save(); };
+    grid.appendChild(none);
+    drawerEls.set("none:" + sl.k, { btn: none, c: none.querySelector(".c"), slot: sl.k });
+
+    for (const o of OUTFITS.filter((x) => x.slot === sl.k)) {
+      const b = document.createElement("button");
+      b.innerHTML = `
+        <span class="e">${art(`<g transform="${sl.k === "head" ? "translate(-24 30) scale(1.1)" : "translate(-30 -62) scale(1.35)"}">${ACC_ART[o.id]}</g>`)}</span>
+        <span class="n">${o.name}</span>
+        <span class="d">${o.desc}</span>
+        <span class="c"></span>`;
+      b.onclick = () => wearOutfit(o);
+      grid.appendChild(b);
+      drawerEls.set("d:" + o.id, { btn: b, c: b.querySelector(".c"), outfit: o });
+    }
+    box.appendChild(grid);
+    drawerEls.set("cnt:" + sl.k, { count, slot: sl.k });
+  }
+
+  // 벽지
+  const [wcount, wnote] = section("🎨 벽지", true);
+  const wgrid = document.createElement("div");
+  wgrid.className = "shopgrid";
+  for (const w of WALLPAPERS) {
+    const b = document.createElement("button");
+    b.innerHTML = `<span class="sw" style="background:${w.sw}"></span><span class="n">${w.name}</span><span class="c"></span>`;
+    b.onclick = () => applyWall(w);
+    wgrid.appendChild(b);
+    drawerEls.set("d:" + w.id, { btn: b, c: b.querySelector(".c"), wall: w });
+  }
+  box.appendChild(wgrid);
+  drawerEls.set("cnt:wall", { count: wcount, note: wnote });
+
+  // 설비 — 어디에 놓였는지 보여주는 목록
+  const [fcount] = section("🪑 놓아둔 물건");
+  const fgrid = document.createElement("div");
+  fgrid.className = "shopgrid";
+  for (const f of FURNITURE) {
+    const rm = ROOMS.find((r) => r.id === f.room);
+    const b = document.createElement("button");
+    b.innerHTML = `<span class="e2">${f.emoji}</span><span class="n">${f.name}</span><span class="c"></span>`;
+    b.onclick = () => { goRoom(f.room); tab = "care"; syncTabs(); };
+    b.title = `${f.name} — ${rm.name}에 있음`;
+    fgrid.appendChild(b);
+    drawerEls.set("d:" + f.id, { btn: b, c: b.querySelector(".c"), furn: f, room: rm });
+  }
+  box.appendChild(fgrid);
+  drawerEls.set("cnt:furn", { count: fcount });
+
+  const empty = document.createElement("div");
+  empty.className = "sect";
+  empty.style.padding = "14px 2px 0";
+  empty.id = "drawer-empty";
+  box.appendChild(empty);
+
+  updateDrawer();
+}
+
+function updateDrawer() {
+  for (const sl of ["head", "body"]) {
+    const n = drawerEls.get("none:" + sl);
+    if (n) {
+      const off = !S.wear[sl];
+      n.c.textContent = off ? "✓ 지금" : "벗기";
+      n.btn.classList.toggle("done", off);
+    }
+    const c = drawerEls.get("cnt:" + sl);
+    if (c) c.count.textContent =
+      `${OUTFITS.filter((o) => o.slot === sl && has(o.id)).length} / ${OUTFITS.filter((o) => o.slot === sl).length}`;
+  }
+
+  for (const o of OUTFITS) {
+    const el = drawerEls.get("d:" + o.id);
+    if (!el) continue;
+    const owned = has(o.id), on = S.wear[o.slot] === o.id;
+    el.btn.hidden = !owned;                        // 없는 건 서랍에 안 보인다
+    el.c.textContent = on ? "✓ 입는 중" : "입히기";
+    el.btn.classList.toggle("done", on);
+  }
+
+  const here = ROOMS.find((x) => x.id === S.room);
+  const wc = drawerEls.get("cnt:wall");
+  if (wc) {
+    wc.count.textContent =
+      `${WALLPAPERS.filter((w) => !w.cost || has(w.id)).length} / ${WALLPAPERS.length}`;
+    wc.note.textContent = `고르면 지금 있는 ${here.icon} ${here.name}에 발립니다.`;
+  }
+  for (const w of WALLPAPERS) {
+    const el = drawerEls.get("d:" + w.id);
+    if (!el) continue;
+    const owned = !w.cost || has(w.id);
+    const inUse = wallpaperOf(S.room).id === w.id;
+    el.btn.hidden = !owned;
+    el.c.textContent = inUse ? "✓ 사용 중" : "바르기";
+    el.btn.classList.toggle("done", inUse);
+  }
+
+  let got = 0;
+  for (const f of FURNITURE) {
+    const el = drawerEls.get("d:" + f.id);
+    if (!el) continue;
+    const owned = has(f.id);
+    el.btn.hidden = !owned;
+    if (owned) got++;
+    el.c.textContent = el.room.icon + " " + el.room.name;
+  }
+  const fc = drawerEls.get("cnt:furn");
+  if (fc) fc.count.textContent = `${got} / ${FURNITURE.length}`;
+
+  const total = OUTFITS.filter((o) => has(o.id)).length + got +
+                WALLPAPERS.filter((w) => w.cost && has(w.id)).length;
+  $("drawer-empty").textContent = total
+    ? "물건을 누르면 바로 입히거나 바를 수 있어요."
+    : "아직 가진 게 없어요 — 🛒 상점에서 사면 여기에 쌓입니다.";
 }
 
 /* --- 일지 --- */
@@ -1590,11 +1920,13 @@ function renderLog() {
 function render() {
   renderTop();
   renderNeedLine();
+  renderWish();
   renderStats();
   updateIncome();
   updateRooms();
   updateCare();
   updateShop();
+  updateDrawer();
   renderRoom();
   if (tab === "log") renderLog();
 }
@@ -1622,6 +1954,7 @@ function loop(now) {
 
   renderTop();
   renderNeedLine();
+  renderWish();
   renderStats();
   updateIncome();
   updateRooms();
@@ -1740,6 +2073,7 @@ function begin() {
   buildIncome();
   buildCare();
   buildShop();
+  buildDrawer();
   if (!storageOK) {
     $("savenote").textContent = "이 환경에서는 저장이 안 돼요 (새로고침하면 처음부터)";
     $("savenote").style.color = "var(--pink)";
@@ -1755,17 +2089,24 @@ function begin() {
   document.addEventListener("visibilitychange", () => { if (document.hidden) save(); });
 }
 
+function syncTabs() {
+  document.querySelectorAll("#nav button").forEach((x) => x.classList.toggle("on", x.dataset.tab === tab));
+  for (const t of ["care", "shop", "drawer", "log"]) $("page-" + t).hidden = tab !== t;
+  // 상점·서랍을 볼 때는 그것만 — 무대를 치운다
+  const onStage = tab === "care";
+  for (const id of ["needline", "rooms", "room", "stats"]) $(id).hidden = !onStage;
+  $("wishbar").hidden = !onStage || !S.wish;
+  render();
+}
+
 document.querySelectorAll("#nav button").forEach((b) => {
-  b.onclick = () => {
-    tab = b.dataset.tab;
-    document.querySelectorAll("#nav button").forEach((x) => x.classList.toggle("on", x === b));
-    for (const t of ["care", "shop", "log"]) $("page-" + t).hidden = tab !== t;
-    // 상점을 볼 때는 상점만 — 무대와 게이지를 치운다
-    const onStage = tab === "care";
-    for (const id of ["needline", "rooms", "room", "stats"]) $(id).hidden = !onStage;
-    render();
-  };
+  b.onclick = () => { tab = b.dataset.tab; syncTabs(); };
 });
+
+$("wishbar").onclick = () => {
+  const go = $("wishbar").dataset.go;
+  if (go) goRoom(go);
+};
 
 $("needline").onclick = () => {
   const go = $("needline").dataset.go;
@@ -1793,7 +2134,12 @@ $("reset").onclick = () => {
   S.room = S.room || "living";
   S.asleep = !!S.asleep;
   S.walls = S.walls || {};
-  if (S.outfit === undefined) S.outfit = null;
+  S.wear = S.wear || { head: S.outfit || null, body: null };   // 예전 세이브 이어받기
+  if (S.wear.head === undefined) S.wear.head = null;
+  if (S.wear.body === undefined) S.wear.body = null;
+  delete S.outfit;
+  if (S.wish === undefined) S.wish = null;
+  if (S.wishIn === undefined) S.wishIn = 40;
 
   const away = Math.max(0, (Date.now() - (S.lastSeen || Date.now())) / 1000);
   begin();
