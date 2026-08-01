@@ -85,45 +85,89 @@
   #needline .nt { min-width: 0; }
   #needline .pay { color: var(--gold); }
   #needline.calm { color: var(--ink-soft); }
+  #needline[data-go]:not([data-go=""]) { cursor: pointer; }
+  #needline[data-go]:not([data-go=""]):hover { filter: brightness(.985); }
 
-  /* ---------- 방 ---------- */
-  #room { position: relative; height: 250px; overflow: hidden; border-radius: 14px; }
+  /* ---------- 방 = 화면 전체 배경 ----------
+     벽과 바닥의 경계선(--floorline)은 반려동물이 서 있는 자리에 맞춰 JS가 잡아준다.
+     그래야 화면 높이가 달라져도 발밑이 늘 바닥이다. */
+  #roombg { position: absolute; left: 0; right: 0; top: 0; bottom: 0; z-index: 0; pointer-events: none; }
+  #app { position: relative; z-index: 1; }
 
-  /* 벽 — 위 62%. 은은한 세로 벽지 줄무늬 */
-  #room .wall {
-    position: absolute; left: 0; right: 0; top: 0; height: 62%;
-    background: linear-gradient(#f3e9d8, #e8dac2);
+  #roombg .wall {
+    position: absolute; left: 0; right: 0; top: 0; height: var(--floorline, 300px);
+    background: linear-gradient(var(--w1, #f6eee2), var(--w2, #ebdfca));
   }
-  #room .wall::after {
+  #roombg .wall::after {
     content: ""; position: absolute; inset: 0;
     background: repeating-linear-gradient(90deg,
-      rgba(150,120,86,.075) 0 1px, transparent 1px 22px);
+      rgba(150,120,86,.07) 0 1px, transparent 1px 24px);
   }
-  /* 걸레받이 — 벽과 바닥이 만나는 선 */
-  #room .baseboard {
-    position: absolute; left: 0; right: 0; top: 62%; height: 11px;
-    background: linear-gradient(#f6ecda, #e4d4bb);
+  #roombg .baseboard {
+    position: absolute; left: 0; right: 0; top: var(--floorline, 300px); height: 12px;
+    background: linear-gradient(#f8efdd, #e6d7bf);
     border-top: 2px solid rgba(122,96,68,.16);
-    border-bottom: 2px solid rgba(122,96,68,.13);
+    border-bottom: 2px solid rgba(122,96,68,.14);
   }
-  /* 바닥 — 마루 결 */
-  #room .floor {
-    position: absolute; left: 0; right: 0; top: calc(62% + 11px); bottom: 0;
-    background: linear-gradient(#d5be9f, #c6ac89);
+  #roombg .floor {
+    position: absolute; left: 0; right: 0;
+    top: calc(var(--floorline, 300px) + 12px); bottom: 0;
+    background: linear-gradient(var(--f1, #dcc7aa), var(--f2, #cbb192) 260px);
   }
-  #room .floor::after {
+  #roombg .floor::after {
     content: ""; position: absolute; inset: 0;
     background:
-      repeating-linear-gradient(90deg, rgba(108,78,46,.16) 0 2px, transparent 2px 54px),
-      repeating-linear-gradient(0deg,  rgba(108,78,46,.10) 0 1px, transparent 1px 27px);
+      repeating-linear-gradient(90deg, rgba(108,78,46,.15) 0 2px, transparent 2px 58px),
+      repeating-linear-gradient(0deg,  rgba(108,78,46,.09) 0 1px, transparent 1px 30px);
   }
-  /* 러그 — 반려동물이 서 있는 자리를 잡아준다 */
+
+  /* ---------- 방 고르기 ---------- */
+  #rooms { display: flex; gap: 7px; margin-bottom: 8px; }
+  #rooms button {
+    flex: 1; padding: 7px 2px; display: flex; flex-direction: column;
+    align-items: center; gap: 1px; position: relative;
+  }
+  #rooms .ri { font-size: 22px; line-height: 1.15; }
+  #rooms .rn { font-size: 10.5px; font-weight: 800; }
+  #rooms button.on { background: var(--ink); color: #fff8ee; border-color: var(--ink); }
+  #rooms .dot {
+    position: absolute; top: 5px; right: 10px;
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--pink); border: 2px solid var(--panel);
+  }
+  #rooms button.on .dot { border-color: var(--ink); }
+
+  /* ---------- 방마다 다른 벽지와 바닥 ---------- */
+  /* 욕실만 바닥이 타일 */
+  #roombg[data-room="bath"] .floor::after {
+    background:
+      repeating-linear-gradient(90deg, rgba(90,120,132,.16) 0 2px, transparent 2px 42px),
+      repeating-linear-gradient(0deg,  rgba(90,120,132,.16) 0 2px, transparent 2px 42px);
+  }
+
+  /* 벽지 무늬 */
+  #roombg[data-pattern="dot"] .wall::after {
+    background: radial-gradient(circle, rgba(150,110,140,.16) 2.6px, transparent 3px) 0 0 / 34px 34px;
+  }
+  #roombg[data-pattern="check"] .wall::after {
+    background:
+      repeating-linear-gradient(90deg, rgba(150,120,86,.13) 0 12px, transparent 12px 34px),
+      repeating-linear-gradient(0deg,  rgba(150,120,86,.13) 0 12px, transparent 12px 34px);
+  }
+  #roombg[data-pattern="star"] .wall::after {
+    background:
+      radial-gradient(circle, rgba(110,120,180,.20) 2px, transparent 2.4px) 0 0 / 46px 46px,
+      radial-gradient(circle, rgba(110,120,180,.12) 1.4px, transparent 1.8px) 23px 23px / 46px 46px;
+  }
+
+  /* 반려동물이 서 있는 무대 — 카드가 아니라 방 그 자체이므로 테두리가 없다 */
+  #room { position: relative; height: 270px; margin-bottom: 10px; }
   #room .rug {
-    position: absolute; left: 50%; bottom: 4%; transform: translateX(-50%);
-    width: 54%; height: 23%; border-radius: 50%;
+    position: absolute; left: 50%; bottom: 5%; transform: translateX(-50%);
+    width: 60%; height: 22%; border-radius: 50%;
     background: radial-gradient(closest-side,
-      #ecd8bc 54%, #dcc19c 55% 74%, #ecd8bc 75%);
-    opacity: .92;
+      #eedcc2 54%, #ddc4a1 55% 74%, #eedcc2 75%);
+    opacity: .9;
   }
 
   .furn {
@@ -134,13 +178,14 @@
   }
   @keyframes pop { from { transform: translate(-50%,-50%) scale(0); } to { transform: translate(-50%,-50%) scale(1); } }
   #pet {
-    position: absolute; left: 50%; top: 68%;
+    position: absolute; left: 50%; top: 66%;
     transform: translate(-50%, -50%);
-    font-size: 66px; line-height: 1; cursor: pointer;
-    filter: drop-shadow(0 4px 2px rgba(0,0,0,.18));
+    width: 124px; height: 124px; cursor: pointer;
     animation: idle 2.6s ease-in-out infinite;
     user-select: none; transition: left .9s ease-in-out;
   }
+  /* 캐릭터와 옷은 같은 좌표계 위에 겹쳐 그린다 — 흐름에 두면 옷이 아래로 밀려난다 */
+  #pet svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
   @keyframes idle {
     0%,100% { transform: translate(-50%,-50%) scaleY(1); }
     50%     { transform: translate(-50%,-52%) scaleY(1.05); }
@@ -250,12 +295,23 @@
   .tabbody { padding: 10px; max-height: 60vh; overflow-y: auto; }
 
   /* ---------- 상점 (아이콘 격자) ---------- */
+  .shophead {
+    display: flex; align-items: baseline; gap: 8px;
+    font-size: 12.5px; font-weight: 800; padding: 14px 2px 7px;
+  }
+  .shophead:first-child { padding-top: 2px; }
+  .shophead b { margin-left: auto; font-size: 11px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
   .shopgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .shopgrid button {
     display: flex; flex-direction: column; align-items: center; gap: 3px;
     padding: 10px 4px 8px; position: relative; text-align: center;
   }
-  .shopgrid .e { font-size: 28px; line-height: 1.1; }
+  .shopgrid .e { width: 34px; height: 34px; }
+  .shopgrid .e svg { width: 100%; height: 100%; display: block; }
+  .shopgrid .sw {
+    width: 34px; height: 34px; border-radius: 9px;
+    border: 2px solid rgba(122,96,68,.25);
+  }
   .shopgrid .n { font-size: 11.5px; font-weight: 800; line-height: 1.25; }
   .shopgrid .d { font-size: 9.5px; color: var(--ink-soft); font-weight: 700; line-height: 1.35; min-height: 25px; }
   .shopgrid .c { font-size: 11.5px; font-weight: 800; color: var(--gold); }
@@ -286,7 +342,8 @@
   .picks { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; margin-bottom: 10px; }
   .picks button { padding: 9px 2px; display: flex; flex-direction: column; gap: 2px; align-items: center; }
   .picks button.on { border-color: var(--ink); background: #f6ead8; }
-  .picks .e { font-size: 27px; line-height: 1.1; }
+  .picks .e { width: 46px; height: 46px; }
+  .picks .e svg { width: 100%; height: 100%; display: block; }
   .picks .n { font-size: 11px; font-weight: 800; }
   .pickinfo {
     background: #f6ead8; border-radius: 11px; padding: 10px 12px; margin-bottom: 12px;
@@ -310,6 +367,12 @@
 </style>
 </head>
 <body>
+<div id="roombg" aria-hidden="true">
+  <div class="wall"></div>
+  <div class="baseboard"></div>
+  <div class="floor"></div>
+</div>
+
 <div id="app">
 
   <div class="panel" id="topbar">
@@ -325,10 +388,9 @@
 
   <div class="panel" id="needline"><span class="ni"></span><span class="nt"></span></div>
 
-  <div class="panel" id="room">
-    <div class="wall"></div>
-    <div class="baseboard"></div>
-    <div class="floor"></div>
+  <div id="rooms"></div>
+
+  <div id="room">
     <div class="rug"></div>
     <div id="bubble"></div>
     <div id="pet">🐕</div>
@@ -433,6 +495,173 @@ const PETS = {
   },
 };
 
+/* ===================== 캐릭터 그림 =====================
+   두꺼운 외곽선 · 납작한 색면 · 볼터치 · 큰 머리. 도형과 짧은 곡선만으로 그려서
+   이미지 파일 없이 SVG 문자열로 들고 다닌다. */
+
+const OUT = "#3a2c44";          // 공통 외곽선
+const WHITE = "#fffaf2";
+
+const eye = (x, y, r) =>
+  `<ellipse cx="${x}" cy="${y}" rx="${r}" ry="${r * 1.14}" fill="${OUT}" stroke="none"/>` +
+  `<circle cx="${x + r * 0.36}" cy="${y - r * 0.44}" r="${r * 0.3}" fill="#fff" stroke="none"/>`;
+
+const cheek = (x, y, c) =>
+  `<ellipse cx="${x}" cy="${y}" rx="7.5" ry="4.8" fill="${c || "#f2a09b"}" stroke="none" opacity=".82"/>`;
+
+const smile = (x, y) =>
+  `<path d="M${x - 7} ${y} q3.5 4.6 7 0 q3.5 4.6 7 0" stroke-width="3.4"/>`;
+
+const snout = (x, y) =>
+  `<path d="M${x - 3.4} ${y} h6.8 l-3.4 4 z" fill="${OUT}" stroke="none"/>`;
+
+const GROUND = `<ellipse cx="60" cy="114" rx="32" ry="5.4" fill="${OUT}" opacity=".13" stroke="none"/>`;
+
+const art = (inner) =>
+  `<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="${OUT}"` +
+  ` stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
+
+// 옷은 머리 위에 올라간다. 종마다 머리 위치가 달라 보정값을 따로 둔다.
+const ACC_FIT = {
+  dog: [0, 0], cat: [0, 0], rabbit: [0, 7], hamster: [0, 2], parrot: [0, 3],
+  turtle: [0, -7], hedgehog: [0, 40], fish: [-17, 12],
+};
+
+const ACC_ART = {
+  o_ribbon:
+    `<path d="M83 25 q-13 -9 -14 2 q1 11 14 2 z" fill="#f28aa6"/>` +
+    `<path d="M83 25 q13 -9 14 2 q-1 11 -14 2 z" fill="#f28aa6"/>` +
+    `<circle cx="83" cy="27" r="4.4" fill="#e56d8c"/>`,
+  o_flower:
+    `<g fill="#f6f0f8">` +
+    `<circle cx="87" cy="8" r="6"/><circle cx="97" cy="15" r="6"/>` +
+    `<circle cx="93" cy="26" r="6"/><circle cx="81" cy="26" r="6"/>` +
+    `<circle cx="77" cy="15" r="6"/></g>` +
+    `<circle cx="87" cy="17" r="5" fill="#f5c94c"/>`,
+  o_cap:
+    `<path d="M37 21 q23 -22 46 0 z" fill="#5aa9d6"/>` +
+    `<path d="M83 21 q16 1 15 8 q-16 1 -15 -8 z" fill="#4a93bd"/>` +
+    `<path d="M35 21 h49" stroke-width="5"/>`,
+  o_glass:
+    `<circle cx="48" cy="45" r="12" fill="#cfe9f5" fill-opacity=".55"/>` +
+    `<circle cx="72" cy="45" r="12" fill="#cfe9f5" fill-opacity=".55"/>` +
+    `<path d="M60 44 h0.5 M36 42 l-9 -3 M84 42 l9 -3" stroke-width="4"/>`,
+  o_crown:
+    `<path d="M41 24 L46 6 L53 16 L60 3 L67 16 L74 6 L79 24 z" fill="#f5c94c"/>` +
+    `<circle cx="60" cy="12" r="3" fill="#e8607d" stroke="none"/>`,
+};
+
+const PET_ART = {
+  dog: art(GROUND +
+    `<path d="M88 98 q20 0 19 -17" stroke-width="9" stroke="#e8bc84"/>` +
+    `<path d="M31 107 q-1 -34 29 -34 q30 0 29 34 z" fill="#f3d3a0"/>` +
+    `<ellipse cx="60" cy="96" rx="18" ry="14" fill="${WHITE}" stroke="none"/>` +
+    `<ellipse cx="47" cy="105" rx="9" ry="6.2" fill="${WHITE}"/>` +
+    `<ellipse cx="73" cy="105" rx="9" ry="6.2" fill="${WHITE}"/>` +
+    `<path d="M30 32 q-14 5 -13 25 q1 15 13 13" fill="#cf9a5e"/>` +
+    `<path d="M90 32 q14 5 13 25 q-1 15 -13 13" fill="#cf9a5e"/>` +
+    `<ellipse cx="60" cy="46" rx="33" ry="30" fill="#f3d3a0"/>` +
+    `<ellipse cx="60" cy="58" rx="17" ry="13" fill="${WHITE}" stroke="none"/>` +
+    eye(48, 44, 7) + eye(72, 44, 7) + cheek(34, 56) + cheek(86, 56) +
+    snout(60, 53) + smile(60, 59)),
+
+  cat: art(GROUND +
+    `<path d="M87 99 q22 -1 21 -21 q-1 -12 -11 -11" stroke-width="9" stroke="#f0a05e"/>` +
+    `<path d="M99 91 h9 M103 80 h6" stroke-width="3.2" stroke="#d9803c"/>` +
+    `<path d="M31 107 q-1 -34 29 -34 q30 0 29 34 z" fill="#f6b273"/>` +
+    `<ellipse cx="60" cy="96" rx="18" ry="14" fill="${WHITE}" stroke="none"/>` +
+    `<ellipse cx="47" cy="105" rx="9" ry="6.2" fill="${WHITE}"/>` +
+    `<ellipse cx="73" cy="105" rx="9" ry="6.2" fill="${WHITE}"/>` +
+    `<path d="M34 30 L28 6 L53 17 Z" fill="#f6b273"/>` +
+    `<path d="M86 30 L92 6 L67 17 Z" fill="#f6b273"/>` +
+    `<ellipse cx="60" cy="46" rx="34" ry="31" fill="#f6b273"/>` +
+    `<path d="M38 25 L35 13 L47 19 Z" fill="#f2a0a8" stroke="none"/>` +
+    `<path d="M82 25 L85 13 L73 19 Z" fill="#f2a0a8" stroke="none"/>` +
+    `<path d="M60 16 q-11 0 -11 17 q0 12 11 12 q11 0 11 -12 q0 -17 -11 -17" fill="${WHITE}" stroke="none"/>` +
+    `<ellipse cx="60" cy="58" rx="18" ry="13" fill="${WHITE}" stroke="none"/>` +
+    `<path d="M43 25 q6 -5 10 -2 M77 25 q-6 -5 -10 -2" stroke="#dd8b45" stroke-width="3.4"/>` +
+    eye(48, 45, 7) + eye(72, 45, 7) + cheek(34, 56) + cheek(86, 56) +
+    snout(60, 54) + smile(60, 60) +
+    `<path d="M27 52 l-13 -3 M27 60 l-14 3 M93 52 l13 -3 M93 60 l14 3" stroke-width="3"/>`),
+
+  rabbit: art(GROUND +
+    `<circle cx="91" cy="99" r="8" fill="${WHITE}"/>` +
+    `<path d="M33 107 q-1 -33 27 -33 q28 0 27 33 z" fill="#f1ece7"/>` +
+    `<ellipse cx="60" cy="97" rx="17" ry="13" fill="${WHITE}" stroke="none"/>` +
+    `<ellipse cx="48" cy="105" rx="8.5" ry="6" fill="${WHITE}"/>` +
+    `<ellipse cx="72" cy="105" rx="8.5" ry="6" fill="${WHITE}"/>` +
+    `<ellipse cx="46" cy="22" rx="9" ry="22" fill="#f1ece7" transform="rotate(-9 46 22)"/>` +
+    `<ellipse cx="74" cy="22" rx="9" ry="22" fill="#f1ece7" transform="rotate(9 74 22)"/>` +
+    `<ellipse cx="46" cy="23" rx="4" ry="14" fill="#f2a0a8" stroke="none" transform="rotate(-9 46 23)"/>` +
+    `<ellipse cx="74" cy="23" rx="4" ry="14" fill="#f2a0a8" stroke="none" transform="rotate(9 74 23)"/>` +
+    `<ellipse cx="60" cy="53" rx="31" ry="28" fill="#f1ece7"/>` +
+    eye(49, 50, 6.6) + eye(71, 50, 6.6) + cheek(36, 61) + cheek(84, 61) +
+    `<path d="M56.6 59 h6.8 l-3.4 3.6 z" fill="#e58f97" stroke="none"/>` +
+    `<path d="M60 63 v4 M53 70 q7 5 14 0" stroke-width="3.2"/>` +
+    `<path d="M56 74 v5 M64 74 v5" stroke-width="3"/>`),
+
+  hamster: art(GROUND +
+    `<path d="M34 106 q-1 -31 26 -31 q27 0 26 31 z" fill="#f5c98c"/>` +
+    `<ellipse cx="60" cy="97" rx="17" ry="13" fill="#fff3df" stroke="none"/>` +
+    `<ellipse cx="48" cy="104" rx="8" ry="5.6" fill="#fff3df"/>` +
+    `<ellipse cx="72" cy="104" rx="8" ry="5.6" fill="#fff3df"/>` +
+    `<circle cx="36" cy="26" r="11" fill="#f5c98c"/>` +
+    `<circle cx="84" cy="26" r="11" fill="#f5c98c"/>` +
+    `<circle cx="36" cy="26" r="5.5" fill="#f2a0a8" stroke="none"/>` +
+    `<circle cx="84" cy="26" r="5.5" fill="#f2a0a8" stroke="none"/>` +
+    `<ellipse cx="60" cy="48" rx="34" ry="29" fill="#f5c98c"/>` +
+    `<ellipse cx="60" cy="58" rx="19" ry="13" fill="#fff3df" stroke="none"/>` +
+    eye(48, 46, 6.8) + eye(72, 46, 6.8) + cheek(30, 57) + cheek(90, 57) +
+    snout(60, 54) + smile(60, 60) +
+    `<path d="M56 63 v5 M64 63 v5" stroke-width="3"/>`),
+
+  parrot: art(GROUND +
+    `<path d="M78 100 q20 8 26 21" stroke-width="9" stroke="#4fa8c9"/>` +
+    `<path d="M34 105 q-2 -32 26 -32 q28 0 26 32 z" fill="#7cc98f"/>` +
+    `<ellipse cx="49" cy="107" rx="7" ry="4.6" fill="#f5a63c"/>` +
+    `<ellipse cx="71" cy="107" rx="7" ry="4.6" fill="#f5a63c"/>` +
+    `<path d="M36 79 q-13 10 -7 24 q11 5 16 -7" fill="#4fa8c9"/>` +
+    `<path d="M48 20 q4 -14 12 -16 q8 2 12 16" fill="#f2d45c"/>` +
+    `<ellipse cx="60" cy="48" rx="31" ry="29" fill="#7cc98f"/>` +
+    `<path d="M60 19 q-14 2 -14 22 q0 16 14 16 q14 0 14 -16 q0 -20 -14 -22" fill="#f2d45c" stroke="none"/>` +
+    eye(49, 44, 6.6) + eye(71, 44, 6.6) + cheek(32, 55, "#f28a8a") + cheek(88, 55, "#f28a8a") +
+    `<path d="M52 56 q8 -3 16 0 q0 14 -8 17 q-8 -3 -8 -17 z" fill="#f5a63c"/>` +
+    `<path d="M52 63 q8 4 16 0" stroke-width="3"/>`),
+
+  turtle: art(GROUND +
+    `<ellipse cx="33" cy="102" rx="10" ry="6.5" fill="#9ccf87"/>` +
+    `<ellipse cx="87" cy="102" rx="10" ry="6.5" fill="#9ccf87"/>` +
+    `<path d="M22 100 q0 -40 38 -40 q38 0 38 40 z" fill="#c9a25e"/>` +
+    `<path d="M60 61 v39 M33 84 h54 M42 68 l-10 14 M78 68 l10 14" stroke="#a9813f" stroke-width="3.4"/>` +
+    `<ellipse cx="60" cy="38" rx="26" ry="23" fill="#9ccf87"/>` +
+    eye(51, 35, 6) + eye(69, 35, 6) + cheek(37, 45, "#e8a08f") + cheek(83, 45, "#e8a08f") +
+    smile(60, 46)),
+
+  hedgehog: art(GROUND +
+    `<path d="M18 100 q2 -46 42 -46 q40 0 42 46 z" fill="#9d8574"/>` +
+    `<path d="M29 73 l-9 -8 M39 61 l-6 -12 M52 55 l-2 -13 M68 55 l2 -13 M81 61 l6 -12 M91 73 l9 -8"
+       stroke="#8a7263" stroke-width="4"/>` +
+    `<ellipse cx="44" cy="104" rx="8" ry="5.4" fill="#f5ddbf"/>` +
+    `<ellipse cx="76" cy="104" rx="8" ry="5.4" fill="#f5ddbf"/>` +
+    `<path d="M60 58 q-26 0 -26 22 q0 22 26 22 q26 0 26 -22 q0 -22 -26 -22" fill="#f5ddbf"/>` +
+    eye(50, 76, 6) + eye(70, 76, 6) + cheek(38, 86, "#eda49c") + cheek(82, 86, "#eda49c") +
+    `<ellipse cx="60" cy="88" rx="5" ry="4" fill="${OUT}" stroke="none"/>` +
+    `<path d="M60 92 v3" stroke-width="3"/>`),
+
+  fish: art(
+    `<ellipse cx="60" cy="112" rx="30" ry="5" fill="${OUT}" opacity=".1" stroke="none"/>` +
+    `<path d="M92 60 q18 -15 20 0 q-2 15 -20 0 z" fill="#f6c48a"/>` +
+    `<path d="M50 27 q11 -14 25 -1" fill="#f6c48a"/>` +
+    `<ellipse cx="58" cy="62" rx="36" ry="33" fill="#f79a5c"/>` +
+    `<path d="M58 29 q-16 12 -16 33 q0 21 16 33" fill="${WHITE}" stroke="none"/>` +
+    `<path d="M58 29 q-16 12 -16 33 q0 21 16 33" stroke-width="3.4"/>` +
+    `<path d="M62 76 q14 6 12 18 q-12 2 -16 -10 z" fill="#f6c48a"/>` +
+    eye(41, 56, 7) + cheek(33, 71, "#ef8f8f") +
+    `<path d="M25 65 q5 5 10 0" stroke-width="3.4"/>` +
+    `<circle cx="21" cy="33" r="5" stroke-width="3.2" opacity=".5"/>` +
+    `<circle cx="32" cy="21" r="3.4" stroke-width="3" opacity=".4"/>`),
+};
+
 // (1) 수입원 — 무엇 때문에 행복한지에 따라 단가가 다르다
 const CHANNELS = [
   { k: "sat", ico: "🍚", label: "든든함",   per: 7, hint: "밥을 주면 늘어요", need: "밥 주기"   },
@@ -451,7 +680,7 @@ const URGENT_BONUS = 1.5;
 //     buff  : 끝난 뒤 일정 시간 동안 해당 채널 수익에 붙는 배율
 const CARE = [
   {
-    k: "sat", ico: "🍚", title: "먹이",
+    k: "sat", ico: "🍚", title: "먹이", room: "kitchen",
     items: [
       { id: "feed_low",  label: "남은 밥",   cost: 10, eff: { sat: 16 },          ch: "sat", pay:  5, note: "찬밥이지만 배는 참" },
       { id: "feed_mid",  label: "사료",      cost: 24, eff: { sat: 32 },          ch: "sat", pay: 12, buff: { mult: 1.2, secs: 300 } },
@@ -459,7 +688,7 @@ const CARE = [
     ],
   },
   {
-    k: "cln", ico: "🫧", title: "씻기기",
+    k: "cln", ico: "🫧", title: "씻기기", room: "bath",
     items: [
       { id: "wash_low",  label: "물수건",    cost: 12, eff: { cln: 20 },          ch: "cln", pay:  5, note: "대충 닦아줌" },
       { id: "wash_mid",  label: "샴푸 목욕", cost: 34, eff: { cln: 48 },          ch: "cln", pay: 10, buff: { mult: 1.2, secs: 300 } },
@@ -467,34 +696,89 @@ const CARE = [
     ],
   },
   {
-    k: "aff", ico: "💗", title: "함께 놀기",
+    k: "aff", ico: "💗", title: "함께 놀기", room: "living",
     items: [
       { id: "pet",   label: "쓰다듬기", cost:  0, cd:  4, eff: { aff: 5 },           ch: "aff", pay:  6, bond: 1, scale: "pet", note: "언제나 무료" },
       { id: "treat", label: "간식",     cost: 62, cd:  0, eff: { aff: 16, sat: 12 }, ch: "aff", pay: 14, bond: 2, buff: { mult: 1.4, secs: 480 } },
       { id: "play",  label: "놀아주기", cost:  0, cd: 25, eff: { aff: 20 },          ch: "aff", pay: 16, bond: 6, scale: "play", buff: { mult: 1.3, secs: 300 }, needs: "toy" },
     ],
   },
+  {
+    k: "rest", ico: "😴", title: "재우기", room: "bedroom",
+    items: [
+      { id: "sleep", label: "재우기", cost: 0, special: "sleep",
+        note: "자는 동안 게이지가 천천히 닳고 수익은 줄어요" },
+    ],
+  },
 ];
 
 const ALL_ITEMS = CARE.flatMap((g) => g.items);
 
+// 잠 — 오래 자리를 비울 때의 선택지. 덜 닳는 대신 덜 번다.
+const SLEEP_DECAY = 0.35;
+const SLEEP_INCOME = 0.55;
+
 // 설비 — 1회 구매, 영구. 산 물건은 반드시 방에 나타난다.
 //   x,y : 방 안 위치(%). 전부 벽과 바닥 가장자리에 붙인다 — 가운데는 반려동물 자리다.
 //   s   : 크기 배율. 안쪽(뒤)일수록 작게 해서 깊이를 만든다.
+// 집 — 방마다 하는 일이 다르다. 돌보려면 그 방으로 데려가야 한다.
+const ROOMS = [
+  { id: "living",  name: "거실", icon: "🛋️", care: "aff",  w1: "#f6eee2", w2: "#ebdfca", f1: "#dcc7aa", f2: "#cbb192" },
+  { id: "kitchen", name: "주방", icon: "🍽️", care: "sat",  w1: "#eaf1e4", w2: "#dbe7d3", f1: "#e0d3bd", f2: "#cfbfa4" },
+  { id: "bath",    name: "욕실", icon: "🛁", care: "cln",  w1: "#e4eff3", w2: "#d3e5ec", f1: "#e8eef0", f2: "#d6e0e4", tile: true },
+  { id: "bedroom", name: "침실", icon: "🛏️", care: "rest", w1: "#efe6ee", w2: "#e2d6e2", f1: "#d9c9b6", f2: "#c8b6a0" },
+];
+
+// 벽지 — 방마다 따로 고를 수 있다
+const WALLPAPERS = [
+  { id: "w_plain",  name: "기본",      cost:    0, sw: "#efe4d4" },
+  { id: "w_mint",   name: "민트",      cost:  500, sw: "#d8ecdd", w1: "#eaf7ee", w2: "#d5e9db" },
+  { id: "w_lilac",  name: "라벤더",    cost:  500, sw: "#e2daf0", w1: "#f2edfa", w2: "#ded5ef" },
+  { id: "w_peach",  name: "살구",      cost:  800, sw: "#f8ddcd", w1: "#fdeee4", w2: "#f6d9c6" },
+  { id: "w_sky",    name: "하늘",      cost:  800, sw: "#d5e7f5", w1: "#e9f3fb", w2: "#d2e4f2" },
+  { id: "w_dot",    name: "물방울",    cost: 1400, sw: "#f2e2ef", w1: "#fbf0f8", w2: "#f0dcec", pattern: "dot" },
+  { id: "w_star",   name: "별무늬",    cost: 1800, sw: "#dfe3f2", w1: "#eef1fb", w2: "#dae0f0", pattern: "star" },
+  { id: "w_check",  name: "체크",      cost: 2400, sw: "#ecdfc9", w1: "#faf1de", w2: "#eaddc2", pattern: "check" },
+];
+
+// 옷 — 캐릭터 위에 실제로 그려진다. 한 번에 하나만 입는다.
+const OUTFITS = [
+  { id: "o_ribbon", name: "리본",   cost:  300, desc: "💗수익 ×1.15", ch: { aff: 1.15 } },
+  { id: "o_flower", name: "꽃",     cost:  600, desc: "🫧수익 ×1.2",  ch: { cln: 1.2  } },
+  { id: "o_cap",    name: "모자",   cost:  900, desc: "🍚수익 ×1.2",  ch: { sat: 1.2  } },
+  { id: "o_glass",  name: "안경",   cost: 2000, desc: "모든 수익 ×1.15", all: 1.15 },
+  { id: "o_crown",  name: "왕관",   cost: 5500, desc: "모든 수익 ×1.4",  all: 1.4  },
+];
+const roomOf = (ch) => ROOMS.find((r) => r.care === ch);
+
+// 설비 — 1회 구매, 영구. 각자 어울리는 방의 구석에 놓인다.
 const FURNITURE = [
-  // 벽에 걸리거나 기대는 것
-  { id: "collar",  name: "이름표 목걸이", emoji: "🎗️", cost: 4000, desc: "모든 수익 ×1.8",             x: 18, y: 19, s: 0.85 },
-  { id: "window",  name: "창가 자리",     emoji: "🪟", cost: 1800, desc: "햇볕에 말라서 🫧수익 ×2",     x: 79, y: 21, s: 1.15 },
-  { id: "tower",   name: "놀이 타워",     emoji: "🪜", cost: 2600, desc: "행복도 +6 · 💗수익 ×1.6",     x:  8, y: 63, s: 1.1  },
-  // 바닥 안쪽 (뒤)
-  { id: "bowl",    name: "좋은 밥그릇",   emoji: "🥣", cost:  400, desc: "먹이 효과 +50% · 🍚수익 ×1.3", x: 15, y: 72, s: 0.9  },
-  { id: "garden",  name: "작은 정원",     emoji: "🪴", cost: 7000, desc: "모든 감소 −20% · 수익 ×1.5",  x: 94, y: 69, s: 0.95 },
-  // 바닥 중간
-  { id: "cushion", name: "푹신한 방석",   emoji: "🛏️", cost:  600, desc: "애정 감소 −25%",             x: 26, y: 84, s: 1.0  },
-  { id: "brush",   name: "자동 브러시",   emoji: "🧽", cost:  850, desc: "청결 감소 −40%",             x: 89, y: 82, s: 1.0  },
-  // 바닥 앞 구석
-  { id: "toy",     name: "장난감 바구니", emoji: "🧺", cost:  250, desc: "놀아주기 해금",              x:  9, y: 93, s: 1.15 },
-  { id: "feeder",  name: "자동 급식기",   emoji: "⏲️", cost: 1200, desc: "포만감 감소 −35%",           x: 80, y: 94, s: 1.15 },
+  // 🛋️ 거실
+  { id: "collar",  name: "이름표 목걸이", emoji: "🎗️", cost: 4000, desc: "모든 수익 ×1.8",             room: "living",  x:  9, y: 11, s: 0.9  },
+  { id: "tower",   name: "놀이 타워",     emoji: "🪜", cost: 2600, desc: "행복도 +6 · 💗수익 ×1.6",     room: "living",  x:  8, y: 64, s: 1.2  },
+  { id: "toy",     name: "장난감 바구니", emoji: "🧺", cost:  250, desc: "놀아주기 해금",              room: "living",  x: 11, y: 90, s: 1.2  },
+  { id: "garden",  name: "작은 정원",     emoji: "🪴", cost: 7000, desc: "모든 감소 −20% · 수익 ×1.5",  room: "living",  x: 91, y: 74, s: 1.15 },
+  // 🍽️ 주방
+  { id: "bowl",    name: "좋은 밥그릇",   emoji: "🥣", cost:  400, desc: "먹이 효과 +50% · 🍚수익 ×1.3", room: "kitchen", x: 14, y: 88, s: 1.15 },
+  { id: "feeder",  name: "자동 급식기",   emoji: "⏲️", cost: 1200, desc: "포만감 감소 −35%",           room: "kitchen", x: 90, y: 84, s: 1.2  },
+  // 🛁 욕실
+  { id: "window",  name: "창가 자리",     emoji: "🪟", cost: 1800, desc: "햇볕에 말라서 🫧수익 ×2",     room: "bath",    x: 89, y: 13, s: 1.2  },
+  { id: "brush",   name: "자동 브러시",   emoji: "🧽", cost:  850, desc: "청결 감소 −40%",             room: "bath",    x: 11, y: 86, s: 1.15 },
+  { id: "sofa",    name: "푹신한 소파",   emoji: "🛋️", cost: 1000, desc: "행복도 +4 · 💗수익 ×1.15",   room: "living",  x: 88, y: 87, s: 1.25 },
+  { id: "tv",      name: "텔레비전",     emoji: "📺", cost: 1600, desc: "애정 감소 −20%",             room: "living",  x: 90, y: 26, s: 1.05 },
+  { id: "doll",    name: "애착 인형",     emoji: "🧸", cost:  500, desc: "쓰다듬기 효과 +50%",          room: "living",  x: 25, y: 93, s: 1.0  },
+  // 🍽️ 주방
+  { id: "fridge",  name: "냉장고",       emoji: "🧊", cost: 2200, desc: "먹이 값 −25%",               room: "kitchen", x: 88, y: 68, s: 1.15 },
+  { id: "water",   name: "정수기",       emoji: "💧", cost:  700, desc: "포만감 감소 −15% · 🍚수익 ×1.1", room: "kitchen", x: 11, y: 72, s: 1.0  },
+  // 🛁 욕실
+  { id: "tub",     name: "욕조",         emoji: "🛁", cost:  900, desc: "씻기기 효과 +40%",            room: "bath",    x: 85, y: 84, s: 1.25 },
+  { id: "shampoo", name: "고급 샴푸",     emoji: "🧴", cost: 1500, desc: "🫧수익 ×1.35",               room: "bath",    x: 14, y: 74, s: 0.95 },
+  { id: "mirror",  name: "김서림 방지 거울", emoji: "🪞", cost: 3000, desc: "청결 감소 −25% · 🫧수익 ×1.2", room: "bath",  x: 12, y: 20, s: 1.05 },
+  // 🛏️ 침실
+  { id: "cushion", name: "푹신한 방석",   emoji: "🛏️", cost:  600, desc: "애정 감소 −25%",             room: "bedroom", x: 86, y: 88, s: 1.25 },
+  { id: "lamp",    name: "무드등",       emoji: "🕯️", cost:  800, desc: "자는 동안 수익 ×0.8까지 회복",  room: "bedroom", x: 11, y: 85, s: 1.05 },
+  { id: "blanket", name: "포근한 담요",   emoji: "🧣", cost: 1300, desc: "자는 동안 게이지 감소 −30% 더", room: "bedroom", x: 90, y: 72, s: 1.05 },
+  { id: "clock",   name: "밤 시계",      emoji: "⏰", cost: 2000, desc: "자는 동안 애정이 천천히 회복",   room: "bedroom", x: 12, y: 22, s: 1.0  },
 ];
 
 const BOND_STEPS = [50, 130, 260, 460, 760, 1200, 1800, 2600];
@@ -529,6 +813,10 @@ function freshState(type, name) {
     sat: 80, cln: 85, aff: 70,
     coins: 120,
     bondExp: 0,
+    room: "living",
+    asleep: false,
+    outfit: null,
+    walls: {},
     owned: {},
     cooldown: {},
     buffs: {},          // { 채널키: { mult, left } }
@@ -562,17 +850,19 @@ function bondProgress() {
 
 function decayRates() {
   const p = pet();
-  const g = has("garden") ? 0.8 : 1;
+  const sleep = S.asleep ? SLEEP_DECAY * (has("blanket") ? 0.7 : 1) : 1;
+  const g = (has("garden") ? 0.8 : 1) * sleep;
   return {
-    sat: DECAY.sat * p.sat * (has("feeder")  ? 0.65 : 1) * g,
-    cln: DECAY.cln * p.cln * (has("brush")   ? 0.60 : 1) * g,
-    aff: DECAY.aff * p.aff * (has("cushion") ? 0.75 : 1) * g,
+    sat: DECAY.sat * p.sat * (has("feeder")  ? 0.65 : 1) * (has("water")  ? 0.85 : 1) * g,
+    cln: DECAY.cln * p.cln * (has("brush")   ? 0.60 : 1) * (has("mirror") ? 0.75 : 1) * g,
+    aff: DECAY.aff * p.aff * (has("cushion") ? 0.75 : 1) * (has("tv")     ? 0.80 : 1) * g,
   };
 }
 
 function happiness() {
   let h = S.sat * WEIGHT.sat + S.cln * WEIGHT.cln + S.aff * WEIGHT.aff;
   if (has("tower")) h += 6;
+  if (has("sofa"))  h += 4;
   return clamp(h, 0, 100);
 }
 
@@ -582,7 +872,10 @@ function coinMultiplier() {
   if (has("collar")) m *= 1.8;
   if (has("garden")) m *= 1.5;
   m *= 1 + (bondLevel() - 1) * 0.1;
+  const outfit = OUTFITS.find((x) => x.id === S.outfit);
+  if (outfit && outfit.all) m *= outfit.all;
   if (happiness() >= 90) m *= 1.25;      // 최상 기분 보너스
+  if (S.asleep) m *= has("lamp") ? 0.8 : SLEEP_INCOME;   // 무드등이 있으면 덜 손해
   return m;
 }
 
@@ -591,9 +884,15 @@ function channelMultiplier(k) {
   let m = 1;
   const byPet = pet().ch && pet().ch[k];   // 이 동물이 어느 행복으로 먹고사는지
   if (byPet) m *= byPet;
-  if (k === "sat" && has("bowl"))   m *= 1.3;
-  if (k === "cln" && has("window")) m *= 2.0;
-  if (k === "aff" && has("tower"))  m *= 1.6;
+  if (k === "sat" && has("bowl"))    m *= 1.3;
+  if (k === "sat" && has("water"))   m *= 1.1;
+  if (k === "cln" && has("window"))  m *= 2.0;
+  if (k === "cln" && has("shampoo")) m *= 1.35;
+  if (k === "cln" && has("mirror"))  m *= 1.2;
+  if (k === "aff" && has("tower"))   m *= 1.6;
+  if (k === "aff" && has("sofa"))    m *= 1.15;
+  const o = OUTFITS.find((x) => x.id === S.outfit);
+  if (o && o.ch && o.ch[k]) m *= o.ch[k];
   const b = S.buffs[k];
   if (b && b.left > 0) m *= b.mult;
   return m;
@@ -625,6 +924,7 @@ function urgentKey() {
 }
 
 function itemReward(it) {
+  if (!it.pay) return 0;
   const bonus = urgentKey() === it.ch ? URGENT_BONUS : 1;
   return Math.round(it.pay * neediness(it.ch) * bonus * coinMultiplier());
 }
@@ -661,17 +961,24 @@ function renderNeedLine() {
   if (!u) {
     box.style.borderLeftColor = "var(--green)";
     box.classList.add("calm");
-    ico.textContent = mood().face;
-    txt.textContent = `${S.name}는 지금 다 괜찮아요 — 분당 ${(coinRate() * 60).toFixed(1)}코인 버는 중`;
+    box.dataset.go = "";
+    ico.textContent = S.asleep ? "😴" : mood().face;
+    txt.textContent = S.asleep
+      ? `${S.name}는 자는 중이에요 — 천천히 닳고 천천히 벌어요`
+      : `${S.name}는 지금 다 괜찮아요 — 분당 ${(coinRate() * 60).toFixed(1)}코인 버는 중`;
     return;
   }
 
-  const t = NEED_TEXT[u], best = bestNow(u);
+  const t = NEED_TEXT[u], best = bestNow(u), rm = roomOf(u);
   box.style.borderLeftColor = CH_COLOR[u];
   box.classList.remove("calm");
+  box.dataset.go = rm.id;              // 줄을 누르면 그 방으로 바로 간다
   ico.textContent = CH_LABEL[u];
+
+  const here = S.room === rm.id;
+  const where = here ? "지금" : `${rm.icon} ${rm.name}에서`;
   txt.innerHTML = best > 0
-    ? `${S[u] < 30 ? t.hard : t.soft} — 지금 ${t.act} <span class="pay">+${best}코인</span>`
+    ? `${S[u] < 30 ? t.hard : t.soft} — ${where} ${t.act} <span class="pay">+${best}코인</span>`
     : `${S[u] < 30 ? t.hard : t.soft} — 코인이 모자라요`;
 }
 
@@ -691,6 +998,7 @@ function step(dt, efficiency = 1) {
   S.cln = clamp(S.cln - d.cln * dt, 0, 100);
   S.aff = clamp(S.aff - d.aff * dt, 0, 100);
 
+  if (S.asleep && has("clock")) S.aff = clamp(S.aff + (0.4 / 60) * dt, 0, 100);
   S.coins += coinRate() * dt * efficiency;
   if (happiness() >= 80) S.bondExp += 0.05 * dt;   // 행복을 유지하는 것만으로도 관계가 쌓인다
 
@@ -719,27 +1027,54 @@ function settleOffline(seconds) {
 
 /* ===================== 액션 ===================== */
 
+// 먹이 값은 냉장고가 있으면 싸진다 — 값을 쓰는 곳이 여러 군데라 한 함수로 모은다
+function itemCost(it) {
+  if (!it.cost) return 0;
+  return Math.round(it.cost * (it.ch === "sat" && has("fridge") ? 0.75 : 1));
+}
+
 function canDo(it) {
   if (it.needs && !has(it.needs)) return false;
   if (S.cooldown[it.id] > 0) return false;
-  if (it.cost > S.coins) return false;
+  if (itemCost(it) > S.coins) return false;
   return true;
 }
 
+function goRoom(id) {
+  if (S.room === id) return;
+  S.room = id;
+  if (id !== "bedroom") S.asleep = false;   // 다른 방으로 데려가면 잠이 깬다
+  render();
+  save();
+}
+
+function toggleSleep() {
+  S.asleep = !S.asleep;
+  addLog(S.asleep ? `${S.name}가 잠들었다` : `${S.name}가 잠에서 깼다`);
+  say(S.asleep ? "쿨…" : "잘 잤다!");
+  render();
+  save();
+}
+
 function doCare(it) {
+  if (it.special === "sleep") { toggleSleep(); return; }
   if (!canDo(it)) return;
+  S.asleep = false;                          // 돌봐주면 잠이 깬다
 
   // 보상은 효과를 적용하기 "전" 상태로 계산한다 — 얼마나 필요했는지가 기준이므로
   const wasUrgent = urgentKey() === it.ch;
   const reward = itemReward(it);
-  S.coins += reward - it.cost;
+  const cost = itemCost(it);
+  S.coins += reward - cost;
 
-  const scale = it.scale ? pet()[it.scale] : 1;
+  let scale = it.scale ? pet()[it.scale] : 1;
+  if (it.id === "pet" && has("doll")) scale *= 1.5;
   const foodBoost = has("bowl") ? 1.5 : 1;
+  const washBoost = has("tub") ? 1.4 : 1;
   const gained = [];
 
   for (const [k, v] of Object.entries(it.eff)) {
-    const amount = v * scale * (k === "sat" ? foodBoost : 1);
+    const amount = v * scale * (k === "sat" ? foodBoost : 1) * (k === "cln" ? washBoost : 1);
     const before = S[k];
     S[k] = clamp(S[k] + amount, 0, 100);
     const real = Math.round(S[k] - before);
@@ -765,7 +1100,7 @@ function doCare(it) {
 
   if (it.cd) S.cooldown[it.id] = it.cd;
 
-  const net = reward - it.cost;
+  const net = reward - cost;
   addLog(wasUrgent
     ? `제때 ${it.label} — 딱 필요했던 거라 ${reward}코인을 받았다 (${net >= 0 ? "+" : ""}${net})`
     : `${it.label} — ${reward}코인을 받았다 (${net >= 0 ? "+" : ""}${net})`);
@@ -793,10 +1128,30 @@ function reactionTo(it) {
   }
 }
 
+function wearOutfit(o) {
+  if (!has(o.id)) return;
+  S.outfit = S.outfit === o.id ? null : o.id;
+  say(S.outfit ? "어때, 잘 어울려?" : "편하다~");
+  addLog(S.outfit ? `${o.name}을(를) 입었다` : `${o.name}을(를) 벗었다`);
+  render();
+  save();
+}
+
+function applyWall(w) {
+  if (w.cost && !has(w.id)) return;
+  S.walls[S.room] = w.id;
+  const r = ROOMS.find((x) => x.id === S.room);
+  addLog(`${r.name} 벽지를 ${w.name}(으)로 바꿨다`);
+  render();
+  save();
+}
+
 function buy(item) {
   if (has(item.id) || S.coins < item.cost) return;
   S.coins -= item.cost;
   S.owned[item.id] = true;
+  if (item.kind === "outfit") S.outfit = item.id;
+  if (item.kind === "wall") S.walls[S.room] = item.id;
   addLog(`${item.name}을(를) 샀다 — ${item.cost}코인`);
   say(`${item.name}이다!`);
   floatText("✨ 새 용품!", "var(--green)");
@@ -835,11 +1190,53 @@ function addLog(text) {
 }
 
 /* --- 방 --- */
+const roomEls = new Map();
+
+function buildRooms() {
+  const box = $("rooms");
+  box.innerHTML = "";
+  roomEls.clear();
+  for (const r of ROOMS) {
+    const b = document.createElement("button");
+    b.innerHTML = `<span class="ri">${r.icon}</span><span class="rn">${r.name}</span><span class="dot" hidden></span>`;
+    b.title = r.name;
+    b.onclick = () => goRoom(r.id);
+    box.appendChild(b);
+    roomEls.set(r.id, { btn: b, dot: b.querySelector(".dot") });
+  }
+  updateRooms();
+}
+
+// 지금 돌봐줘야 하는 방에 점을 찍는다 — 어느 방으로 갈지가 바로 보이도록
+function updateRooms() {
+  const u = urgentKey();
+  for (const r of ROOMS) {
+    const el = roomEls.get(r.id);
+    if (!el) continue;
+    el.btn.classList.toggle("on", S.room === r.id);
+    el.dot.hidden = !(u && r.care === u);
+  }
+}
+
 // 이미 놓인 가구는 건드리지 않는다 — 새로 산 것만 등장 애니메이션과 함께 추가
+function wallpaperOf(roomId) {
+  const id = (S.walls && S.walls[roomId]) || "w_plain";
+  return WALLPAPERS.find((w) => w.id === id) || WALLPAPERS[0];
+}
+
 function renderRoom() {
+  const bg = $("roombg");
+  const r = ROOMS.find((x) => x.id === S.room);
+  const wp = wallpaperOf(S.room);
+  bg.dataset.room = S.room;
+  bg.dataset.pattern = wp.pattern || "";
+  bg.style.setProperty("--w1", wp.w1 || r.w1);
+  bg.style.setProperty("--w2", wp.w2 || r.w2);
+  bg.style.setProperty("--f1", r.f1);
+  bg.style.setProperty("--f2", r.f2);
   for (const f of FURNITURE) {
     const exists = $("furn-" + f.id);
-    if (!has(f.id)) { if (exists) exists.remove(); continue; }
+    if (!has(f.id) || f.room !== S.room) { if (exists) exists.remove(); continue; }
     if (exists) continue;
     const el = document.createElement("div");
     el.className = "furn";
@@ -851,7 +1248,23 @@ function renderRoom() {
     el.title = f.name;
     $("room").insertBefore(el, $("bubble"));
   }
-  $("pet").textContent = pet().emoji;
+  const p = $("pet");
+  const look = S.type + "/" + (S.outfit || "");
+  if (p.dataset.look !== look) {        // SVG 다시 파싱하지 않도록 겉모습이 바뀔 때만
+    const [dx, dy] = ACC_FIT[S.type] || [0, 0];
+    const acc = S.outfit && ACC_ART[S.outfit]
+      ? art(`<g transform="translate(${dx} ${dy})">${ACC_ART[S.outfit]}</g>`)
+      : "";
+    p.innerHTML = PET_ART[S.type] + acc;
+    p.dataset.look = look;
+  }
+}
+
+// 벽과 바닥의 경계를 반려동물 발밑에 맞춘다 — 화면 크기가 달라져도 늘 바닥을 딛고 있도록
+function syncFloorline() {
+  const r = $("room").getBoundingClientRect();
+  const y = r.top + window.scrollY + r.height * 0.66;
+  document.documentElement.style.setProperty("--floorline", Math.round(y) + "px");
 }
 
 /* --- 게이지 --- */
@@ -958,7 +1371,7 @@ function buildCare() {
     }
     wrap.appendChild(items);
     box.appendChild(wrap);
-    careEls.set("group:" + g.k, { tag: wrap.querySelector(".tag") });
+    careEls.set("group:" + g.k, { wrap, tag: wrap.querySelector(".tag") });
   }
   updateCare();
 }
@@ -968,12 +1381,28 @@ function updateCare() {
 
   for (const g of CARE) {
     const ge = careEls.get("group:" + g.k);
-    if (ge) ge.tag.hidden = urgent !== g.k;
+    if (!ge) continue;
+    ge.wrap.hidden = g.room !== S.room;      // 그 방에서 할 수 있는 것만 보여준다
+    ge.tag.hidden = urgent !== g.k;
   }
 
   for (const it of ALL_ITEMS) {
     const el = careEls.get(it.id);
     if (!el) continue;
+    if (it.special === "sleep") {
+      el.n.textContent = S.asleep ? "깨우기" : "재우기";
+      el.c.textContent = "무료";
+      el.c.classList.add("free");
+      el.p.textContent = S.asleep ? "자는 중" : "";
+      el.p.classList.add("zero");
+      el.bf.textContent = S.asleep
+        ? `게이지 −65% · 수익 ×${SLEEP_INCOME}`
+        : it.note;
+      el.btn.classList.toggle("urgent", S.asleep);
+      el.btn.disabled = false;
+      continue;
+    }
+
     const locked = it.needs && !has(it.needs);
     const cd = S.cooldown[it.id];
 
@@ -981,7 +1410,7 @@ function updateCare() {
 
     let costText, free = false;
     if (cd > 0) costText = Math.ceil(cd) + "초";
-    else if (it.cost) costText = "🪙 " + it.cost;
+    else if (it.cost) costText = "🪙 " + itemCost(it);
     else { costText = "무료"; free = true; }
     el.c.textContent = costText;
     el.c.classList.toggle("free", free);
@@ -1008,30 +1437,86 @@ const shopEls = new Map();
 
 function buildShop() {
   const box = $("shopbody");
-  box.innerHTML = `<div class="sect">설비 — 한 번 사면 계속 남고, 방에 놓입니다</div>`;
+  box.innerHTML = `<div class="sect">설비 — 한 번 사면 계속 남고, 그 방에 놓입니다</div>`;
   shopEls.clear();
 
-  const grid = document.createElement("div");
-  grid.className = "shopgrid";
-  // 방 배치 순서와 상관없이, 상점은 항상 싼 것부터 보여준다
-  for (const f of [...FURNITURE].sort((a, b) => a.cost - b.cost)) {
+  // 어느 방에 놓일 물건인지가 곧 무엇에 쓰는 물건인지다. 방별로 묶고, 그 안에서 싼 것부터.
+  for (const r of ROOMS) {
+    const items = FURNITURE.filter((f) => f.room === r.id).sort((a, b) => a.cost - b.cost);
+    if (!items.length) continue;
+
+    const head = document.createElement("div");
+    head.className = "shophead";
+    head.innerHTML = `<span>${r.icon} ${r.name}</span><b></b>`;
+    box.appendChild(head);
+
+    const grid = document.createElement("div");
+    grid.className = "shopgrid";
+    for (const f of items) {
+      const b = document.createElement("button");
+      b.innerHTML = `
+        <span class="e">${f.emoji}</span>
+        <span class="n">${f.name}</span>
+        <span class="d">${f.desc}</span>
+        <span class="c"></span>`;
+      b.title = `${f.name} — ${f.desc}`;
+      b.onclick = () => buy(f);
+      grid.appendChild(b);
+      shopEls.set(f.id, { btn: b, c: b.querySelector(".c") });
+    }
+    box.appendChild(grid);
+    shopEls.set("head:" + r.id, { count: head.querySelector("b"), total: items.length });
+  }
+
+  // 👕 옷 — 사면 캐릭터 위에 바로 그려진다
+  const oh = document.createElement("div");
+  oh.className = "shophead";
+  oh.innerHTML = `<span>👕 옷</span><b></b>`;
+  box.appendChild(oh);
+  const ogrid = document.createElement("div");
+  ogrid.className = "shopgrid";
+  for (const o of OUTFITS) {
     const b = document.createElement("button");
     b.innerHTML = `
-      <span class="e">${f.emoji}</span>
-      <span class="n">${f.name}</span>
-      <span class="d">${f.desc}</span>
+      <span class="e">${art(`<g transform="translate(-22 34) scale(1.15)">${ACC_ART[o.id]}</g>`)}</span>
+      <span class="n">${o.name}</span>
+      <span class="d">${o.desc}</span>
       <span class="c"></span>`;
-    b.title = `${f.name} — ${f.desc}`;
-    b.onclick = () => buy(f);
-    grid.appendChild(b);
-    shopEls.set(f.id, { btn: b, c: b.querySelector(".c") });
+    b.onclick = () => (has(o.id) ? wearOutfit(o) : buy({ ...o, kind: "outfit" }));
+    ogrid.appendChild(b);
+    shopEls.set(o.id, { btn: b, c: b.querySelector(".c"), outfit: o });
   }
-  box.appendChild(grid);
+  box.appendChild(ogrid);
+  shopEls.set("head:outfit", { count: oh.querySelector("b"), total: OUTFITS.length });
+
+  // 🎨 벽지 — 지금 있는 방에 발린다
+  const wh = document.createElement("div");
+  wh.className = "shophead";
+  wh.innerHTML = `<span>🎨 벽지</span><b></b>`;
+  box.appendChild(wh);
+  const wnote = document.createElement("div");
+  wnote.className = "sect";
+  wnote.style.padding = "0 2px 8px";
+  box.appendChild(wnote);
+  const wgrid = document.createElement("div");
+  wgrid.className = "shopgrid";
+  for (const w of WALLPAPERS) {
+    const b = document.createElement("button");
+    b.innerHTML = `
+      <span class="sw" style="background:${w.sw}"></span>
+      <span class="n">${w.name}</span>
+      <span class="c"></span>`;
+    b.onclick = () => (w.cost && !has(w.id) ? buy({ ...w, kind: "wall", desc: "벽지" }) : applyWall(w));
+    wgrid.appendChild(b);
+    shopEls.set(w.id, { btn: b, c: b.querySelector(".c"), wall: w });
+  }
+  box.appendChild(wgrid);
+  shopEls.set("head:wall", { count: wh.querySelector("b"), total: WALLPAPERS.length, note: wnote });
 
   const note = document.createElement("div");
   note.className = "sect";
   note.style.padding = "14px 2px 0";
-  note.textContent = "먹이·목욕 같은 소모품은 🏠 돌보기에서 누를 때 코인이 바로 빠져나갑니다.";
+  note.textContent = "산 물건은 그 방 구석에 놓입니다. 먹이·목욕 같은 소모품은 🏠 돌보기에서 누를 때 코인이 바로 빠져나갑니다.";
   box.appendChild(note);
   updateShop();
 }
@@ -1050,6 +1535,41 @@ function updateShop() {
     el.btn.classList.toggle("buyable", !owned && afford);
     const off = owned || !afford;
     if (el.btn.disabled !== off) el.btn.disabled = off;
+  }
+  for (const r of ROOMS) {
+    const h = shopEls.get("head:" + r.id);
+    if (!h) continue;
+    const got = FURNITURE.filter((f) => f.room === r.id && has(f.id)).length;
+    h.count.textContent = `${got} / ${h.total}`;
+  }
+
+  for (const o of OUTFITS) {
+    const el = shopEls.get(o.id);
+    if (!el) continue;
+    const owned = has(o.id), worn = S.outfit === o.id;
+    el.c.textContent = worn ? "✓ 입는 중" : owned ? "입히기" : "🪙 " + fmt(o.cost);
+    el.btn.classList.toggle("done", worn);
+    el.btn.classList.toggle("buyable", !owned && S.coins >= o.cost);
+    el.btn.disabled = !owned && S.coins < o.cost;
+  }
+  const oh = shopEls.get("head:outfit");
+  if (oh) oh.count.textContent = `${OUTFITS.filter((o) => has(o.id)).length} / ${oh.total}`;
+
+  const here = ROOMS.find((x) => x.id === S.room);
+  const wh = shopEls.get("head:wall");
+  if (wh) {
+    wh.count.textContent = `${WALLPAPERS.filter((w) => !w.cost || has(w.id)).length} / ${wh.total}`;
+    wh.note.textContent = `고르면 지금 있는 ${here.icon} ${here.name}에 발립니다.`;
+  }
+  for (const w of WALLPAPERS) {
+    const el = shopEls.get(w.id);
+    if (!el) continue;
+    const owned = !w.cost || has(w.id);
+    const inUse = wallpaperOf(S.room).id === w.id;
+    el.c.textContent = inUse ? "✓ 사용 중" : owned ? "바르기" : "🪙 " + fmt(w.cost);
+    el.btn.classList.toggle("done", inUse);
+    el.btn.classList.toggle("buyable", !owned && S.coins >= w.cost);
+    el.btn.disabled = !owned && S.coins < w.cost;
   }
   // 살 수 있는 게 생기면 🛒 아이콘에 점을 찍는다
   $("nav").querySelector('[data-tab="shop"] .dot').hidden = !anyBuyable;
@@ -1072,6 +1592,7 @@ function render() {
   renderNeedLine();
   renderStats();
   updateIncome();
+  updateRooms();
   updateCare();
   updateShop();
   renderRoom();
@@ -1103,6 +1624,7 @@ function loop(now) {
   renderNeedLine();
   renderStats();
   updateIncome();
+  updateRooms();
   updateCare();
   updateShop();   // 🛒 아이콘의 알림 점도 여기서 갱신되므로 탭과 무관하게 돌린다
 }
@@ -1146,7 +1668,7 @@ function showPicker() {
       <div class="picks">
         ${Object.entries(PETS).map(([k, p]) => `
           <button data-k="${k}" class="${k === "dog" ? "on" : ""}">
-            <span class="e">${p.emoji}</span>
+            <span class="e">${PET_ART[k]}</span>
             <span class="n">${p.name}</span>
           </button>`).join("")}
       </div>
@@ -1162,7 +1684,7 @@ function showPicker() {
 
   const info = (k) => {
     const p = PETS[k];
-    ov.querySelector(".pickinfo .tg").textContent = `${p.emoji} ${p.name} — ${p.tag}`;
+    ov.querySelector(".pickinfo .tg").textContent = `${p.name} — ${p.tag}`;
     ov.querySelector(".pickinfo .ds").textContent = p.desc;
     ov.querySelector(".pickinfo .st").innerHTML = petSummary(p);
   };
@@ -1214,6 +1736,7 @@ function showReport(seconds, earned) {
 }
 
 function begin() {
+  buildRooms();
   buildIncome();
   buildCare();
   buildShop();
@@ -1222,6 +1745,8 @@ function begin() {
     $("savenote").style.color = "var(--pink)";
   }
   render();
+  syncFloorline();
+  window.addEventListener("resize", syncFloorline);
   lastFrame = performance.now();
   idleTimer = 25;
   requestAnimationFrame(loop);
@@ -1235,9 +1760,17 @@ document.querySelectorAll("#nav button").forEach((b) => {
     tab = b.dataset.tab;
     document.querySelectorAll("#nav button").forEach((x) => x.classList.toggle("on", x === b));
     for (const t of ["care", "shop", "log"]) $("page-" + t).hidden = tab !== t;
+    // 상점을 볼 때는 상점만 — 무대와 게이지를 치운다
+    const onStage = tab === "care";
+    for (const id of ["needline", "rooms", "room", "stats"]) $(id).hidden = !onStage;
     render();
   };
 });
+
+$("needline").onclick = () => {
+  const go = $("needline").dataset.go;
+  if (go) goRoom(go);
+};
 
 $("pet").onclick = () => {
   const it = ALL_ITEMS.find((x) => x.id === "pet");
@@ -1257,6 +1790,10 @@ $("reset").onclick = () => {
   S.cooldown = S.cooldown || {};
   S.buffs = S.buffs || {};
   S.log = S.log || [];
+  S.room = S.room || "living";
+  S.asleep = !!S.asleep;
+  S.walls = S.walls || {};
+  if (S.outfit === undefined) S.outfit = null;
 
   const away = Math.max(0, (Date.now() - (S.lastSeen || Date.now())) / 1000);
   begin();
