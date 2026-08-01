@@ -1478,13 +1478,21 @@ const art = (inner) =>
 // 옷은 머리 위에 올라간다. 종마다 머리 높이가 달라 보정값을 따로 둔다.
 const ACC_FIT = {
   dog: [0, 0], cat: [0, 0], rabbit: [0, 5], hamster: [0, 1], parrot: [0, 2],
-  turtle: [0, 0], hedgehog: [0, 6], fish: [-18, 12],
+  turtle: [0, 0], hedgehog: [0, 6], fish: [38, 41, .55],   // 어항 속이라 옷도 같이 줄인다
+};
+
+/* 옷을 어디에 얹을지: [가로, 세로] 또는 [가로, 세로, 배율].
+   배율은 몸이 작아진 종(어항 속 금붕어)만 쓴다. */
+const fitAt = (fit, type) => {
+  const [dx = 0, dy = 0, s = 1] = fit[type] || [];
+  return s === 1 ? `translate(${dx} ${dy})`
+                 : `translate(${dx} ${dy}) scale(${s})`;
 };
 
 // 몸통 위치는 네 발 동물끼리 같지만 거북이·고슴도치·금붕어는 다르다
 const BODY_FIT = {
   dog: [0, 0], cat: [0, 0], rabbit: [0, 0], hamster: [0, 0], parrot: [0, 0],
-  turtle: [0, 0], hedgehog: [0, 0], fish: [-6, 2],
+  turtle: [0, 0], hedgehog: [0, 0], fish: [38, 41, .55],
 };
 
 const ACC_ART = {
@@ -1672,7 +1680,7 @@ const EYES = {
   dog: [[46, 44], [74, 44], 8],    cat: [[46, 44], [74, 44], 8],
   rabbit: [[47, 49], [73, 49], 7.8], hamster: [[46, 45], [74, 45], 8],
   parrot: [[47, 42], [73, 42], 7.6], turtle: [[47, 43], [73, 43], 7.8],
-  hedgehog: [[49, 53], [71, 53], 7], fish: [[40, 56], null, 8],
+  hedgehog: [[49, 53], [71, 53], 7], fish: [[52, 71], null, 4.4],
 };
 const SKIN = {
   dog: "#f7dcb2", cat: "#f9bb7a", rabbit: "#f3efeb", hamster: "#f7cd92",
@@ -2177,19 +2185,43 @@ const PET_ART = {
     `<path d="M53 65 q7 7 14 0 q-2 10 -7 10 q-5 0 -7 -10 z" fill="#f2d3ae"/>` +
     `<ellipse cx="60" cy="74" rx="4.4" ry="3.6" fill="${OUT}" stroke="none"/>`),
 
+  /* 금붕어만 어항 안에 산다. 물고기를 바닥에 세워 두면 그게 제일 이상하다.
+     어항(뒤) → 줄여 넣은 금붕어 → 유리 광택(앞) 순서로 겹친다.
+     금붕어를 0.7배로 줄였으므로 눈 자리(EYES)와 옷 자리(ACC_FIT·BODY_FIT)도
+     같은 비율로 따라간다. */
   fish: art(
-    `<ellipse cx="60" cy="113" rx="29" ry="5" fill="${OUT}" opacity=".1" stroke="none"/>` +
-    `<path d="M93 58 q19 -16 21 0 q-2 16 -21 0 z" fill="#f9cf9a"/>` +
-    `<path d="M48 25 q12 -15 27 -1" fill="#f9cf9a"/>` +
-    `<ellipse cx="57" cy="62" rx="37" ry="34" fill="#f9a468"/>` +
-    `<path d="M57 28 q-17 13 -17 34 q0 22 17 34" fill="#fffaf2" stroke="none"/>` +
-    `<path d="M57 28 q-17 13 -17 34 q0 22 17 34" stroke-width="3.4"/>` +
-    `<path d="M62 76 q15 6 13 19 q-13 2 -17 -11 z" fill="#f9cf9a"/>` +
-    gloss(52, 36, 13, 7, -30) +
-    eye(40, 56, 8) + cheek(31, 72, "#f28d8d") +
-    `<path d="M23 66 q6 5 11 0" stroke-width="3.4"/>` +
-    `<circle cx="19" cy="32" r="5.2" stroke-width="3.2" opacity=".5"/>` +
-    `<circle cx="31" cy="19" r="3.6" stroke-width="3" opacity=".4"/>`),
+    // 어항 그림자와 받침
+    `<ellipse cx="60" cy="117" rx="34" ry="5.5" fill="${OUT}" opacity=".14" stroke="none"/>` +
+    `<path d="M40 110 h40 q4 0 4 4 t-4 4 h-40 q-4 0 -4 -4 t4 -4 z" fill="#d9c6a8"/>` +
+    // 물
+    `<path d="M33 34 a45 45 0 1 0 54 0 z" fill="#cbe9f5"/>` +
+    // 자갈
+    `<path d="M17 88 q43 20 86 0 q-6 27 -43 27 q-37 0 -43 -27 z" fill="#e9d8b6"/>` +
+    `<g fill="#d3bd93" stroke="none">` +
+    `<circle cx="36" cy="99" r="4"/><circle cx="50" cy="104" r="3.2"/>` +
+    `<circle cx="72" cy="103" r="3.6"/><circle cx="86" cy="97" r="3"/></g>` +
+    // 수초
+    `<path d="M30 108 q-6 -20 4 -30 q4 14 0 30" fill="#8fc98a"/>` +
+    `<path d="M90 108 q7 -16 -1 -26 q-6 12 -3 26" fill="#7cbb78"/>` +
+    // 금붕어 (0.7배)
+    `<g transform="translate(30 40) scale(.55)">` +
+      `<path d="M93 58 q19 -16 21 0 q-2 16 -21 0 z" fill="#f9cf9a"/>` +
+      `<path d="M48 25 q12 -15 27 -1" fill="#f9cf9a"/>` +
+      `<ellipse cx="57" cy="62" rx="37" ry="34" fill="#f9a468"/>` +
+      `<path d="M57 28 q-17 13 -17 34 q0 22 17 34" fill="#fffaf2" stroke="none"/>` +
+      `<path d="M57 28 q-17 13 -17 34 q0 22 17 34" stroke-width="3.4"/>` +
+      `<path d="M62 76 q15 6 13 19 q-13 2 -17 -11 z" fill="#f9cf9a"/>` +
+      gloss(52, 36, 13, 7, -30) +
+      eye(40, 56, 8) + cheek(31, 72, "#f28d8d") +
+      `<path d="M23 66 q6 5 11 0" stroke-width="3.4"/>` +
+      `<circle cx="19" cy="32" r="5.2" stroke-width="3.2" opacity=".5"/>` +
+      `<circle cx="31" cy="19" r="3.6" stroke-width="3" opacity=".4"/>` +
+    `</g>` +
+    // 물결과 유리 — 금붕어보다 앞에 와야 물속처럼 보인다
+    `<path d="M34 41 q9 -5 18 0 t18 0 t16 -1" stroke-width="3" opacity=".55" stroke="#fff"/>` +
+    `<path d="M26 52 q-3 13 2 23" stroke-width="4.5" opacity=".4" stroke="#fff"/>` +
+    `<path d="M33 34 a45 45 0 1 0 54 0" fill="none"/>` +
+    `<ellipse cx="60" cy="34" rx="27" ry="7.5" fill="#e8f6fb"/>`),
 };
 
 // (1) 수입원 — 무엇 때문에 행복한지에 따라 단가가 다르다
@@ -3804,8 +3836,7 @@ function renderRoom() {
 function petLook(a) {
   const layer = (id, fit) => {
     if (!id || !ACC_ART[id]) return "";
-    const [dx, dy] = fit[a.type] || [0, 0];
-    return art(`<g transform="translate(${dx} ${dy})">${ACC_ART[id]}</g>`);
+    return art(`<g transform="${fitAt(fit, a.type)}">${ACC_ART[id]}</g>`);
   };
   return PET_ART[a.type] + layer(a.wear.body, BODY_FIT) + layer(a.wear.head, ACC_FIT);
 }
@@ -5458,8 +5489,7 @@ async function drawPhoto() {
     for (const [slot, fit] of [["body", BODY_FIT], ["head", ACC_FIT]]) {
       const id = a.wear[slot];
       if (!id || !ACC_ART[id]) continue;
-      const [dx, dy] = fit[a.type] || [0, 0];
-      layers.push(art(`<g transform="translate(${dx} ${dy})">${ACC_ART[id]}</g>`));
+      layers.push(art(`<g transform="${fitAt(fit, a.type)}">${ACC_ART[id]}</g>`));
     }
     for (const svg of layers) ctx.drawImage(await svgToImage(svg, petSize), px, py, petSize, petSize);
   }

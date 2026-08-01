@@ -45,8 +45,8 @@ const LIMIT = 0.06;                  // 눈 넓이의 6%까지는 눈감아 준�
           .map(e => { const b = e.getBBox(); return { x: b.x * 2, y: b.y * 2, w: b.width * 2, h: b.height * 2 }; });
         if (!eyes.length) continue;
 
-        const [dx, dy] = ACC_FIT[t] || [0, 0];
-        const px = await raster(art(`<g transform="translate(${dx} ${dy})">${ACC_ART[o.id]}</g>`));
+        // 게임과 똑같은 배치식을 쓴다 — 배율이 붙는 종(어항 속 금붕어)이 있으므로
+        const px = await raster(art(`<g transform="${fitAt(ACC_FIT, t)}">${ACC_ART[o.id]}</g>`));
 
         let worst = 0;
         for (const e of eyes) {
