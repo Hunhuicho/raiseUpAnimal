@@ -65,13 +65,17 @@ npm run deploy
 
 ### 방법 3 — GitHub Actions
 
-`.github/workflows/deploy.yml`이 들어 있습니다. 저장소 **Settings → Secrets → Actions**에
-아래 둘을 넣으면 푸시할 때마다 배포됩니다.
+`.github/workflows/deploy.yml`이 들어 있습니다. 저장소
+**Settings → Secrets and variables → Actions**에 아래 둘을 넣으면 푸시할 때마다 배포됩니다.
 
 | 시크릿 | 어디서 |
 |---|---|
 | `CLOUDFLARE_API_TOKEN` | Cloudflare → My Profile → API Tokens → *Edit Cloudflare Workers* 템플릿 |
 | `CLOUDFLARE_ACCOUNT_ID` | Cloudflare 대시보드 우측 사이드바 |
+
+**둘이 없으면 빌드만 하고 배포는 건너뜁니다.** 없는 열쇠 때문에 매번 빨간 X가 뜨면
+진짜 고장과 구분이 안 되기 때문입니다. 건너뛴 이유와 넣는 방법은 그 실행의
+요약(Summary)에 적힙니다. 넣은 뒤에는 **Re-run** 만 눌러도 바로 올라갑니다.
 
 ## 올라가는 것
 

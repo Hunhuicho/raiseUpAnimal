@@ -13,9 +13,9 @@ jobs:
       contents: read
       deployments: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 20
 
@@ -23,7 +23,37 @@ jobs:
       - name: Build
         run: npm run build
 
+      # 토큰이 없으면 배포만 건너뛴다. 없는 열쇠 때문에 매번 빨간 X가 뜨면
+      # 진짜 고장과 구분이 안 된다.
+      - name: Cloudflare 자격 확인
+        id: cf
+        env:
+          TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -n "$TOKEN" ] && [ -n "$ACCOUNT" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            {
+              echo "### ⏭️ Cloudflare 배포를 건너뛰었습니다"
+              echo ""
+              echo "빌드는 성공했지만 배포에 필요한 값이 저장소에 없습니다."
+              echo ""
+              echo "**Settings → Secrets and variables → Actions** 에서 두 가지를 넣어 주세요."
+              echo ""
+              echo "| 이름 | 어디서 |"
+              echo "|---|---|"
+              echo "| \`CLOUDFLARE_API_TOKEN\` | Cloudflare → My Profile → API Tokens → *Edit Cloudflare Workers* 템플릿 |"
+              echo "| \`CLOUDFLARE_ACCOUNT_ID\` | Cloudflare 대시보드 우측 사이드바 |"
+              echo ""
+              echo "넣고 나면 다음 푸시부터 자동으로 올라갑니다."
+              echo "지금 바로 올리려면 이 작업을 **Re-run** 하세요."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Deploy
+        if: steps.cf.outputs.ready == 'true'
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
