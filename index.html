@@ -3376,11 +3376,12 @@ async function graduate() {
 
   save(); snapshot();
   try { localStorage.removeItem(SAVE_KEY); } catch (e) { /* 저장 불가 */ }
+  closeSide();
+  tab = "care";
   S = null;
   document.querySelectorAll(".overlay").forEach((x) => x.remove());
   $("pets").innerHTML = "";
   $("room").querySelectorAll(".furn").forEach((x) => x.remove());
-  tab = "care"; closeSide();
   toast(`🐾 발도장 ${paws}개를 받았어요`);
   showPicker();
 }
@@ -4727,6 +4728,7 @@ function renderLog() {
 }
 
 function render() {
+  if (!S) return;      // 판을 비운 뒤(새로 시작·졸업) 선택 화면으로 넘어가는 사이
   renderTop();
   renderNeedLine();
   renderWish();
@@ -5339,11 +5341,12 @@ $("btn-reset").onclick = async () => {
   snapshot();          // 지운 기록을 선택 화면에서 되살릴 수 있도록 남겨 둔다
   try { localStorage.removeItem(SAVE_KEY); } catch (e) { /* 저장 불가 환경 */ }
   // 새로고침이 막히는 환경도 있으므로 그 자리에서 초기화한다
+  closeSide();         // 서랍은 판이 살아 있을 때 닫는다 — 닫으면서 한 번 그리므로
+  tab = "care";
   S = null;
   document.querySelectorAll(".overlay").forEach((x) => x.remove());
   $("pets").innerHTML = "";
   $("room").querySelectorAll(".furn").forEach((x) => x.remove());
-  tab = "care"; closeSide();
   toast("처음부터 시작합니다");
   updateUndo();
   showPicker();
