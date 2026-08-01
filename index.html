@@ -569,7 +569,8 @@ const ACC_ART = {
     `<ellipse cx="76" cy="18" rx="4.5" ry="2.4" fill="#fff" opacity=".5" stroke="none" transform="rotate(-22 76 18)"/>`,
 
   o_flower:
-    `<path d="M74 30 q-9 3 -12 11 q9 1 13 -7 z" fill="#8dc98a"/>` +
+    // 잎사귀는 얼굴 바깥쪽으로. 안쪽에 두면 오른쪽 눈 위를 덮는다.
+    `<path d="M99 27 q11 2 14 11 q-11 1 -15 -8 z" fill="#8dc98a"/>` +
     `<g fill="#fdf8fd">` +
     `<circle cx="88" cy="5" r="6.6"/><circle cx="99" cy="13" r="6.6"/>` +
     `<circle cx="95" cy="25" r="6.6"/><circle cx="81" cy="25" r="6.6"/>` +
