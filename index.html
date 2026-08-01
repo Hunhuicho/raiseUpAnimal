@@ -381,6 +381,8 @@
   .shopgrid button.done { opacity: .5; border-style: dashed; }
   .shopgrid button.done .c { color: var(--green); }
   .shopgrid button.buyable { border-color: var(--gold); }
+  .shopgrid button.dice { border-color: #c8b6e0; background: #f8f4fd; }
+  .shopgrid button.dice:disabled { border-color: var(--line); background: var(--panel); }
   .sect { font-size: 11px; font-weight: 800; color: var(--ink-soft); padding: 2px 2px 9px; letter-spacing: .04em; line-height: 1.6; }
 
   #logbody .li { font-size: 12px; padding: 6px 4px; border-bottom: 1px dashed var(--line); display: flex; gap: 8px; }
@@ -479,6 +481,31 @@
   #mg-stage .treat { z-index: 1; transition: left var(--mg-speed, 300ms) ease-in-out; }
   #mg-stage .cup svg, #mg-stage .treat svg { width: 100%; height: 100%; display: block; }
   #mg-msg b { font-weight: 800; }
+
+  /* 원반 받기 */
+  #cg-disc { width: 92px; height: 92px; margin: 0 auto 10px; }
+  #cg-disc svg { width: 100%; height: 100%; display: block; }
+  #cg-disc.spin { animation: cg-spin .7s ease-out; }
+  @keyframes cg-spin {
+    0%   { transform: rotate(0) scale(1); }
+    100% { transform: rotate(360deg) scale(1.15); }
+  }
+  #cg-stage {
+    position: relative; height: 34px; border-radius: 10px; margin-bottom: 10px;
+    background: #ebe0cf; border: 2px solid var(--line); overflow: hidden; cursor: var(--cur-tap);
+  }
+  .cg-zone { position: absolute; top: 0; bottom: 0; background: #b8e0a8; }
+  .cg-mark {
+    position: absolute; top: -2px; bottom: -2px; width: 7px; margin-left: -3.5px;
+    background: var(--ink); border-radius: 4px;
+  }
+  #cg-dots { display: flex; gap: 7px; justify-content: center; margin-bottom: 12px; }
+  #cg-dots span {
+    width: 13px; height: 13px; border-radius: 50%;
+    background: #e5d8c4; border: 2px solid var(--line);
+  }
+  #cg-dots span.ok { background: var(--green); border-color: var(--green); }
+  #cg-dots span.no { background: var(--pink); border-color: var(--pink); }
 
   #shot { width: 100%; border-radius: 12px; display: block; margin-bottom: 12px; border: 2px solid var(--line); }
   .modal .sub { display: flex; gap: 8px; margin-top: 8px; }
@@ -1092,6 +1119,8 @@ const CARE = [
         ch: "aff", pay: 10, bond: 3, scale: "play", note: "잠깐 뛰어놀기" },
       { id: "walk", label: "산책", cost: 0, cd: 90, eff: { aff: 27, cln: -20, sat: -12 },
         ch: "aff", pay: 22, bond: 9, scale: "play", buff: { mult: 1.5, secs: 480 } },
+      { id: "catch", label: "원반 받기", cost: 0, cd: 60, special: "minigame2",
+        note: "타이밍 맞춰 세 번 던지기" },
       { id: "sun",  label: "일광욕", cost: 0, cd: 120, eff: { cln: 16, aff: 5 },
         ch: "cln", pay: 12, bond: 2, buff: { mult: 1.25, secs: 360 } },
     ],
@@ -1657,12 +1686,12 @@ function checkWish(it) {
 }
 
 function doCare(it) {
-  if (it.special === "minigame") {
+  if (it.special === "minigame" || it.special === "minigame2") {
     if (S.cooldown[it.id] > 0) return;
     S.asleep = false;
     Sound.setTrack("day");
     checkWish(it);
-    playHideGame(it);
+    (it.special === "minigame" ? playHideGame : playCatchGame)(it);
     return;
   }
   // 재우기는 다른 돌보기와 흐름이 달라 먼저 빠져나간다 — 부탁 확인은 여기서 따로 해줘야 한다
@@ -1753,6 +1782,28 @@ function reactionTo(it) {
     case "play":      return "더! 더!";
     default:          return "고마워!";
   }
+}
+
+// 가진 옷 중에서 아무거나 하나 — 지금 입은 것과 다른 것으로 고른다
+function randomPool(slot) {
+  return OUTFITS.filter((o) =>
+    o.slot === slot && has(o.id) && canWear(o.id) && S.wear[slot] !== o.id);
+}
+
+function randomWear(slot) {
+  const pool = randomPool(slot);
+  if (!pool.length) {
+    const owned = OUTFITS.some((o) => o.slot === slot && has(o.id));
+    toast(owned ? "고를 옷이 더 없어요" : "아직 가진 옷이 없어요");
+    return;
+  }
+  const o = pool[Math.floor(Math.random() * pool.length)];
+  S.wear[slot] = o.id;
+  Sound.sfx("buy");
+  say(`${o.name}, 어때?`);
+  addLog(`랜덤으로 ${o.name}을(를) 입었다`);
+  render();
+  save();
 }
 
 function wearOutfit(o) {
@@ -1922,6 +1973,124 @@ async function graduate() {
   tab = "care";
   toast(`🐾 발도장 ${paws}개를 받았어요`);
   showPicker();
+}
+
+/* ===================== 미니게임 2 — 원반 받기 =====================
+   컵 게임이 기억력이라면 이쪽은 타이밍. 성격이 겹치지 않아야 둘 다 살아남는다. */
+
+const DISC_ART = art(
+  `<ellipse cx="60" cy="60" rx="46" ry="16" fill="#f28aa4"/>` +
+  `<ellipse cx="60" cy="55" rx="46" ry="16" fill="#f9a8bd"/>` +
+  `<ellipse cx="60" cy="55" rx="24" ry="8" fill="#e8768f" stroke="none"/>`);
+
+function oneThrow(stage, zoneL, zoneW, sweep) {
+  return new Promise((res) => {
+    const mark = stage.querySelector(".cg-mark");
+    const zone = stage.querySelector(".cg-zone");
+    zone.style.left = zoneL + "%";
+    zone.style.width = zoneW + "%";
+
+    let stop = false, x = 0;
+    const t0 = performance.now();
+    const step = (t) => {
+      if (stop) return;
+      const q = ((t - t0) / sweep) % 2;
+      x = q < 1 ? q : 2 - q;                 // 0 → 1 → 0 왕복
+      mark.style.left = (x * 100) + "%";
+      requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+
+    const press = () => {
+      if (stop) return;
+      stop = true;
+      stage.onclick = null;
+      const at = x * 100;
+      res({ hit: at >= zoneL && at <= zoneL + zoneW, at });
+    };
+    stage.onclick = press;
+    stage._press = press;
+  });
+}
+
+async function playCatchGame(it) {
+  const lv = bondLevel();
+  const sweep = Math.max(700, 1250 - lv * 55);   // 친밀도가 오를수록 빨라진다
+  const widths = [26, 19, 13];
+  let hits = 0;
+
+  const ov = document.createElement("div");
+  ov.className = "overlay";
+  ov.innerHTML = `
+    <div class="modal">
+      <h2>🥏 원반 받기</h2>
+      <p id="cg-msg">막대가 초록 칸에 올 때 눌러주세요</p>
+      <div id="cg-disc">${DISC_ART}</div>
+      <div id="cg-stage"><div class="cg-zone"></div><div class="cg-mark"></div></div>
+      <div id="cg-dots"></div>
+      <button class="big" id="cg-go">던지기!</button>
+      <div class="sub"><button id="cg-quit">그만하기</button></div>
+    </div>`;
+  document.body.appendChild(ov);
+
+  const stage = ov.querySelector("#cg-stage");
+  const msg = ov.querySelector("#cg-msg");
+  const dots = ov.querySelector("#cg-dots");
+  const go = ov.querySelector("#cg-go");
+  const paint = (n) => {
+    dots.innerHTML = widths.map((_, i) =>
+      `<span class="${i < n ? (hitLog[i] ? "ok" : "no") : ""}"></span>`).join("");
+  };
+  const hitLog = [];
+  paint(0);
+
+  let quit = false;
+  ov.querySelector("#cg-quit").onclick = () => { quit = true; ov.remove(); };
+
+  for (let r = 0; r < widths.length && !quit; r++) {
+    const w = widths[r];
+    const zoneL = 8 + Math.random() * (84 - w);
+    msg.textContent = `${r + 1}번째 던지기 — 초록 칸에서!`;
+    go.disabled = false;
+    go.onclick = () => stage._press && stage._press();
+
+    const out = await oneThrow(stage, zoneL, w, sweep);
+    if (quit) return;
+    hitLog[r] = out.hit;
+    hits += out.hit ? 1 : 0;
+    paint(r + 1);
+    go.disabled = true;
+    msg.textContent = out.hit ? "딱 맞았어요!" : "아깝다!";
+    Sound.sfx(out.hit ? "wish" : "care");
+    ov.querySelector("#cg-disc").classList.toggle("spin", out.hit);
+    await wait(700);
+    ov.querySelector("#cg-disc").classList.remove("spin");
+  }
+  if (quit) return;
+
+  const a = S.pets[S.active];
+  let coins = Math.round(hits * 15 * coinMultiplier());
+  if (hits === widths.length) coins += Math.round(30 * coinMultiplier());
+  S.coins += coins;
+  a.aff = clamp(a.aff + 5 * hits + (hits === 3 ? 8 : 0), 0, 100);
+  a.bondExp += 3 * hits + (hits === 3 ? 6 : 0);
+
+  msg.innerHTML = hits === 3
+    ? `세 번 다 성공! <b style="color:var(--gold)">+${fmt(coins)}코인</b>`
+    : hits > 0
+      ? `${hits}번 성공 <b style="color:var(--gold)">+${fmt(coins)}코인</b>`
+      : "한 번도 못 받았어요… 그래도 즐거웠죠?";
+  addLog(`원반 받기 — ${hits}/3 성공 · +${fmt(coins)}코인`);
+  if (coins > 0) floatText(`🪙+${fmt(coins)}`, "var(--gold)");
+  showPose("play");
+
+  go.disabled = false;
+  go.textContent = "닫기";
+  go.onclick = () => ov.remove();
+  ov.querySelector(".sub").hidden = true;   // 끝나면 닫기 버튼은 하나면 된다
+  S.cooldown[it.id] = it.cd;
+  render();
+  save();
 }
 
 function buy(item) {
@@ -2249,7 +2418,7 @@ function updateCare() {
   for (const it of ALL_ITEMS) {
     const el = careEls.get(it.id);
     if (!el) continue;
-    if (it.special === "minigame") {
+    if (it.special === "minigame" || it.special === "minigame2") {
       const cd = S.cooldown[it.id];
       el.n.textContent = it.label;
       el.c.textContent = cd > 0 ? Math.ceil(cd) + "초" : "무료";
@@ -2518,6 +2687,13 @@ function buildDrawer() {
     grid.appendChild(none);
     drawerEls.set("none:" + sl.k, { btn: none, c: none.querySelector(".c"), slot: sl.k });
 
+    const dice = document.createElement("button");
+    dice.className = "dice";
+    dice.innerHTML = `<span class="e">🎲</span><span class="n">랜덤</span><span class="c"></span>`;
+    dice.onclick = () => randomWear(sl.k);
+    grid.appendChild(dice);
+    drawerEls.set("dice:" + sl.k, { btn: dice, c: dice.querySelector(".c"), slot: sl.k });
+
     for (const o of OUTFITS.filter((x) => x.slot === sl.k)) {
       const b = document.createElement("button");
       b.innerHTML = `
@@ -2579,6 +2755,12 @@ function updateDrawer() {
       const off = !S.wear[sl];
       n.c.textContent = off ? "✓ 지금" : "벗기";
       n.btn.classList.toggle("done", off);
+    }
+    const d = drawerEls.get("dice:" + sl);
+    if (d) {
+      const n = randomPool(sl).length;
+      d.c.textContent = n ? `${n}벌 중` : "없음";
+      d.btn.disabled = !n;
     }
     const c = drawerEls.get("cnt:" + sl);
     if (c) {
