@@ -826,42 +826,66 @@
   #act .ac-say        { animation: ac-say        var(--d) ease-in-out both; transform-origin: 60% 40%; }
   #act .ac-still      { opacity: 1; }
 
-  /* 활동하는 모습 — idle보다 뒤에 두어 이긴다 */
-  .pet.pose-eat  { animation: p-eat .55s ease-in-out infinite; }
-  .pet.pose-wash { animation: p-wash .3s ease-in-out infinite; }
-  .pet.pose-play { animation: p-play .48s ease-in-out infinite; }
-  .pet.pose-walk { animation: p-walk .42s ease-in-out infinite; }
-  .pet.pose-love { animation: p-love .9s ease-in-out infinite; }
-  .pet.pose-sun  { animation: p-sun 2.4s ease-in-out infinite; }
+  /* ---------- 활동하는 모습 ----------
+     핵심은 두 가지다.
+
+     1) 회전축을 발밑에 둔다. 가운데(배)를 축으로 돌리면 제자리에서 흔들리는
+        것으로만 보이고, 발밑을 축으로 돌려야 "숙인다 / 기댄다 / 젖힌다"가 된다.
+     2) 반복 구간을 "취한 자세" 주위로 잡는다. 0%를 똑바로 선 자세로 두면
+        고개를 숙였다 폈다 하느라 자세가 안 남는다. 밥 먹을 때는 숙인 채로
+        오물거려야 밥 먹는 것처럼 보인다.
+
+     여기에 눌리고 늘어나는 변형(scaleX/scaleY)을 얹으면 몸이 실제로 바뀐다.
+     idle보다 뒤, 조르는 몸짓보다도 뒤에 두어 활동이 이긴다. */
+  .pet.pose-eat, .pet.pose-wash, .pet.pose-play,
+  .pet.pose-walk, .pet.pose-love, .pet.pose-sun,
+  .pet.sleeping { transform-origin: 50% 94%; }
+
+  .pet.pose-eat  { animation: p-eat .62s ease-in-out infinite; }
+  .pet.pose-wash { animation: p-wash .34s ease-in-out infinite; }
+  .pet.pose-play { animation: p-play .52s cubic-bezier(.3,0,.4,1) infinite; }
+  .pet.pose-walk { animation: p-walk .46s ease-in-out infinite; }
+  .pet.pose-love { animation: p-love 1.1s ease-in-out infinite; }
+  .pet.pose-sun  { animation: p-sun 2.6s ease-in-out infinite; }
   .pet.sleeping  { animation: p-sleep 3.4s ease-in-out infinite; }
 
+  /* 🍚 밥 — 고개를 숙이고 오물오물 */
   @keyframes p-eat {
-    0%,100% { transform: translate(-50%,-50%); }
-    50%     { transform: translate(-50%,-44%) rotate(4deg); }
+    0%,100% { transform: translate(-50%,-46%) rotate(10deg) scale(1.03,.94); }
+    50%     { transform: translate(-50%,-45%) rotate(13deg) scale(1.05,.91); }
   }
+  /* 🫧 씻기 — 몸을 부르르 턴다 */
   @keyframes p-wash {
-    0%,100% { transform: translate(-50%,-50%) rotate(-5deg); }
-    50%     { transform: translate(-50%,-50%) rotate(5deg); }
+    0%,100% { transform: translate(-51%,-50%) rotate(-6deg) scale(1.02,.98); }
+    50%     { transform: translate(-49%,-50%) rotate(6deg)  scale(.98,1.02); }
   }
+  /* 💗 놀기 — 웅크렸다 폴짝 */
   @keyframes p-play {
-    0%,100% { transform: translate(-50%,-50%); }
-    45%     { transform: translate(-50%,-68%) rotate(-9deg); }
+    0%,100% { transform: translate(-50%,-45%) scale(1.08,.88); }
+    18%     { transform: translate(-50%,-58%) scale(.94,1.10); }
+    45%     { transform: translate(-50%,-72%) rotate(-8deg) scale(.97,1.04); }
+    72%     { transform: translate(-50%,-56%) rotate(-3deg) scale(1.0,1.0); }
   }
+  /* 🐾 걷기 — 앞뒤로 성큼성큼, 몸이 좌우로 실린다 */
   @keyframes p-walk {
-    0%,100% { transform: translate(-50%,-50%) rotate(-3.5deg); }
-    50%     { transform: translate(-50%,-55%) rotate(3.5deg); }
+    0%,100% { transform: translate(-53%,-50%) rotate(-6deg) scale(.97,1.01); }
+    25%     { transform: translate(-51%,-54%) rotate(-2deg) scale(1,1); }
+    50%     { transform: translate(-47%,-50%) rotate(6deg)  scale(.97,1.01); }
+    75%     { transform: translate(-49%,-54%) rotate(2deg)  scale(1,1); }
   }
+  /* 💗 쓰다듬기 — 손 쪽으로 기대며 부푼다 */
   @keyframes p-love {
-    0%,100% { transform: translate(-50%,-50%) scale(1); }
-    50%     { transform: translate(-50%,-53%) scale(1.06); }
+    0%,100% { transform: translate(-50%,-50%) rotate(-7deg) scale(1.03); }
+    50%     { transform: translate(-50%,-52%) rotate(-11deg) scale(1.07); }
   }
+  /* ☀️ 볕 쬐기 — 몸을 젖히고 길게 늘어진다 */
   @keyframes p-sun {
-    0%,100% { transform: translate(-50%,-50%) rotate(-2deg); }
-    50%     { transform: translate(-50%,-48%) rotate(2deg); }
+    0%,100% { transform: translate(-50%,-49%) rotate(-8deg) scale(.98,1.03); }
+    50%     { transform: translate(-50%,-47%) rotate(-5deg) scale(1,1.05); }
   }
   @keyframes p-sleep {
-    0%,100% { transform: translate(-50%,-50%) scaleY(1); }
-    50%     { transform: translate(-50%,-48%) scaleY(.96); }
+    0%,100% { transform: translate(-50%,-50%) scale(1.02,.96); }
+    50%     { transform: translate(-50%,-49%) scale(1,.99); }
   }
   @keyframes idle {
     0%,100% { transform: translate(-50%,-50%) scaleY(1); }
@@ -1741,6 +1765,25 @@ function wishEyes(type, kind) {
     + `<circle cx="${x - r * 0.42}" cy="${y + r * 0.4}" r="${r * 0.22}" fill="#fff" stroke="none"/>`);
 }
 
+/* 활동할 때의 표정. 눈만 바꿔도 무엇을 하는 중인지가 달라 보인다.
+   closed 감은 눈 · down 아래를 내려다보는 눈 · spark 기대에 찬 눈 */
+function poseEyes(type, kind) {
+  if (!kind) return "";
+  if (kind === "closed") return closedEyes(type);
+  if (kind === "spark") return wishEyes(type, "spark");
+  if (kind === "down") {
+    const [a, b, r] = EYES[type];
+    const pair = (fn) => fn(a) + (b ? fn(b) : "");
+    // 원래 눈을 살갗으로 덮고, 눈동자를 아래쪽에 다시 그린다 — 그릇을 본다
+    return pair(([x, y]) =>
+      `<ellipse cx="${x}" cy="${y}" rx="${r + 1.7}" ry="${r * 1.32}" fill="${SKIN[type]}" stroke="none"/>`
+      + `<ellipse cx="${x}" cy="${y + r * 0.46}" rx="${r * 0.66}" ry="${r * 0.78}" fill="${OUT}" stroke="none"/>`
+      + `<circle cx="${x + r * 0.24}" cy="${y + r * 0.24}" r="${r * 0.24}" fill="#fff" stroke="none"/>`
+      + `<path d="M${x - r} ${y - r * 0.5} q${r} ${-r * 0.55} ${r * 2} 0" stroke-width="3" fill="none"/>`);
+  }
+  return "";
+}
+
 // 활동마다 곁들이는 소품
 const PROPS = {
   eat: `<path d="M34 106 h52 l-6 14 q-1 5 -8 5 h-24 q-7 0 -8 -5 z" fill="#7fb6cc"/>` +
@@ -1781,8 +1824,15 @@ const POSES = {
   own_parrot: "love", own_turtle: "wash", own_hedgehog: "eat", own_fish: "wash",
 };
 const POSE_SECS = { eat: 2.6, wash: 2.4, play: 2.2, love: 2.0, walk: 3.0, sun: 3.0 };
-// 눈을 감는 활동
-const POSE_EYES = { love: true, sun: true, eat: false, wash: false, play: false, walk: false };
+// 활동마다의 표정
+const POSE_FACE = {
+  eat: "down",      // 그릇을 내려다본다
+  wash: "closed",   // 물이 눈에 들어가지 않게
+  love: "closed",   // 기분 좋아서
+  sun: "closed",    // 눈이 부셔서
+  play: "spark",    // 신나서
+  walk: "spark",
+};
 
 /* ===== 직접 해주는 장면 =====
    소품만 띄우는 것과 직접 해주는 것은 다르다. 특식은 접시를 들고 와서
@@ -4103,11 +4153,16 @@ function showPose(kind, secs, eyes) {
   el.querySelectorAll(".prop").forEach((x) => x.remove());
 
   // 장면이 따로 있으면 소품은 그쪽이 그린다 — 여기서는 표정만 얹는다
-  const shut = eyes === undefined ? POSE_EYES[kind] : eyes;
+  //   eyes 를 따로 넘기면 그 표정으로, 안 넘기면 활동에 정해진 표정으로.
+  //   (예전 코드가 true/false 를 넘겼으므로 그것도 받아 준다)
+  const face = eyes === undefined ? POSE_FACE[kind]
+             : eyes === true ? "closed"
+             : eyes === false ? ""
+             : eyes;
   const extra = secs === undefined ? (PROPS[kind] || "") : "";
   const prop = document.createElement("div");
   prop.className = "prop";
-  prop.innerHTML = art((shut ? closedEyes(S.type) : "") + extra);
+  prop.innerHTML = art(poseEyes(S.type, face) + extra);
   el.appendChild(prop);
   el.classList.add("pose-" + kind);
 
